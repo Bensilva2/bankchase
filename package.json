@@ -1,0 +1,1 @@
+{"name": "v0-login-password-2", "version": "1.0.0", "dependencies": {"@simplewebauthn/server": "latest","@simplewebauthn/browser": "latest"}}
