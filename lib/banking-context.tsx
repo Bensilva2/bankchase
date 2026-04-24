@@ -11,18 +11,6 @@ import {
   getLastSyncTime,
   setLastSyncTime,
 } from "@/lib/sync-service"
-import { SettingsEnforcer } from "./settings-enforcement"
-import { getRealTimeSync } from "./real-time-sync"
-import { NotificationManager } from "./notification-manager"
-
-export const CUSTOMER_SERVICE_EMAIL = "chase.org_info247@zohomail.com"
-export const CUSTOMER_SERVICE_PHONE = "1-800-935-9935"
-
-export const VERIFICATION_CODES = {
-  OTP: "330668",
-  COT: "92115",
-  TAX: "HM36RC",
-}
 
 export type Transaction = {
   id: string
@@ -51,7 +39,6 @@ export type Account = {
   name: string
   type: string
   balance: number
-  availableBalance: number // Added available balance separate from current balance
   accountNumber: string
   routingNumber: string
   interestRate?: number
@@ -284,11 +271,6 @@ export type AppSettings = {
   sessionTimeout?: number
   autoLockEnabled?: boolean
   backupCodes?: string[]
-  textSize?: string
-  highContrast?: boolean
-  reduceMotion?: boolean
-  screenReader?: boolean
-  voiceControl?: boolean
 }
 
 export type SupportTicket = {
@@ -327,7 +309,7 @@ type BankingContextType = {
   addTransaction: (transaction: Omit<Transaction, "id" | "date">) => Transaction
   updateTransaction: (transactionId: string, updates: Partial<Transaction>) => void
   addAccount: (account: Omit<Account, "id">) => void
-  updateBalance: (accountId: string, amount: number, type?: "credit" | "debit") => void
+  updateBalance: (accountId: string, amount: number) => void
   calculateSpending: (month: number, year: number) => number
   getSpendingByCategory: (month: number, year: number) => { category: string; amount: number }[]
   transferFunds: (
@@ -436,20 +418,9 @@ type BankingContextType = {
   // Data Management
   exportData: () => string
   clearAllData: () => void
-
-  // Add settings enforcer and lock state to context
-  settingsEnforcer: SettingsEnforcer | null
-  isLocked: boolean
-  unlockApp: () => void
-
-  // Expose real-time sync and notification manager
-  realTimeSync: ReturnType<typeof getRealTimeSync>
-  notificationManager: NotificationManager | null
 }
 
 const BankingContext = createContext<BankingContextType | undefined>(undefined)
-
-export { BankingContext }
 
 export function BankingProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -458,114 +429,22 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
   const [lastSynced, setLastSynced] = useState<string | null>(null)
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Add settings enforcer and lock state
-  const [settingsEnforcer, setSettingsEnforcer] = useState<SettingsEnforcer | null>(null)
-  const [isLocked, setIsLocked] = useState(false)
-
-  const [realTimeSync] = useState(() => getRealTimeSync())
-  const [notificationManager, setNotificationManager] = useState<NotificationManager | null>(null)
-  const appSettingsRef = useRef<AppSettings>(null!)
-
-  // Define defaultAppSettings here to be used in clearAllData
-  const defaultAppSettings: AppSettings = {
-    darkMode: false,
-    language: "English",
-    region: "United States",
-    currency: "EUR",
-    biometricLogin: true,
-    twoFactorAuth: true, // Changed from false to true
-    pushNotifications: true,
-    emailNotifications: true,
-    smsAlerts: true,
-    transactionAlerts: true,
-    balanceAlerts: true,
-    balanceThreshold: 1000, // Changed from 100 to 1000
-    loginAlerts: true,
-    marketingEmails: false,
-    paperlessStatements: true,
-    quickBalanceEnabled: true,
-    roundUpSavings: false,
-    password: "Chun2000",
-    pin: "1234",
-    lastPasswordChange: "",
-    lastPinChange: "",
-    twoFactorMethod: "sms",
-    twoFactorPhone: "(555) 888-9999", // Updated phone number
-    twoFactorEmail: "hungchun164@gmail.com", // Updated email
-    twoFactorEnabled: true, // Changed from false to true
-    trustedDevices: [
-      {
-        id: "dev1",
-        name: "iPhone 15 Pro Max",
-        type: "mobile",
-        lastUsed: new Date().toISOString(),
-        location: "New York, NY",
-        trusted: true,
-      },
-    ],
-    loginHistory: [
-      {
-        id: "lh1",
-        date: new Date().toISOString(),
-        device: "iPhone 15 Pro Max",
-        location: "New York, NY",
-        status: "success",
-        ip: "192.168.1.105",
-      },
-    ],
-    privacySettings: {
-      shareDataWithPartners: false,
-      personalizedAds: false,
-      locationServices: true,
-      analyticsTracking: true,
-      socialMediaConnections: false,
-      creditBureauAccess: true,
-      accountVisibility: "private",
-      showProfilePhoto: true,
-      showOnlineStatus: false,
-    },
-    dataPermissions: {
-      cameraAccess: true,
-      photoLibrary: true,
-      contacts: true, // Changed from false to true
-      notifications: true,
-      location: true,
-      microphone: false,
-      faceId: true,
-      touchId: true, // Changed from false to true
-    },
-    securityQuestions: [
-      { question: "What was your first pet's name?", answer: "Buddy" },
-      { question: "What city were you born in?", answer: "New York" },
-      { question: "What is your mother's maiden name?", answer: "Smith" },
-    ],
-    lastSecurityReview: new Date().toISOString(), // Added lastSecurityReview
-    sessionTimeout: 15, // Added sessionTimeout
-    autoLockEnabled: true, // Added autoLockEnabled
-    backupCodes: ["BACKUP-1234-5678", "BACKUP-8765-4321", "BACKUP-1111-2222"], // Added backupCodes
-    textSize: "medium",
-    highContrast: false,
-    reduceMotion: false,
-    screenReader: false,
-    voiceControl: false,
-  }
-
   const [userProfile, setUserProfile] = useState<UserProfile>({
     id: "user1",
-    name: "CHUN HUNG",
-    email: "hungchun164@gmail.com",
-    phone: "+1 (702) 886-4745",
-    address: "34B Philadelphia, Pennsylvania PA, USA",
-    memberSince: "1988-08-24",
+    name: "Lin Huang",
+    email: "linhuang011@gmail.com",
+    phone: "(555) 888-9999",
+    address: "123 Main Street, New York, NY 10001", // Updated address
+    memberSince: "2018-03-20", // Updated memberSince
     tier: "Chase Private Client",
     ultimateRewardsPoints: 287450,
     profilePicture: null,
-    dateOfBirth: "1961-08-24",
-    ssn: "697-03-2642",
+    dateOfBirth: "1985-06-15", // Updated DOB
+    ssn: "***-**-1234", // Updated SSN
     preferredLanguage: "English",
     currency: "USD",
     timezone: "America/New_York",
-    avatarUrl: "/professional-headshot.png",
+    avatarUrl: "/professional-headshot.png", // Added avatarUrl
   })
 
   const defaultAccounts: Account[] = [
@@ -573,9 +452,8 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: "1",
       name: "Total Checking",
       type: "checking",
-      balance: 580000,
-      availableBalance: 580000,
-      accountNumber: "290114795",
+      balance: 15847.23,
+      accountNumber: "****0683",
       routingNumber: "021000021",
       interestRate: 0.01,
     },
@@ -583,8 +461,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: "2",
       name: "Chase Savings",
       type: "savings",
-      balance: 0,
-      availableBalance: 0,
+      balance: 52340.89,
       accountNumber: "****4521",
       routingNumber: "021000021",
       interestRate: 4.0,
@@ -593,8 +470,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: "3",
       name: "Sapphire Reserve",
       type: "credit",
-      balance: 0,
-      availableBalance: 25000,
+      balance: 3247.56,
       accountNumber: "****8901",
       routingNumber: "",
       interestRate: 21.99,
@@ -603,8 +479,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: "4",
       name: "Freedom Unlimited",
       type: "credit",
-      balance: 0,
-      availableBalance: 10000,
+      balance: 1520.33,
       accountNumber: "****7823",
       routingNumber: "",
       interestRate: 19.99,
@@ -614,19 +489,6 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
   const [accounts, setAccounts] = useState<Account[]>(defaultAccounts)
 
   const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: "tx-alsco-001",
-      description: "Wire Transfer Credit - Alsco Berufskleidungs Fabrics Enterprises and Company",
-      amount: 580000,
-      date: new Date().toISOString(),
-      type: "credit",
-      category: "Income",
-      status: "completed",
-      reference: "WIRE-ALSCO-2024-001",
-      senderName: "Alsco Berufskleidungs Fabrics Enterprises and Company",
-      bankName: "Deutsche Bank AG",
-      recipientAccount: "2267003745",
-    },
     {
       id: "tx1",
       description: "Payroll Deposit - Tech Corp Inc",
@@ -777,71 +639,49 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     },
   ])
 
-  const [linkedDevices, setLinkedDevices] = useState<LinkedDevice[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("chase_linked_devices")
-      if (saved) {
-        try {
-          return JSON.parse(saved)
-        } catch {
-          // Fall back to default
-        }
-      }
-    }
-    return [
-      {
-        id: "dev1",
-        name: "iPhone 15 Pro Max",
-        type: "mobile",
-        lastActive: new Date().toISOString(),
-        location: "New York, NY",
-        current: true,
-        browser: "Safari",
-        os: "iOS 17.2",
-        ip: "192.168.1.105",
-      },
-      {
-        id: "dev2",
-        name: 'MacBook Pro 16"',
-        type: "desktop",
-        lastActive: new Date(Date.now() - 3600000).toISOString(),
-        location: "New York, NY",
-        current: false,
-        browser: "Chrome",
-        os: "macOS Sonoma",
-        ip: "192.168.1.102",
-      },
-      {
-        id: "dev3",
-        name: 'iPad Pro 12.9"',
-        type: "tablet",
-        lastActive: new Date(Date.now() - 86400000).toISOString(),
-        location: "Brooklyn, NY",
-        current: false,
-        browser: "Safari",
-        os: "iPadOS 17.2",
-        ip: "192.168.1.110",
-      },
-    ]
-  })
+  const [linkedDevices, setLinkedDevices] = useState<LinkedDevice[]>([
+    {
+      id: "dev1",
+      name: "iPhone 15 Pro Max",
+      type: "mobile",
+      lastActive: new Date().toISOString(),
+      location: "New York, NY",
+      current: true,
+      browser: "Safari",
+      os: "iOS 17.2",
+      ip: "192.168.1.105",
+    },
+    {
+      id: "dev2",
+      name: 'MacBook Pro 16"',
+      type: "desktop",
+      lastActive: new Date(Date.now() - 3600000).toISOString(),
+      location: "New York, NY",
+      current: false,
+      browser: "Chrome",
+      os: "macOS Sonoma",
+      ip: "192.168.1.102",
+    },
+    {
+      id: "dev3",
+      name: 'iPad Pro 12.9"',
+      type: "tablet",
+      lastActive: new Date(Date.now() - 86400000).toISOString(),
+      location: "Brooklyn, NY",
+      current: false,
+      browser: "Safari",
+      os: "iPadOS 17.2",
+      ip: "192.168.1.110",
+    },
+  ])
 
   const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "notif-alsco-credit",
-      title: "Wire Transfer Credit Received",
-      message:
-        "You have received a wire transfer of $580,000.00 from Alsco Berufskleidungs Fabrics Enterprises and Company (Account: 2267003745). Funds are now available in your Total Checking account.",
-      type: "success",
-      date: new Date().toISOString(),
-      read: false,
-      category: "Transactions",
-    },
     {
       id: "notif1",
       title: "Direct Deposit Received",
       message: "Your payroll deposit of $8,750.00 has been credited to your Total Checking account.",
       type: "success",
-      date: new Date(Date.now() - 60000).toISOString(),
+      date: new Date().toISOString(),
       read: false,
       category: "Transactions",
     },
@@ -872,42 +712,6 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       read: true,
       category: "Rewards",
     },
-    {
-      id: "notif5",
-      title: "Low Balance Alert",
-      message: "Your Savings account balance has fallen below $1,000.",
-      type: "warning",
-      date: new Date(Date.now() - 7200000).toISOString(),
-      read: false,
-      category: "Alerts",
-    },
-    {
-      id: "notif6",
-      title: "Large Transaction Alert",
-      message: "A transaction of $3,500 was made on your credit card ending in 4567.",
-      type: "alert",
-      date: new Date(Date.now() - 10800000).toISOString(),
-      read: false,
-      category: "Transactions",
-    },
-    {
-      id: "notif7",
-      title: "Payment Successful",
-      message: "Your credit card payment of $1,250.00 has been processed successfully.",
-      type: "success",
-      date: new Date(Date.now() - 14400000).toISOString(),
-      read: true,
-      category: "Payments",
-    },
-    {
-      id: "notif8",
-      title: "Travel Notification Confirmed",
-      message: "Your travel notification to Paris, France has been confirmed for Dec 15-25.",
-      type: "info",
-      date: new Date(Date.now() - 172800000).toISOString(),
-      read: true,
-      category: "Travel",
-    },
   ])
 
   const [messages, setMessages] = useState<Message[]>([
@@ -932,50 +736,6 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       date: new Date(Date.now() - 172800000).toISOString(),
       read: true,
       category: "Offers",
-    },
-    {
-      id: "msg3",
-      from: "Chase Security",
-      subject: "Action Required: Verify Your Recent Transaction",
-      preview: "We detected an unusual transaction on your account...",
-      content:
-        "Dear Customer,\n\nWe noticed a transaction that appears unusual for your account:\n\nDate: December 14, 2024\nAmount: $3,500.00\nMerchant: Online Electronics Store\n\nIf you recognize this transaction, no action is needed. If you don't recognize it, please contact us immediately at 1-800-935-9935.\n\nYour security is our priority.\n\nChase Security Team",
-      date: new Date(Date.now() - 86400000).toISOString(),
-      read: false,
-      category: "Security",
-    },
-    {
-      id: "msg4",
-      from: "Chase Rewards",
-      subject: "Redeem Your 50,000 Ultimate Rewards Points",
-      preview: "You have 50,000 points available to redeem...",
-      content:
-        "Dear Customer,\n\nCongratulations! You have earned 50,000 Ultimate Rewards points. Here are some ways you can redeem:\n\n• Travel: Book flights, hotels, and rental cars\n• Cash Back: Redeem as statement credit\n• Gift Cards: Choose from hundreds of retailers\n• Shopping: Use points at Amazon and more\n\nLog in to your account to start redeeming today!\n\nChase Rewards Team",
-      date: new Date(Date.now() - 259200000).toISOString(),
-      read: false,
-      category: "Rewards",
-    },
-    {
-      id: "msg5",
-      from: "Chase Mortgage",
-      subject: "Your Mortgage Rate Lock Expires Soon",
-      preview: "Your locked interest rate expires in 7 days...",
-      content:
-        "Dear Customer,\n\nThis is a reminder that your mortgage rate lock of 6.25% expires on December 21, 2024.\n\nTo maintain this rate, please complete the following:\n• Submit final income documentation\n• Schedule your home appraisal\n• Review and sign closing documents\n\nContact your loan officer at 1-800-848-9380 if you have questions.\n\nChase Mortgage Team",
-      date: new Date(Date.now() - 345600000).toISOString(),
-      read: true,
-      category: "Mortgage",
-    },
-    {
-      id: "msg6",
-      from: "Chase Auto Finance",
-      subject: "Your Auto Payment is Due in 3 Days",
-      preview: "Payment of $487.50 due on December 17...",
-      content:
-        "Dear Customer,\n\nThis is a friendly reminder that your auto loan payment is due soon:\n\nAmount Due: $487.50\nDue Date: December 17, 2024\nAccount: Auto Loan ending in 8901\n\nYou can make a payment online, through the Chase app, or by calling 1-800-336-6675.\n\nThank you for your business!\nChase Auto Finance",
-      date: new Date(Date.now() - 432000000).toISOString(),
-      read: false,
-      category: "Loans",
     },
   ])
 
@@ -1037,8 +797,117 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     },
   ])
 
+  const defaultAppSettings: AppSettings = {
+    darkMode: false,
+    language: "English",
+    region: "United States",
+    currency: "USD",
+    biometricLogin: true,
+    twoFactorAuth: false,
+    pushNotifications: true,
+    emailNotifications: true,
+    smsAlerts: true,
+    transactionAlerts: true,
+    balanceAlerts: true,
+    balanceThreshold: 100,
+    loginAlerts: true,
+    marketingEmails: false,
+    paperlessStatements: true,
+    quickBalanceEnabled: true,
+    roundUpSavings: false,
+    password: "********",
+    pin: "****",
+    lastPasswordChange: "2024-10-15",
+    lastPinChange: "2024-09-20",
+    twoFactorMethod: "sms",
+    twoFactorPhone: "(555) 123-0683",
+    twoFactorEmail: "demo.user@example.com",
+    twoFactorEnabled: false,
+    trustedDevices: [
+      {
+        id: "td1",
+        name: "iPhone 15 Pro Max",
+        type: "mobile",
+        lastUsed: new Date().toISOString(),
+        location: "New York, NY",
+        trusted: true,
+      },
+      {
+        id: "td2",
+        name: 'MacBook Pro 16"',
+        type: "desktop",
+        lastUsed: new Date(Date.now() - 86400000).toISOString(),
+        location: "New York, NY",
+        trusted: true,
+      },
+    ],
+    loginHistory: [
+      {
+        id: "lh1",
+        date: new Date().toISOString(),
+        device: "iPhone 15 Pro Max",
+        location: "New York, NY",
+        status: "success",
+        ip: "192.168.1.105",
+      },
+      {
+        id: "lh2",
+        date: new Date(Date.now() - 86400000).toISOString(),
+        device: 'MacBook Pro 16"',
+        location: "New York, NY",
+        status: "success",
+        ip: "192.168.1.102",
+      },
+      {
+        id: "lh3",
+        date: new Date(Date.now() - 172800000).toISOString(),
+        device: "Unknown Device",
+        location: "Los Angeles, CA",
+        status: "blocked",
+        ip: "10.45.23.178",
+      },
+      {
+        id: "lh4",
+        date: new Date(Date.now() - 259200000).toISOString(),
+        device: 'iPad Pro 12.9"',
+        location: "Brooklyn, NY",
+        status: "success",
+        ip: "192.168.1.110",
+      },
+      {
+        id: "lh5",
+        date: new Date(Date.now() - 345600000).toISOString(),
+        device: "Windows PC",
+        location: "Chicago, IL",
+        status: "failed",
+        ip: "73.45.123.89",
+      },
+    ],
+    privacySettings: {
+      shareDataWithPartners: false,
+      personalizedAds: false,
+      locationServices: true,
+      analyticsTracking: true,
+      socialMediaConnections: false,
+      creditBureauAccess: true,
+      accountVisibility: "private",
+      showProfilePhoto: true,
+      showOnlineStatus: false,
+    },
+    dataPermissions: {
+      cameraAccess: true,
+      photoLibrary: true,
+      contacts: false,
+      notifications: true,
+      location: true,
+      microphone: false,
+      faceId: true,
+      touchId: false,
+    },
+    backupCodes: [],
+  }
+
   const [appSettings, setAppSettings] = useState<AppSettings>(defaultAppSettings)
-  appSettingsRef.current = appSettings
 
   const defaultRecentActivity = [
     {
@@ -1188,311 +1057,10 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     loadFromStorage().then(() => setIsLoaded(true))
   }, [])
 
-  // Supabase real-time sync - fetch user data from database and set up live listeners
   useEffect(() => {
-    if (typeof window === "undefined") return
-
-    const userId = localStorage.getItem("chase_user_id")
-    if (!userId) return
-
-    let accountsChannel: any = null
-    let notificationsChannel: any = null
-    let transactionsChannel: any = null
-
-    const fetchSupabaseData = async () => {
-      try {
-        // Fetch user data from dashboard API
-        const response = await fetch('/api/dashboard', {
-          headers: { 'x-user-id': userId },
-        })
-
-        if (!response.ok) return
-
-        const dashData = await response.json()
-
-        // Update user profile from stored data
-        const storedUserData = localStorage.getItem("chase_user_data")
-        if (storedUserData) {
-          try {
-            const userData = JSON.parse(storedUserData)
-            if (userData.name && userData.email) {
-              setUserProfile(prev => ({
-                ...prev,
-                id: userData.id || prev.id,
-                name: userData.name,
-                email: userData.email,
-                phone: userData.phone || prev.phone,
-              }))
-            }
-          } catch { /* ignore parse errors */ }
-        }
-
-        // Update accounts from Supabase data
-        const storedAccounts = localStorage.getItem("chase_user_accounts")
-        if (storedAccounts) {
-          try {
-            const dbAccounts = JSON.parse(storedAccounts)
-            if (dbAccounts && dbAccounts.length > 0) {
-              const mappedAccounts: Account[] = dbAccounts.map((acc: any) => ({
-                id: acc.id,
-                name: acc.name || 'Checking Account',
-                type: acc.account_type || acc.type || 'checking',
-                balance: parseFloat(acc.balance) || 0,
-                availableBalance: parseFloat(acc.available_balance || acc.balance) || 0,
-                accountNumber: acc.full_account_number || acc.account_number || '****0000',
-                routingNumber: acc.routing_number || '021000021',
-                interestRate: parseFloat(acc.interest_rate) || 0,
-              }))
-              setAccounts(mappedAccounts)
-            }
-          } catch { /* ignore parse errors */ }
-        }
-
-        // Update transactions from dashboard
-        if (dashData.recentTransactions && dashData.recentTransactions.length > 0) {
-          const mappedTx: Transaction[] = dashData.recentTransactions.map((tx: any) => ({
-            id: tx.id,
-            description: tx.description,
-            amount: parseFloat(tx.amount) || 0,
-            date: tx.date || new Date().toISOString(),
-            type: tx.type === 'credit' || tx.type === 'deposit' ? 'credit' : 'debit',
-            category: tx.category || 'General',
-            status: tx.status || 'completed',
-            reference: tx.reference || '',
-          }))
-          setTransactions(prev => {
-            // Only replace if we have real DB transactions
-            if (mappedTx.length > 0) return mappedTx
-            return prev
-          })
-        }
-
-        // Update notifications from dashboard
-        if (dashData.notifications && dashData.notifications.recent) {
-          const dbNotifs: Notification[] = dashData.notifications.recent.map((n: any) => ({
-            id: n.id,
-            title: n.title,
-            message: n.message,
-            type: n.type || 'info',
-            date: n.createdAt || new Date().toISOString(),
-            read: n.read || false,
-            category: n.category || 'General',
-          }))
-          if (dbNotifs.length > 0) {
-            setNotifications(prev => {
-              // Merge: add new DB notifs that don't already exist
-              const existingIds = new Set(prev.map(n => n.id))
-              const newNotifs = dbNotifs.filter(n => !existingIds.has(n.id))
-              return [...newNotifs, ...prev]
-            })
-          }
-        }
-      } catch (error) {
-        console.error('[v0] Error fetching Supabase data:', error)
-      }
+    if (isLoaded) {
+      saveToStorage()
     }
-
-    // Fetch initial data
-    fetchSupabaseData()
-
-    // Set up real-time Supabase listeners for live updates
-    const setupRealtimeListeners = async () => {
-      try {
-        const { createClient } = await import('@/lib/supabase/client')
-        const supabase = createClient()
-        if (!supabase) return
-
-        // Listen for account balance changes (admin transfers)
-        accountsChannel = supabase
-          .channel('user_accounts_changes')
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'accounts',
-              filter: `user_id=eq.${userId}`,
-            },
-            (payload: any) => {
-              console.log('[v0] Real-time account update:', payload)
-              const updated = payload.new
-              setAccounts(prev => prev.map(acc => {
-                if (acc.id === updated.id) {
-                  return {
-                    ...acc,
-                    balance: parseFloat(updated.balance) || acc.balance,
-                    availableBalance: parseFloat(updated.available_balance || updated.balance) || acc.availableBalance,
-                  }
-                }
-                return acc
-              }))
-            }
-          )
-          .subscribe()
-
-        // Listen for new notifications (credit/debit alerts)
-        notificationsChannel = supabase
-          .channel('user_notifications_changes')
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'notifications',
-              filter: `user_id=eq.${userId}`,
-            },
-            (payload: any) => {
-              console.log('[v0] Real-time notification:', payload)
-              const newNotif = payload.new
-              const notification: Notification = {
-                id: newNotif.id,
-                title: newNotif.title,
-                message: newNotif.message,
-                type: (newNotif.type === 'credit' ? 'success' : newNotif.type === 'debit' ? 'alert' : newNotif.type) as any,
-                date: newNotif.created_at || new Date().toISOString(),
-                read: false,
-                category: newNotif.category || 'Transactions',
-              }
-              setNotifications(prev => [notification, ...prev])
-
-              // Show browser notification if supported
-              if ('Notification' in window && window.Notification.permission === 'granted') {
-                new window.Notification(newNotif.title, {
-                  body: newNotif.message,
-                  icon: '/images/chase-logo.png',
-                  tag: newNotif.id,
-                })
-              }
-            }
-          )
-          .subscribe()
-
-        // Listen for new transactions
-        transactionsChannel = supabase
-          .channel('user_transactions_changes')
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'transactions',
-              filter: `user_id=eq.${userId}`,
-            },
-            (payload: any) => {
-              console.log('[v0] Real-time transaction:', payload)
-              const newTx = payload.new
-              const transaction: Transaction = {
-                id: newTx.id,
-                description: newTx.description,
-                amount: parseFloat(newTx.amount) || 0,
-                date: newTx.created_at || new Date().toISOString(),
-                type: newTx.type === 'credit' || newTx.type === 'deposit' ? 'credit' : 'debit',
-                category: newTx.category || 'General',
-                status: newTx.status || 'completed',
-                reference: newTx.reference || '',
-              }
-              setTransactions(prev => [transaction, ...prev])
-            }
-          )
-          .subscribe()
-      } catch (error) {
-        console.error('[v0] Error setting up realtime:', error)
-      }
-    }
-
-    setupRealtimeListeners()
-
-    // Request notification permission
-    if ('Notification' in window && window.Notification.permission === 'default') {
-      window.Notification.requestPermission()
-    }
-
-    return () => {
-      // Cleanup channels
-      const cleanup = async () => {
-        try {
-          const { createClient } = await import('@/lib/supabase/client')
-          const supabase = createClient()
-          if (supabase) {
-            if (accountsChannel) supabase.removeChannel(accountsChannel)
-            if (notificationsChannel) supabase.removeChannel(notificationsChannel)
-            if (transactionsChannel) supabase.removeChannel(transactionsChannel)
-          }
-        } catch { /* ignore cleanup errors */ }
-      }
-      cleanup()
-    }
-  }, [isLoaded])
-
-  // Internal function to handle adding notifications to avoid circular dependencies
-  const addNotificationInternal = useCallback((notification: Omit<Notification, "id" | "date" | "read">) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: `notif${Date.now()}`,
-      date: new Date().toISOString(),
-      read: false,
-    }
-    setNotifications((prev) => [newNotification, ...prev])
-  }, [])
-
-  // The 'addNotification' dependency was causing a re-creation of notificationManager, which was problematic.
-  // It's better to initialize notificationManager once when settingsEnforcer is available.
-  useEffect(() => {
-    if (settingsEnforcer) {
-      const manager = new NotificationManager(
-        (type) => settingsEnforcer.shouldSendNotification(type as any),
-        addNotificationInternal, // Use the internal addNotification function
-      )
-
-      // Request notification permission on first load
-      manager.requestPermission().then((granted) => {
-        if (granted) {
-          console.log("[v0] Notification permission granted")
-        }
-      })
-
-      setNotificationManager(manager)
-
-      // Cleanup function to potentially destroy the manager if needed
-      return () => {
-        // manager.destroy(); // Uncomment if NotificationManager has a destroy method
-      }
-    }
-  }, [settingsEnforcer, addNotificationInternal]) // Depend on addNotificationInternal
-
-  useEffect(() => {
-    const enforcer = new SettingsEnforcer(() => appSettingsRef.current)
-    setSettingsEnforcer(enforcer)
-
-    return () => {
-      enforcer.destroy()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!settingsEnforcer || typeof window === "undefined") return
-
-    const checkAutoLock = () => {
-      if (settingsEnforcer.checkAutoLock()) {
-        setIsLocked(true)
-        console.log("[v0] App locked due to inactivity")
-      }
-    }
-
-    const interval = setInterval(checkAutoLock, 10000) // Check every 10 seconds
-
-    return () => clearInterval(interval)
-  }, [settingsEnforcer])
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("chase_linked_devices", JSON.stringify(linkedDevices))
-    }
-  }, [linkedDevices])
-
-  useEffect(() => {
-    if (!isLoaded) return
-    saveToStorage()
   }, [
     isLoaded,
     userProfile,
@@ -1514,44 +1082,6 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     faqs,
     scheduledPayments,
   ])
-
-  useEffect(() => {
-    const unsubscribe = realTimeSync.subscribe("chase_accounts", (data) => {
-      if (data && Array.isArray(data)) setAccounts(data)
-    })
-    return unsubscribe
-  }, [realTimeSync])
-
-  useEffect(() => {
-    const unsubscribe = realTimeSync.subscribe("chase_transactions", (data) => {
-      if (data && Array.isArray(data)) setTransactions(data)
-    })
-    return unsubscribe
-  }, [realTimeSync])
-
-  useEffect(() => {
-    const unsubscribe = realTimeSync.subscribe("chase_settings", (data) => {
-      if (data && typeof data === "object") setAppSettings(data)
-    })
-    return unsubscribe
-  }, [realTimeSync])
-
-  // Real-time sync for linked devices
-  useEffect(() => {
-    const unsubscribe = realTimeSync.subscribe("chase_linked_devices", (data) => {
-      if (data && Array.isArray(data)) {
-        setLinkedDevices(data)
-      }
-    })
-    return unsubscribe
-  }, [realTimeSync])
-
-  // Publish linked devices changes for real-time sync
-  useEffect(() => {
-    if (isLoaded && linkedDevices && linkedDevices.length > 0) {
-      realTimeSync.publish("chase_linked_devices", linkedDevices)
-    }
-  }, [linkedDevices, isLoaded, realTimeSync])
 
   const saveToStorage = useCallback(() => {
     if (typeof window === "undefined") return
@@ -1598,7 +1128,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
         }
       }, 2000) // Sync to cloud after 2 seconds of no changes
     } catch (error) {
-      // Silently handle errors in production
+      console.error("Failed to save to localStorage:", error)
     }
   }, [
     userProfile,
@@ -1649,7 +1179,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Then try to sync with cloud if online
-      const email = localData?.userProfile?.email || "hungchun164@gmail.com" // Fallback email
+      const email = localData?.userProfile?.email || "linhuang011@gmail.com" // Fallback email
       if (navigator.onLine) {
         setIsSyncing(true)
         try {
@@ -1684,14 +1214,14 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
             setLastSyncTime(new Date().toISOString()) // Update last sync time
           }
         } catch (error) {
-          // Silently handle cloud sync errors
+          console.error("Cloud sync failed:", error)
         }
         setIsSyncing(false)
       }
 
       setLastSynced(getLastSyncTime()) // Load last sync time from storage
     } catch (error) {
-      // Silently handle errors
+      console.error("Failed to load from localStorage:", error)
     }
   }, [])
 
@@ -1822,30 +1352,8 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
   ])
 
   const updateUserProfile = useCallback((updates: Partial<UserProfile>) => {
-    setUserProfile((prev) => {
-      const updated = { ...prev, ...updates }
-      // Immediately save to localStorage when profile picture changes
-      if (updates.profilePicture !== undefined) {
-        setTimeout(() => {
-          const currentData = getLocalData() || {}
-          saveLocalData({
-            ...currentData,
-            userProfile: updated,
-            savedAt: new Date().toISOString(),
-          })
-        }, 0)
-      }
-      return updated
-    })
+    setUserProfile((prev) => ({ ...prev, ...updates }))
   }, [])
-
-  // Public function to add notifications, which will be used by NotificationManager
-  const addNotification = useCallback(
-    (notification: Omit<Notification, "id" | "date" | "read">) => {
-      addNotificationInternal(notification)
-    },
-    [addNotificationInternal],
-  )
 
   const addTransaction = useCallback((transaction: Omit<Transaction, "id" | "date">): Transaction => {
     const newTransaction: Transaction = {
@@ -1854,6 +1362,21 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       date: new Date().toISOString(),
     }
     setTransactions((prev) => [newTransaction, ...prev])
+
+    // Update account balance if accountId is provided
+    if (transaction.accountId) {
+      setAccounts((prev) =>
+        prev.map((acc) => {
+          if (acc.id === transaction.accountId) {
+            const newBalance =
+              transaction.type === "debit" ? acc.balance - transaction.amount : acc.balance + transaction.amount
+            return { ...acc, balance: newBalance }
+          }
+          return acc
+        }),
+      )
+    }
+
     return newTransaction
   }, [])
 
@@ -1867,6 +1390,10 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: `acc${Date.now()}`,
     }
     setAccounts((prev) => [...prev, newAccount])
+  }, [])
+
+  const updateBalance = useCallback((accountId: string, amount: number) => {
+    setAccounts((prev) => prev.map((acc) => (acc.id === accountId ? { ...acc, balance: acc.balance + amount } : acc)))
   }, [])
 
   const calculateSpending = useCallback(
@@ -1897,33 +1424,17 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     [transactions],
   )
 
-  const updateBalance = useCallback((accountId: string, amount: number, type?: "credit" | "debit") => {
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (acc.id === accountId) {
-          let newBalance = acc.balance
-          if (type === "credit") {
-            newBalance += amount
-          } else if (type === "debit") {
-            newBalance -= amount
-          } else {
-            // If type is not specified, assume it's a direct balance update
-            newBalance = amount
-          }
-          return { ...acc, balance: newBalance }
-        }
-        return acc
-      }),
-    )
-  }, [])
-
   const transferFunds = useCallback(
     (fromAccountId: string, toAccountId: string, amount: number, description: string, fee = 0): Transaction => {
       // Deduct from source account
-      updateBalance(fromAccountId, amount + fee, "debit")
+      setAccounts((prev) =>
+        prev.map((acc) => (acc.id === fromAccountId ? { ...acc, balance: acc.balance - amount - fee } : acc)),
+      )
 
       // Add to destination account
-      updateBalance(toAccountId, amount, "credit")
+      setAccounts((prev) =>
+        prev.map((acc) => (acc.id === toAccountId ? { ...acc, balance: acc.balance + amount } : acc)),
+      )
 
       const newTransaction: Transaction = {
         id: `tx${Date.now()}`,
@@ -1942,14 +1453,14 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       setTransactions((prev) => [newTransaction, ...prev])
       return newTransaction
     },
-    [updateBalance],
+    [],
   )
 
   const addExternalRecipient = useCallback((recipient: Omit<ExternalRecipient, "id" | "addedDate">) => {
     const newRecipient: ExternalRecipient = {
       ...recipient,
       id: `ext${Date.now()}`,
-      addedDate: new Date().toISOString(),
+      addedDate: new Date().toISOString().split("T")[0],
     }
     setExternalRecipients((prev) => [...prev, newRecipient])
   }, [])
@@ -1979,11 +1490,9 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     [transactions],
   )
 
+  // Payees
   const addPayee = useCallback((payee: Omit<Payee, "id">) => {
-    const newPayee: Payee = {
-      ...payee,
-      id: `payee${Date.now()}`,
-    }
+    const newPayee: Payee = { ...payee, id: `payee${Date.now()}` }
     setPayees((prev) => [...prev, newPayee])
   }, [])
 
@@ -1995,11 +1504,9 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     setPayees((prev) => prev.map((p) => (p.id === payeeId ? { ...p, ...updates } : p)))
   }, [])
 
+  // Zelle Contacts
   const addZelleContact = useCallback((contact: Omit<ZelleContact, "id">) => {
-    const newContact: ZelleContact = {
-      ...contact,
-      id: `zelle${Date.now()}`,
-    }
+    const newContact: ZelleContact = { ...contact, id: `z${Date.now()}` }
     setZelleContacts((prev) => [...prev, newContact])
   }, [])
 
@@ -2007,68 +1514,66 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     setZelleContacts((prev) => prev.filter((c) => c.id !== contactId))
   }, [])
 
+  // Savings Goals
   const addSavingsGoal = useCallback((goal: Omit<SavingsGoal, "id">) => {
-    const newGoal: SavingsGoal = {
-      ...goal,
-      id: `goal${Date.now()}`,
-    }
+    const newGoal: SavingsGoal = { ...goal, id: `goal${Date.now()}` }
     setSavingsGoals((prev) => [...prev, newGoal])
   }, [])
 
   const updateSavingsGoal = useCallback((goalId: string, amount: number) => {
     setSavingsGoals((prev) =>
-      prev.map((goal) => (goal.id === goalId ? { ...goal, currentAmount: goal.currentAmount + amount } : goal)),
+      prev.map((g) => (g.id === goalId ? { ...g, currentAmount: g.currentAmount + amount } : g)),
     )
   }, [])
 
   const deleteSavingsGoal = useCallback((goalId: string) => {
-    setSavingsGoals((prev) => prev.filter((goal) => goal.id !== goalId))
+    setSavingsGoals((prev) => prev.filter((g) => g.id !== goalId))
   }, [])
 
-  const removeDevice = useCallback((deviceId: string) => {
-    setLinkedDevices((prev) => prev.filter((device) => device.id !== deviceId))
-  }, [])
-
+  // Linked Devices
   const addDevice = useCallback((device: Omit<LinkedDevice, "id">) => {
-    const newDevice: LinkedDevice = {
-      ...device,
-      id: `dev${Date.now()}`,
-    }
+    const newDevice: LinkedDevice = { ...device, id: `dev${Date.now()}` }
     setLinkedDevices((prev) => [...prev, newDevice])
   }, [])
 
+  const removeDevice = useCallback((deviceId: string) => {
+    setLinkedDevices((prev) => prev.filter((d) => d.id !== deviceId))
+  }, [])
+
   const updateDevice = useCallback((deviceId: string, updates: Partial<LinkedDevice>) => {
-    setLinkedDevices((prev) => prev.map((device) => (device.id === deviceId ? { ...device, ...updates } : device)))
+    setLinkedDevices((prev) => prev.map((d) => (d.id === deviceId ? { ...d, ...updates } : d)))
+  }, [])
+
+  // Notifications
+  const addNotification = useCallback((notification: Omit<Notification, "id" | "date" | "read">) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: `notif${Date.now()}`,
+      date: new Date().toISOString(),
+      read: false,
+    }
+    setNotifications((prev) => [newNotification, ...prev])
   }, [])
 
   const markNotificationRead = useCallback((notificationId: string) => {
-    setNotifications((prev) => prev.map((notif) => (notif.id === notificationId ? { ...notif, read: true } : notif)))
+    setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)))
+  }, [])
+
+  const markAllNotificationsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
   }, [])
 
   const deleteNotification = useCallback((notificationId: string) => {
-    setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId))
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
   }, [])
 
   const clearAllNotifications = useCallback(() => {
     setNotifications([])
   }, [])
 
-  const unreadNotificationCount = notifications && Array.isArray(notifications) ? notifications.filter((notif) => !notif.read).length : 0
-  
-  const markAllNotificationsRead = useCallback(() => {
-    setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })))
-  }, [])
+  const unreadNotificationCount = notifications.filter((n) => !n.read).length
 
-  const markMessageRead = useCallback((messageId: string) => {
-    setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, read: true } : msg)))
-  }, [])
-
-  const deleteMessage = useCallback((messageId: string) => {
-    setMessages((prev) => prev.filter((msg) => msg.id !== messageId))
-  }, [])
-
-  const unreadMessageCount = messages && Array.isArray(messages) ? messages.filter((msg) => !msg.read).length : 0
-  
+  // Messages
   const addMessage = useCallback((message: Omit<Message, "id" | "date" | "read">) => {
     const newMessage: Message = {
       ...message,
@@ -2079,39 +1584,54 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     setMessages((prev) => [newMessage, ...prev])
   }, [])
 
+  const markMessageRead = useCallback((messageId: string) => {
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, read: true } : m)))
+  }, [])
+
+  const deleteMessage = useCallback((messageId: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== messageId))
+  }, [])
+
+  const unreadMessageCount = messages.filter((m) => !m.read).length
+
+  // Offers
   const activateOffer = useCallback((offerId: string) => {
-    setOffers((prev) => prev.map((offer) => (offer.id === offerId ? { ...offer, activated: true } : offer)))
+    setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, activated: true } : o)))
   }, [])
 
   const saveOffer = useCallback((offerId: string) => {
-    setOffers((prev) => prev.map((offer) => (offer.id === offerId ? { ...offer, saved: true } : offer)))
+    setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, saved: !o.saved } : o)))
   }, [])
 
   const deleteOffer = useCallback((offerId: string) => {
-    setOffers((prev) => prev.filter((offer) => offer.id !== offerId))
+    setOffers((prev) => prev.filter((o) => o.id !== offerId))
   }, [])
 
+  // Credit Cards
   const toggleCardLock = useCallback((cardId: string) => {
-    setCreditCards((prev) => prev.map((card) => (card.id === cardId ? { ...card, locked: !card.locked } : card)))
+    setCreditCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, locked: !c.locked } : c)))
   }, [])
 
   const updateCardSettings = useCallback((cardId: string, settings: Partial<CreditCard>) => {
-    setCreditCards((prev) => prev.map((card) => (card.id === cardId ? { ...card, ...settings } : card)))
+    setCreditCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, ...settings } : c)))
   }, [])
 
+  // App Settings
   const updateAppSettings = useCallback((settings: Partial<AppSettings>) => {
     setAppSettings((prev) => ({ ...prev, ...settings }))
   }, [])
 
+  // Recent Activity
   const addActivity = useCallback((activity: { action: string; device: string; location: string }) => {
     const newActivity = {
       id: `act${Date.now()}`,
       ...activity,
       date: new Date().toISOString(),
     }
-    setRecentActivity((prev) => [newActivity, ...prev])
+    setRecentActivity((prev) => [newActivity, ...prev].slice(0, 50))
   }, [])
 
+  // Reward Redemptions
   const redeemPoints = useCallback((redemption: Omit<RewardRedemption, "id" | "date" | "status">) => {
     const newRedemption: RewardRedemption = {
       ...redemption,
@@ -2120,74 +1640,81 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       status: "completed",
     }
     setRewardRedemptions((prev) => [newRedemption, ...prev])
+    setUserProfile((prev) => ({
+      ...prev,
+      ultimateRewardsPoints: prev.ultimateRewardsPoints - redemption.pointsUsed,
+    }))
   }, [])
 
-  const createSupportTicket = useCallback((subject: string, category: string, message: string) => {
-    const newMessage: SupportTicket["messages"][0] = {
-      id: `msg${Date.now()}`,
-      from: "user",
-      content: message,
-      timestamp: new Date().toISOString(),
-    }
+  // Support Tickets
+  const createSupportTicket = useCallback((subject: string, category: string, message: string): SupportTicket => {
     const newTicket: SupportTicket = {
       id: `ticket${Date.now()}`,
       subject,
       category,
       status: "open",
       priority: "medium",
-      messages: [newMessage],
+      messages: [
+        {
+          id: `tm${Date.now()}`,
+          from: "user",
+          content: message,
+          timestamp: new Date().toISOString(),
+        },
+      ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    setSupportTickets((prev) => [...prev, newTicket])
+    setSupportTickets((prev) => [newTicket, ...prev])
     return newTicket
   }, [])
 
   const addTicketMessage = useCallback((ticketId: string, message: string) => {
     setSupportTickets((prev) =>
-      prev.map((ticket) =>
-        ticket.id === ticketId
+      prev.map((t) =>
+        t.id === ticketId
           ? {
-              ...ticket,
+              ...t,
               messages: [
-                ...ticket.messages,
+                ...t.messages,
                 {
-                  id: `msg${Date.now()}`,
-                  from: "user" as const,
+                  id: `tm${Date.now()}`,
+                  from: "user",
                   content: message,
                   timestamp: new Date().toISOString(),
                 },
               ],
               updatedAt: new Date().toISOString(),
             }
-          : ticket,
+          : t,
       ),
     )
   }, [])
 
   const closeTicket = useCallback((ticketId: string) => {
     setSupportTickets((prev) =>
-      prev.map((ticket) =>
-        ticket.id === ticketId ? { ...ticket, status: "closed", updatedAt: new Date().toISOString() } : ticket,
-      ),
+      prev.map((t) => (t.id === ticketId ? { ...t, status: "closed", updatedAt: new Date().toISOString() } : t)),
     )
   }, [])
 
+  // FAQs
   const markFaqHelpful = useCallback((faqId: string, helpful: boolean) => {
-    setFaqs((prev) => prev.map((faq) => (faq.id === faqId ? { ...faq, helpful: helpful } : faq)))
+    setFaqs((prev) => prev.map((f) => (f.id === faqId ? { ...f, helpful } : f)))
   }, [])
 
-  const addScheduledPayment = useCallback((payment: Omit<ScheduledPayment, "id" | "createdAt" | "status">) => {
-    const newPayment: ScheduledPayment = {
-      ...payment,
-      id: `sp${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      status: "scheduled",
-      nextPaymentDate: payment.scheduledDate, // Initialize nextPaymentDate
-    }
-    setScheduledPayments((prev) => [...prev, newPayment])
-    return newPayment
-  }, [])
+  const addScheduledPayment = useCallback(
+    (payment: Omit<ScheduledPayment, "id" | "createdAt" | "status">): ScheduledPayment => {
+      const newPayment: ScheduledPayment = {
+        ...payment,
+        id: `sp${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        status: "scheduled",
+      }
+      setScheduledPayments((prev) => [...prev, newPayment])
+      return newPayment
+    },
+    [],
+  )
 
   const cancelScheduledPayment = useCallback((paymentId: string) => {
     setScheduledPayments((prev) => prev.map((p) => (p.id === paymentId ? { ...p, status: "cancelled" } : p)))
@@ -2197,21 +1724,21 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     setScheduledPayments((prev) => prev.map((p) => (p.id === paymentId ? { ...p, ...updates } : p)))
   }, [])
 
+  // Login History
   const addLoginHistory = useCallback((entry: Omit<AppSettings["loginHistory"][0], "id" | "date">) => {
     const newEntry = {
-      id: `lh${Date.now()}`,
       ...entry,
+      id: `lh${Date.now()}`,
       date: new Date().toISOString(),
     }
     setAppSettings((prev) => ({
       ...prev,
-      loginHistory: [...prev.loginHistory, newEntry],
+      loginHistory: [newEntry, ...(prev.loginHistory || [])].slice(0, 50),
     }))
   }, [])
 
-  const manualSync = useCallback(async (): Promise<boolean> => {
-    if (typeof window === "undefined" || !userProfile.email) return false
-    setIsSyncing(true)
+  // Export Data
+  const exportData = useCallback(() => {
     const data = {
       userProfile,
       accounts,
@@ -2229,17 +1756,111 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       recentActivity,
       rewardRedemptions,
       supportTickets,
-      faqs,
       scheduledPayments,
-      savedAt: new Date().toISOString(),
+      exportedAt: new Date().toISOString(),
     }
-    const success = await syncToCloud(userProfile.email, data)
-    if (success) {
-      setLastSynced(new Date().toISOString())
-      setLastSyncTime(new Date().toISOString())
-    }
+    return JSON.stringify(data, null, 2)
+  }, [
+    userProfile,
+    accounts,
+    transactions,
+    externalRecipients,
+    payees,
+    zelleContacts,
+    savingsGoals,
+    linkedDevices,
+    notifications,
+    messages,
+    offers,
+    creditCards,
+    appSettings,
+    recentActivity,
+    rewardRedemptions,
+    supportTickets,
+    scheduledPayments,
+  ])
+
+  // Clear All Data
+  const clearAllData = useCallback(() => {
+    localStorage.removeItem("chase_banking_data")
+    localStorage.removeItem("chase_last_sync_time") // Clear last sync time
+    setUserProfile({
+      id: "user1",
+      name: "Lin Huang",
+      email: "linhuang011@gmail.com",
+      phone: "(555) 888-9999",
+      address: "123 Main Street, New York, NY 10001", // Updated address
+      memberSince: "2018-03-20", // Updated memberSince
+      tier: "Chase Private Client",
+      ultimateRewardsPoints: 287450,
+      profilePicture: null,
+      dateOfBirth: "1985-06-15", // Updated DOB
+      ssn: "***-**-1234", // Updated SSN
+      preferredLanguage: "English",
+      currency: "USD",
+      timezone: "America/New_York",
+      avatarUrl: "/professional-headshot.png", // Added avatarUrl
+    })
+    setAccounts(defaultAccounts)
+    setTransactions([])
+    setExternalRecipients([])
+    setPayees([])
+    setZelleContacts([])
+    setSavingsGoals([])
+    setLinkedDevices([])
+    setNotifications([])
+    setMessages([])
+    setOffers([])
+    setCreditCards([])
+    setAppSettings(defaultAppSettings)
+    setRecentActivity([])
+    setRewardRedemptions([])
+    setSupportTickets([])
+    setFaqs([])
+    setScheduledPayments([])
+    setLastSynced(null) // Reset last synced state
     setIsSyncing(false)
-    return success
+  }, [])
+
+  const manualSync = useCallback(async () => {
+    if (!navigator.onLine) return false
+
+    setIsSyncing(true)
+    try {
+      const data = {
+        userProfile,
+        accounts,
+        transactions,
+        externalRecipients,
+        payees,
+        zelleContacts,
+        savingsGoals,
+        linkedDevices,
+        notifications,
+        messages,
+        offers,
+        creditCards,
+        appSettings,
+        recentActivity,
+        rewardRedemptions,
+        supportTickets,
+        faqs,
+        scheduledPayments,
+        savedAt: new Date().toISOString(),
+      }
+
+      const success = await syncToCloud(userProfile.email, data)
+      if (success) {
+        setLastSynced(new Date().toISOString())
+        setLastSyncTime(new Date().toISOString())
+      }
+      setIsSyncing(false)
+      return success
+    } catch (error) {
+      console.error("Manual sync failed:", error)
+      setIsSyncing(false)
+      return false
+    }
   }, [
     userProfile,
     accounts,
@@ -2260,83 +1881,6 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     faqs,
     scheduledPayments,
   ])
-
-  const exportData = (): string => {
-    if (typeof window === "undefined") return ""
-    const data = {
-      userProfile,
-      accounts,
-      transactions,
-      externalRecipients,
-      payees,
-      zelleContacts,
-      savingsGoals,
-      linkedDevices,
-      notifications,
-      messages,
-      offers,
-      creditCards,
-      appSettings,
-      recentActivity,
-      rewardRedemptions,
-      supportTickets,
-      faqs,
-      scheduledPayments,
-    }
-    return JSON.stringify(data, null, 2)
-  }
-
-  const clearAllData = useCallback(() => {
-    // Reset all state to initial defaults
-    setUserProfile({
-      id: "user1",
-      name: "CHUN HUNG",
-      email: "hungchun164@gmail.com",
-      phone: "+1 (702) 886-4745",
-      address: "34B Philadelphia, Pennsylvania PA, USA",
-      memberSince: "1988-08-24",
-      tier: "Chase Private Client",
-      ultimateRewardsPoints: 287450,
-      profilePicture: null,
-      dateOfBirth: "1961-08-24",
-      ssn: "697-03-2642",
-      preferredLanguage: "English",
-      currency: "USD",
-      timezone: "America/New_York",
-      avatarUrl: "/professional-headshot.png",
-    })
-    setAccounts(defaultAccounts)
-    setTransactions([])
-    setExternalRecipients([])
-    setPayees([])
-    setZelleContacts([])
-    setSavingsGoals([])
-    setLinkedDevices([])
-    setNotifications([])
-    setMessages([])
-    setOffers([])
-    setCreditCards([])
-    setAppSettings(defaultAppSettings)
-    setRecentActivity([])
-    setRewardRedemptions([])
-    setSupportTickets([])
-    setFaqs([])
-    setScheduledPayments([])
-    setLastSynced(null)
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("chase_banking_last_sync")
-    }
-
-    // Clear local storage
-    if (typeof window !== "undefined") {
-      localStorage.clear()
-    }
-  }, [])
-
-  const unlockApp = useCallback(() => {
-    setIsLocked(false)
-    console.log("[v0] App unlocked")
-  }, [])
 
   return (
     <BankingContext.Provider
@@ -2419,13 +1963,6 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
         loadFromStorage,
         exportData,
         clearAllData,
-        // Add settings enforcer and lock state to context
-        settingsEnforcer,
-        isLocked,
-        unlockApp,
-        // Expose real-time sync and notification manager
-        realTimeSync,
-        notificationManager,
       }}
     >
       {children}

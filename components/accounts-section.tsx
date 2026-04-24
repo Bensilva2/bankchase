@@ -21,7 +21,7 @@ export function AccountsSection({
 }: AccountsSectionProps) {
   const { accounts, transactions } = useBanking()
   const [showBalances, setShowBalances] = useState(true)
-  const totalBalance = accounts.reduce((acc, curr) => acc + (curr.balance || 0), 0)
+  const totalBalance = accounts.reduce((acc, curr) => acc + curr.balance, 0)
 
   // Get recent transactions for display (sorted by date)
   const recentTransactions = [...transactions]
@@ -30,10 +30,9 @@ export function AccountsSection({
 
   const pendingCount = transactions.filter((tx) => tx.status === "pending").length
 
-  const formatBalance = (balance?: number) => {
+  const formatBalance = (balance: number) => {
     if (!showBalances) return "••••••"
-    const safeBalance = balance ?? 0
-    return safeBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
   const getStatusColor = (status: string) => {
@@ -99,31 +98,41 @@ export function AccountsSection({
           <h3 className="text-white font-medium text-sm">Bank Accounts ({accounts.length})</h3>
         </div>
         <CardContent className="p-0 divide-y divide-border">
-          {accounts.map((account) => (
-            <button
-              key={account.id}
-              className="w-full text-left p-4 hover:bg-muted/50 transition-all duration-150 active:bg-muted/70 active:scale-[0.99]"
-              onClick={onViewAccount}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  {account.name}
-                </span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  {account.id === "1" ? account.accountNumber : `...${account.accountNumber}`}
-                </span>
-                <div className="text-right">
-                  <span className="text-xl font-bold">
-                    ${formatBalance(account.availableBalance ?? account.balance)}
-                  </span>
-                  <p className="text-xs text-muted-foreground">Available balance</p>
+          {accounts.map((account) => {
+            const accountLast4 = account.accountNumber?.slice(-4) || '****'
+            const accountType = account.name || account.account_type || 'Account'
+            return (
+              <button
+                key={account.id}
+                className="w-full text-left p-4 hover:bg-muted/50 transition-colors"
+                onClick={onViewAccount}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {accountType}
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-1">...{accountLast4}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 </div>
-              </div>
-            </button>
-          ))}
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Available Balance</p>
+                    <span className="text-2xl font-bold">${formatBalance(account.balance)}</span>
+                  </div>
+                  <div className="text-right text-xs text-muted-foreground space-y-1">
+                    {account.routing_number && (
+                      <p>Routing: {account.routing_number}</p>
+                    )}
+                    {account.account_number && (
+                      <p>Account: ...{account.account_number.slice(-4)}</p>
+                    )}
+                  </div>
+                </div>
+              </button>
+            )
+          })}
         </CardContent>
       </Card>
 
@@ -145,7 +154,7 @@ export function AccountsSection({
               recentTransactions.map((tx) => (
                 <button
                   key={tx.id}
-                  className="w-full flex items-center justify-between py-3 border-b last:border-0 hover:bg-muted/50 rounded-lg px-2 transition-all duration-150 text-left active:bg-muted/70 active:scale-[0.99]"
+                  className="w-full flex items-center justify-between py-3 border-b last:border-0 hover:bg-muted/50 rounded-lg px-2 transition-colors text-left"
                   onClick={() => onReceiptOpen(tx.id)}
                 >
                   <div className="flex items-center gap-3">
@@ -161,7 +170,7 @@ export function AccountsSection({
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-medium truncate max-w-[180px]">{tx.description}</p>
+                      <p className="text-sm font-medium">{tx.description}</p>
                       <div className="flex items-center gap-2">
                         <p className="text-xs text-muted-foreground">{getRelativeTime(tx.date)}</p>
                         <span className={`text-xs px-1.5 py-0.5 rounded ${getStatusColor(tx.status)}`}>
@@ -172,8 +181,7 @@ export function AccountsSection({
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`font-semibold ${tx.type === "credit" ? "text-green-600" : "text-foreground"}`}>
-                      {tx.type === "credit" ? "+" : "-"}$
-                      {tx.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {tx.type === "credit" ? "+" : "-"}${tx.amount.toFixed(2)}
                     </span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
@@ -189,7 +197,7 @@ export function AccountsSection({
       {/* Link External Accounts */}
       <Button
         variant="outline"
-        className="w-full justify-between bg-card hover:bg-muted/50 border-0 chase-card-shadow h-14 rounded-xl transition-all duration-150 active:scale-[0.98]"
+        className="w-full justify-between bg-card hover:bg-muted/50 border-0 chase-card-shadow h-14 rounded-xl"
         onClick={onLinkExternal}
       >
         <span className="font-medium">Link external accounts</span>

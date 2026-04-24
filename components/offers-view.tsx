@@ -147,7 +147,7 @@ export function OffersView() {
   }
 
   return (
-    <div className="pb-24 space-y-6 touch-pan-y overscroll-contain">
+    <div className="pb-24 space-y-6">
       <div>
         <h2 className="text-2xl font-semibold mb-2">Offers</h2>
         <p className="text-sm text-muted-foreground mb-6">Exclusive deals and rewards just for you</p>

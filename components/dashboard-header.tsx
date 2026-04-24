@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useBanking } from "@/lib/banking-context"
+import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 
 export function DashboardHeader() {
@@ -20,6 +21,7 @@ export function DashboardHeader() {
   const [searchQuery, setSearchQuery] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+  const { user } = useAuth()
 
   const {
     userProfile,
@@ -52,58 +54,13 @@ export function DashboardHeader() {
   const handleProfilePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select an image under 5MB.",
-          variant: "destructive",
-        })
-        return
-      }
-
       const reader = new FileReader()
       reader.onloadend = () => {
-        const base64Image = reader.result as string
-
-        // Compress image if too large for localStorage
-        const img = new window.Image()
-        img.crossOrigin = "anonymous"
-        img.onload = () => {
-          const canvas = document.createElement("canvas")
-          const maxSize = 400
-          let width = img.width
-          let height = img.height
-
-          if (width > height && width > maxSize) {
-            height = (height * maxSize) / width
-            width = maxSize
-          } else if (height > maxSize) {
-            width = (width * maxSize) / height
-            height = maxSize
-          }
-
-          canvas.width = width
-          canvas.height = height
-          const ctx = canvas.getContext("2d")
-          ctx?.drawImage(img, 0, 0, width, height)
-
-          const compressedImage = canvas.toDataURL("image/jpeg", 0.8)
-          updateUserProfile({ profilePicture: compressedImage })
-
-          toast({
-            title: "Profile Picture Updated",
-            description: "Your profile picture has been saved and will persist across devices.",
-          })
-        }
-        img.onerror = () => {
-          // If compression fails, use original
-          updateUserProfile({ profilePicture: base64Image })
-          toast({
-            title: "Profile Picture Updated",
-            description: "Your profile picture has been saved.",
-          })
-        }
-        img.src = base64Image
+        updateUserProfile({ profilePicture: reader.result as string })
+        toast({
+          title: "Profile Picture Updated",
+          description: "Your profile picture has been saved.",
+        })
       }
       reader.readAsDataURL(file)
     }
@@ -127,7 +84,7 @@ export function DashboardHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 chase-gradient transform-gpu backface-hidden pt-[env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-50 chase-gradient">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <Button
@@ -159,7 +116,7 @@ export function DashboardHeader() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Image src="/images/chase-logo.png" alt="Chase" width={36} height={36} className="rounded" loading="eager" />
+            <Image src="/images/chase-logo.png" alt="Chase" width={36} height={36} className="rounded" />
             <span className="text-white text-xl font-bold tracking-wide">CHASE</span>
           </div>
 
@@ -170,9 +127,10 @@ export function DashboardHeader() {
             onClick={() => setProfileOpen(true)}
           >
             <Avatar className="h-10 w-10">
-              <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={userProfile.name || ""} />
+              <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={user?.firstName || user?.username || ""} />
               <AvatarFallback className="bg-white text-[#0a4fa6] font-semibold">
-                {(userProfile.name || "")
+                {((user?.firstName || "") + " " + (user?.lastName || ""))
+                  .trim()
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
@@ -308,9 +266,10 @@ export function DashboardHeader() {
             <div className="flex flex-col items-center">
               <div className="relative">
                 <Avatar className="h-24 w-24 border-4 border-[#0a4fa6]">
-                  <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={userProfile.name || ""} />
+                  <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={user?.firstName || user?.username || ""} />
                   <AvatarFallback className="bg-[#0a4fa6] text-white text-2xl font-bold">
-                    {(userProfile.name || "")
+                    {((user?.firstName || "") + " " + (user?.lastName || ""))
+                      .trim()
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
@@ -331,8 +290,10 @@ export function DashboardHeader() {
                   onChange={handleProfilePictureUpload}
                 />
               </div>
-              <h3 className="font-bold text-xl mt-4">{userProfile.name}</h3>
-              <p className="text-sm text-muted-foreground">{userProfile.email}</p>
+              <h3 className="font-bold text-xl mt-4">
+                {user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : userProfile.name}
+              </h3>
+              <p className="text-sm text-muted-foreground">{user?.email || userProfile.email}</p>
               <Badge className="mt-2 bg-[#0a4fa6]">{userProfile.tier}</Badge>
             </div>
 

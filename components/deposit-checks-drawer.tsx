@@ -315,7 +315,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">${(account.balance || 0).toLocaleString()}</p>
+                        <p className="font-semibold">${account.balance.toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">Available</p>
                       </div>
                     </div>

@@ -1,265 +1,187 @@
-/**
- * Admin Dashboard - Real-time fund transfer management
- * Only accessible to admin users
- */
-
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import AdminTransferForm from '@/components/admin/admin-transfer-form'
-import AdminUsersList from '@/components/admin/admin-users-list'
-import AdminTransferHistory from '@/components/admin/admin-transfer-history'
-
-interface NewUser {
-  id: string
-  email: string
-  name: string
-  created_at: string
-  accounts: any[]
-}
-
-interface AdminTransfer {
-  id: string
-  user_id: string
-  account_id: string
-  amount: number
-  status: string
-  created_at: string
-  confirmed_at?: string
-  users?: { id: string; email: string; name: string }
-  accounts?: { id: string; name: string; type: string }
-}
+import { useAuth } from '@/lib/auth-context'
+import { canAccessAdminDashboard } from '@/lib/rbac'
+import { useRouter } from 'next/navigation'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Users, Settings, BarChart3, AlertCircle, Lock, ArrowLeft } from 'lucide-react'
 
 export default function AdminDashboard() {
-  const [newUsers, setNewUsers] = useState<NewUser[]>([])
-  const [pendingTransfers, setPendingTransfers] = useState<AdminTransfer[]>([])
-  const [transferHistory, setTransferHistory] = useState<AdminTransfer[]>([])
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'new-users' | 'pending' | 'history'>('new-users')
-  const supabase = createClient()
+  const { user, loading } = useAuth()
+  const router = useRouter()
 
-  // Fetch initial data
-  useEffect(() => {
-    fetchDashboardData()
-    setupRealtimeListeners()
-  }, [])
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true)
-
-      const adminHeaders = {
-        'Content-Type': 'application/json',
-        'x-user-id': 'admin',
-        'x-user-role': 'admin',
-      }
-
-      // Fetch all users with their accounts (not just 24h)
-      const allUsersRes = await fetch('/api/admin/users', {
-        method: 'GET',
-        headers: adminHeaders,
-      })
-
-      if (allUsersRes.ok) {
-        const data = await allUsersRes.json()
-        setNewUsers(data.users || [])
-      }
-
-      // Fetch pending transfers
-      const pendingRes = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: adminHeaders,
-        body: JSON.stringify({ action: 'get-pending-transfers' }),
-      })
-
-      if (pendingRes.ok) {
-        const data = await pendingRes.json()
-        setPendingTransfers(data.transfers || [])
-      }
-
-      // Fetch transfer history
-      const historyRes = await fetch('/api/admin/transfers', {
-        headers: adminHeaders,
-      })
-      if (historyRes.ok) {
-        const data = await historyRes.json()
-        setTransferHistory(data.transfers || [])
-      }
-    } catch (error) {
-      console.error('[v0] Error fetching dashboard data:', error)
-    } finally {
-      setLoading(false)
-    }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a4fa6] to-[#003087]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    )
   }
 
-  const setupRealtimeListeners = () => {
-    // Subscribe to admin_transfers changes
-    const transfersChannel = supabase
-      .channel('admin_transfers_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'admin_transfers',
-        },
-        (payload: any) => {
-          console.log('[v0] Transfer update:', payload)
-          fetchDashboardData()
-        }
-      )
-      .subscribe()
-
-    // Subscribe to new users
-    const usersChannel = supabase
-      .channel('users_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'users',
-        },
-        (payload: any) => {
-          console.log('[v0] New user registered:', payload)
-          fetchDashboardData()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(transfersChannel)
-      supabase.removeChannel(usersChannel)
-    }
-  }
-
-  const handleTransferSuccess = () => {
-    fetchDashboardData()
+  // Check if user has admin access
+  if (!user || !canAccessAdminDashboard(user)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <Card className="p-8 max-w-md border-0 shadow-lg">
+          <div className="flex items-center justify-center mb-4">
+            <div className="bg-red-100 p-3 rounded-full">
+              <Lock className="w-6 h-6 text-red-600" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600 text-center mb-6">
+            You don&apos;t have permission to access the admin dashboard. Only administrators can view this page.
+          </p>
+          <Button
+            onClick={() => router.push('/dashboard')}
+            className="w-full bg-[#0a4fa6] hover:bg-[#003087]"
+          >
+            Return to Dashboard
+          </Button>
+        </Card>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-[#0a4fa6] hover:underline mb-6 font-medium"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-2">Manage user accounts and fund transfers</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600">Manage users, permissions, and system settings</p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Admin Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Users</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{newUsers.length}</p>
+          {/* Users Card */}
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Users</h3>
+                <div className="bg-blue-100 p-3 rounded-lg">
+                  <Users className="w-6 h-6 text-blue-600" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">👥</span>
-              </div>
+              <p className="text-3xl font-bold text-gray-900 mb-2">--</p>
+              <p className="text-sm text-gray-600">Total registered users</p>
+              <Button variant="ghost" className="mt-4 text-[#0a4fa6] p-0 hover:underline">
+                View All Users →
+              </Button>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Pending Transfers</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{pendingTransfers.length}</p>
+          {/* Permissions Card */}
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Roles</h3>
+                <div className="bg-purple-100 p-3 rounded-lg">
+                  <Lock className="w-6 h-6 text-purple-600" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">⏳</span>
-              </div>
+              <p className="text-3xl font-bold text-gray-900 mb-2">3</p>
+              <p className="text-sm text-gray-600">Admin, Editor, Viewer</p>
+              <Button variant="ghost" className="mt-4 text-[#0a4fa6] p-0 hover:underline">
+                Manage Roles →
+              </Button>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
+          {/* Analytics Card */}
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
+                <div className="bg-green-100 p-3 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-gray-900 mb-2">--</p>
+              <p className="text-sm text-gray-600">System activity</p>
+              <Button variant="ghost" className="mt-4 text-[#0a4fa6] p-0 hover:underline">
+                View Analytics →
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Features Section */}
+        <Card className="border-0 shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Admin Features</h2>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
+              <div className="bg-blue-100 p-2 rounded">
+                <Users className="w-5 h-5 text-blue-600" />
+              </div>
               <div>
-                <p className="text-gray-600 text-sm font-medium">Completed Transfers</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {transferHistory.filter((t) => t.status === 'completed').length}
+                <h3 className="font-semibold text-gray-900">User Management</h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  View, manage, and delete user accounts. Assign roles and permissions.
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">✅</span>
+            </div>
+
+            <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
+              <div className="bg-purple-100 p-2 rounded">
+                <Lock className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Role-Based Access Control</h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  Configure roles and permissions. Control what each user role can do.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
+              <div className="bg-yellow-100 p-2 rounded">
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">System Monitoring</h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  Monitor system health, activities, and security logs.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="bg-green-100 p-2 rounded">
+                <Settings className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">System Settings</h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  Configure application settings, integrations, and preferences.
+                </p>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow mb-8">
-          <div className="flex border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('new-users')}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center transition ${
-                activeTab === 'new-users'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              New Users ({newUsers.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('pending')}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center transition ${
-                activeTab === 'pending'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Pending Transfers ({pendingTransfers.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center transition ${
-                activeTab === 'history'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Transfer History
-            </button>
+        {/* Admin Info */}
+        <Card className="border-0 shadow-lg p-6 bg-blue-50">
+          <div className="flex items-start gap-4">
+            <AlertCircle className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-blue-900">Administrator Access</h3>
+              <p className="text-blue-800 text-sm mt-1">
+                You are logged in as an administrator. With great power comes great responsibility. Handle with care.
+              </p>
+            </div>
           </div>
-
-          <div className="p-6">
-            {loading ? (
-              <div className="text-center py-12">
-                <p className="text-gray-600">Loading dashboard data...</p>
-              </div>
-            ) : activeTab === 'new-users' ? (
-              <>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Recently Registered Users
-                </h2>
-                <AdminUsersList users={newUsers} />
-              </>
-            ) : activeTab === 'pending' ? (
-              <>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Transfer Funds to New Account
-                </h2>
-                <AdminTransferForm users={newUsers} onSuccess={handleTransferSuccess} />
-                {pendingTransfers.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="text-sm font-medium text-gray-900 mb-4">
-                      Pending Transfers Awaiting Confirmation
-                    </h3>
-                    <AdminTransferHistory transfers={pendingTransfers} />
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Transfer History
-                </h2>
-                <AdminTransferHistory transfers={transferHistory} />
-              </>
-            )}
-          </div>
-        </div>
+        </Card>
       </div>
     </div>
   )

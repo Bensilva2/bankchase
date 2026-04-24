@@ -58,7 +58,7 @@ export function PlanTrackView() {
     Savings: "bg-cyan-500",
   }
 
-  const totalBalance = accounts.reduce((acc, a) => acc + (a.balance ?? 0), 0)
+  const totalBalance = accounts.reduce((acc, a) => acc + a.balance, 0)
 
   const handleAddToGoal = (goalId: string, amount: number) => {
     const goal = savingsGoals.find((g) => g.id === goalId)
@@ -126,7 +126,7 @@ export function PlanTrackView() {
   }
 
   return (
-    <div className="space-y-6 pb-24 touch-pan-y overscroll-contain">
+    <div className="space-y-6 pb-24">
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="chase-card-shadow border-0">
@@ -135,12 +135,8 @@ export function PlanTrackView() {
             <Wallet className="h-4 w-4 text-[#0a4fa6]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${monthlySpending.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              of ${totalBudget.toLocaleString("en-US", { minimumFractionDigits: 2 })} budget
-            </p>
+            <div className="text-2xl font-bold">${monthlySpending.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">of ${totalBudget.toLocaleString()} budget</p>
             <Progress value={spendingPercentage} className="mt-4" />
             <p className="text-xs text-muted-foreground mt-2">
               {spendingPercentage.toFixed(1)}% of monthly budget used
@@ -154,12 +150,8 @@ export function PlanTrackView() {
             <PiggyBank className="h-4 w-4 text-[#0a4fa6]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ${totalSavingsCurrent.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              of ${totalSavingsTarget.toLocaleString("en-US", { minimumFractionDigits: 2 })} target
-            </p>
+            <div className="text-2xl font-bold">${totalSavingsCurrent.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">of ${totalSavingsTarget.toLocaleString()} target</p>
             <Progress value={overallSavingsPercentage} className="mt-4" />
             <p className="text-xs text-muted-foreground mt-2">
               {overallSavingsPercentage.toFixed(1)}% of savings goals achieved
@@ -223,17 +215,11 @@ export function PlanTrackView() {
                   <div className="space-y-2">
                     <Progress value={percentage} className={`h-2 ${isComplete ? "[&>div]:bg-green-600" : ""}`} />
                     <div className="flex justify-between text-sm">
-                      <span className="font-semibold">
-                        €{goal.currentAmount.toLocaleString("de-DE", { minimumFractionDigits: 2 })}
-                      </span>
-                      <span className="text-muted-foreground">
-                        €{goal.targetAmount.toLocaleString("de-DE", { minimumFractionDigits: 2 })}
-                      </span>
+                      <span className="font-semibold">${goal.currentAmount.toLocaleString()}</span>
+                      <span className="text-muted-foreground">${goal.targetAmount.toLocaleString()}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {isComplete
-                        ? "Goal reached! "
-                        : `€${remaining.toLocaleString("de-DE", { minimumFractionDigits: 2 })} to go | `}
+                      {isComplete ? "Goal reached! " : `$${remaining.toLocaleString()} to go | `}
                       {daysLeft > 0 ? `${daysLeft} days left` : "Deadline passed"}
                     </p>
                   </div>
@@ -270,9 +256,7 @@ export function PlanTrackView() {
                         <div className={`h-3 w-3 rounded-full ${categoryColors[item.category] || "bg-gray-400"}`} />
                         <span className="font-medium">{item.category}</span>
                       </div>
-                      <span className="font-bold">
-                        €{item.amount.toLocaleString("de-DE", { minimumFractionDigits: 2 })}
-                      </span>
+                      <span className="font-bold">${item.amount.toLocaleString()}</span>
                     </div>
                     <Progress value={percentage} className="h-2" />
                     <p className="text-xs text-muted-foreground mt-1">{percentage.toFixed(1)}% of total spending</p>
@@ -304,7 +288,7 @@ export function PlanTrackView() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Target Amount (€)</Label>
+              <Label>Target Amount ($)</Label>
               <Input
                 type="number"
                 placeholder="5000"
@@ -357,9 +341,7 @@ export function PlanTrackView() {
             <DialogTitle>Add to Savings Goal</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              Available balance: €{totalBalance.toLocaleString("de-DE", { minimumFractionDigits: 2 })}
-            </p>
+            <p className="text-sm text-muted-foreground">Available balance: ${totalBalance.toLocaleString()}</p>
             <div className="grid grid-cols-3 gap-2">
               {[50, 100, 250].map((amount) => (
                 <Button
@@ -368,7 +350,7 @@ export function PlanTrackView() {
                   onClick={() => selectedGoalId && handleAddToGoal(selectedGoalId, amount)}
                   disabled={amount > totalBalance}
                 >
-                  €{amount}
+                  ${amount}
                 </Button>
               ))}
             </div>

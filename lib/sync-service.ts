@@ -1,9 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
 
-function isSupabaseConfigured(): boolean {
-  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-}
-
 const STORAGE_KEY = "chase_banking_data"
 const SYNC_KEY = "chase_banking_last_sync"
 
@@ -55,118 +51,79 @@ export function setLastSyncTime(time: string): void {
 
 // Sync data to Supabase (cloud)
 export async function syncToCloud(email: string, data: any): Promise<boolean> {
-  if (!isSupabaseConfigured()) {
-    return false
-  }
-
   try {
     const supabase = createClient()
-    if (!supabase) {
-      return false
-    }
+
+    // Check if record exists
+    const { data: existing } = await supabase
+      .from("banking_data")
+      .select("id, updated_at")
+      .eq("user_email", email)
+      .single()
 
     const dataToSync = {
       ...data,
       savedAt: new Date().toISOString(),
     }
 
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Sync timeout")), 10000))
+    if (existing) {
+      // Update existing record
+      const { error } = await supabase.from("banking_data").update({ data: dataToSync }).eq("user_email", email)
 
-    const syncPromise = (async () => {
-      // Use maybeSingle() instead of single() to avoid errors when no record exists
-      const { data: existing, error: fetchError } = await supabase
-        .from("banking_data")
-        .select("id, updated_at")
-        .eq("user_email", email)
-        .maybeSingle()
+      if (error) throw error
+    } else {
+      // Insert new record
+      const { error } = await supabase.from("banking_data").insert({ user_email: email, data: dataToSync })
 
-      if (fetchError) {
-        console.log("Error checking existing record:", fetchError)
-        return false
-      }
+      if (error) throw error
+    }
 
-      if (existing) {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from("banking_data")
-          .update({ data: dataToSync, updated_at: new Date().toISOString() })
-          .eq("user_email", email)
-
-        if (updateError) {
-          console.log("Error updating record:", updateError)
-          return false
-        }
-      } else {
-        // Insert new record - wrap in try/catch to handle race condition
-        const { error: insertError } = await supabase
-          .from("banking_data")
-          .insert({ user_email: email, data: dataToSync })
-
-        // If insert fails with duplicate key (race condition), try update instead
-        if (insertError) {
-          if (insertError.code === "23505") {
-            // Duplicate key error - try update instead
-            const { error: updateError } = await supabase
-              .from("banking_data")
-              .update({ data: dataToSync, updated_at: new Date().toISOString() })
-              .eq("user_email", email)
-
-            if (updateError) {
-              console.log("Error updating after duplicate:", updateError)
-              return false
-            }
-          } else {
-            console.log("Error inserting record:", insertError)
-            return false
-          }
-        }
-      }
-
-      setLastSyncTime(new Date().toISOString())
-      return true
-    })()
-
-    const result = (await Promise.race([syncPromise, timeoutPromise])) as boolean
-    return result
-  } catch (error) {
-    console.log("Sync skipped (offline or network issue)")
+    setLastSyncTime(new Date().toISOString())
+    return true
+  } catch (error: any) {
+    // Silently ignore table not found errors - database may not be initialized yet
+    if (error?.message?.includes("Could not find the table")) {
+      return false
+    }
+    console.error("Failed to sync to cloud:", error)
     return false
   }
 }
 
 // Fetch data from Supabase (cloud)
 export async function fetchFromCloud(email: string): Promise<any | null> {
-  if (!isSupabaseConfigured()) {
-    return null
-  }
-
   try {
     const supabase = createClient()
-    if (!supabase) {
-      return null
-    }
 
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Fetch timeout")), 10000))
+    const { data, error } = await supabase
+      .from("banking_data")
+      .select("data, updated_at")
+      .eq("user_email", email)
+      .single()
 
-    const fetchPromise = (async () => {
-      const { data, error } = await supabase
-        .from("banking_data")
-        .select("data, updated_at")
-        .eq("user_email", email)
-        .maybeSingle()
-
-      if (error) {
-        console.log("Error fetching from cloud:", error)
+    if (error) {
+      // Silently return null if table doesn't exist
+      if (error?.message?.includes("Could not find the table")) {
         return null
       }
+      throw error
+    }
 
-      return data?.data || null
-    })()
+    return data?.data || null
+  } catch (error: any) {
+    // Silently ignore table not found errors - database may not be initialized yet
+    if (error?.message?.includes("Could not find the table")) {
+      return null
+    }
+    console.error("Failed to fetch from cloud:", error)
+    return null
+  }
+      throw error
+    }
 
-    const result = await Promise.race([fetchPromise, timeoutPromise])
-    return result
+    return data?.data || null
   } catch (error) {
-    console.log("Fetch skipped (offline or network issue)")
+    console.error("Failed to fetch from cloud:", error)
     return null
   }
 }

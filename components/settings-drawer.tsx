@@ -278,7 +278,7 @@ export function SettingsDrawer({ open, onOpenChange }: SettingsDrawerProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="USD">USD ($)</SelectItem>
-                <SelectItem value="EUR">EUR ($)</SelectItem>
+                <SelectItem value="EUR">EUR (€)</SelectItem>
                 <SelectItem value="GBP">GBP (£)</SelectItem>
                 <SelectItem value="JPY">JPY (¥)</SelectItem>
               </SelectContent>
