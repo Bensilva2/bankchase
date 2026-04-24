@@ -12,14 +12,13 @@ import {
   Clock,
   Filter,
   Calendar,
-  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useBanking } from "@/lib/banking-context"
-import { useState, useCallback, useEffect } from "react"
+import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface PayTransferViewProps {
@@ -36,35 +35,6 @@ export function PayTransferView({ onSendMoney, onPayBills, onTransfer, onWire, o
   const [showAllTransactions, setShowAllTransactions] = useState(false)
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [showScheduledDetails, setShowScheduledDetails] = useState(false)
-  
-  // Payment option loading states - ensures smooth transitions
-  const [loadingOption, setLoadingOption] = useState<string | null>(null)
-  const [optionClickTimers, setOptionClickTimers] = useState<Record<string, NodeJS.Timeout>>({})
-
-  // Handle smooth option loading with delay
-  const handleOptionClick = useCallback((optionId: string, callback: () => void) => {
-    setLoadingOption(optionId)
-    
-    // Clear any existing timer for this option
-    if (optionClickTimers[optionId]) {
-      clearTimeout(optionClickTimers[optionId])
-    }
-
-    // Simulate loading for smooth UX (like Chase app)
-    const timer = setTimeout(() => {
-      callback()
-      setLoadingOption(null)
-    }, 200)
-
-    setOptionClickTimers((prev) => ({ ...prev, [optionId]: timer }))
-  }, [optionClickTimers])
-
-  // Cleanup timers on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(optionClickTimers).forEach((timer) => clearTimeout(timer))
-    }
-  }, [optionClickTimers])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -99,7 +69,7 @@ export function PayTransferView({ onSendMoney, onPayBills, onTransfer, onWire, o
   const activeScheduledPayments = scheduledPayments?.filter((p) => p.status === "scheduled") || []
 
   return (
-    <div className="space-y-6 pb-24 touch-pan-y overscroll-contain">
+    <div className="space-y-6 pb-24">
       {/* Search and Filter */}
       <div className="space-y-3">
         <div className="relative">
@@ -128,74 +98,54 @@ export function PayTransferView({ onSendMoney, onPayBills, onTransfer, onWire, o
         </div>
       </div>
 
-      {/* Quick Actions Grid - with smooth loading states */}
+      {/* Quick Actions Grid */}
       <div className="grid grid-cols-2 gap-3">
-        {/* Send Money with Zelle */}
         <Card
-          className="chase-card-shadow border-0 cursor-pointer hover:bg-muted/30 transition-all duration-150 active:scale-[0.97]"
-          onClick={() => handleOptionClick("send-money", onSendMoney)}
+          className="chase-card-shadow border-0 cursor-pointer hover:bg-muted/30 transition-colors active:scale-[0.98]"
+          onClick={onSendMoney}
         >
           <CardContent className="p-4">
             <div className="h-12 w-12 rounded-full bg-[#0a4fa6]/10 flex items-center justify-center mb-3">
-              {loadingOption === "send-money" ? (
-                <Loader2 className="h-6 w-6 text-[#0a4fa6] animate-spin" />
-              ) : (
-                <Smartphone className="h-6 w-6 text-[#0a4fa6]" />
-              )}
+              <Smartphone className="h-6 w-6 text-[#0a4fa6]" />
             </div>
             <h3 className="font-semibold text-sm">Send money with Zelle®</h3>
             <p className="text-xs text-muted-foreground mt-1">Fast & free transfers</p>
           </CardContent>
         </Card>
 
-        {/* Transfer Between Accounts */}
         <Card
-          className="chase-card-shadow border-0 cursor-pointer hover:bg-muted/30 transition-all duration-150 active:scale-[0.97]"
-          onClick={() => handleOptionClick("transfer", onTransfer)}
+          className="chase-card-shadow border-0 cursor-pointer hover:bg-muted/30 transition-colors active:scale-[0.98]"
+          onClick={onTransfer}
         >
           <CardContent className="p-4">
             <div className="h-12 w-12 rounded-full bg-[#0a4fa6]/10 flex items-center justify-center mb-3">
-              {loadingOption === "transfer" ? (
-                <Loader2 className="h-6 w-6 text-[#0a4fa6] animate-spin" />
-              ) : (
-                <RefreshCw className="h-6 w-6 text-[#0a4fa6]" />
-              )}
+              <RefreshCw className="h-6 w-6 text-[#0a4fa6]" />
             </div>
             <h3 className="font-semibold text-sm">Transfer</h3>
             <p className="text-xs text-muted-foreground mt-1">Between accounts</p>
           </CardContent>
         </Card>
 
-        {/* Pay Bills */}
         <Card
-          className="chase-card-shadow border-0 cursor-pointer hover:bg-muted/30 transition-all duration-150 active:scale-[0.97]"
-          onClick={() => handleOptionClick("pay-bills", onPayBills)}
+          className="chase-card-shadow border-0 cursor-pointer hover:bg-muted/30 transition-colors active:scale-[0.98]"
+          onClick={onPayBills}
         >
           <CardContent className="p-4">
             <div className="h-12 w-12 rounded-full bg-[#0a4fa6]/10 flex items-center justify-center mb-3">
-              {loadingOption === "pay-bills" ? (
-                <Loader2 className="h-6 w-6 text-[#0a4fa6] animate-spin" />
-              ) : (
-                <Receipt className="h-6 w-6 text-[#0a4fa6]" />
-              )}
+              <Receipt className="h-6 w-6 text-[#0a4fa6]" />
             </div>
             <h3 className="font-semibold text-sm">Pay bills</h3>
             <p className="text-xs text-muted-foreground mt-1">Manage & schedule</p>
           </CardContent>
         </Card>
 
-        {/* Wires & Global Transfers */}
         <Card
-          className="chase-card-shadow border-0 cursor-pointer hover:bg-muted/30 transition-all duration-150 active:scale-[0.97]"
-          onClick={() => handleOptionClick("wire", onWire)}
+          className="chase-card-shadow border-0 cursor-pointer hover:bg-muted/30 transition-colors active:scale-[0.98]"
+          onClick={onWire}
         >
           <CardContent className="p-4">
             <div className="h-12 w-12 rounded-full bg-[#0a4fa6]/10 flex items-center justify-center mb-3">
-              {loadingOption === "wire" ? (
-                <Loader2 className="h-6 w-6 text-[#0a4fa6] animate-spin" />
-              ) : (
-                <Banknote className="h-6 w-6 text-[#0a4fa6]" />
-              )}
+              <Banknote className="h-6 w-6 text-[#0a4fa6]" />
             </div>
             <h3 className="font-semibold text-sm">Wires & global</h3>
             <p className="text-xs text-muted-foreground mt-1">International transfers</p>
@@ -246,7 +196,7 @@ export function PayTransferView({ onSendMoney, onPayBills, onTransfer, onWire, o
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-semibold">${(payment.amount ?? 0).toFixed(2)}</span>
+                    <span className="font-semibold">${payment.amount.toFixed(2)}</span>
                     {showScheduledDetails && (
                       <Button
                         variant="ghost"
@@ -330,10 +280,10 @@ export function PayTransferView({ onSendMoney, onPayBills, onTransfer, onWire, o
                   <div className="flex items-center gap-2">
                     <div className="text-right">
                       <span className={`font-semibold ${transaction.type === "credit" ? "text-green-600" : ""}`}>
-                        {transaction.type === "debit" ? "-" : "+"}${(transaction.amount ?? 0).toFixed(2)}
+                        {transaction.type === "debit" ? "-" : "+"}${transaction.amount.toFixed(2)}
                       </span>
                       {transaction.fee && transaction.fee > 0 && (
-                        <p className="text-xs text-muted-foreground">Fee: ${(transaction.fee ?? 0).toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">Fee: ${transaction.fee.toFixed(2)}</p>
                       )}
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />

@@ -67,7 +67,7 @@ export function CreditJourneyCard({ onViewScore }: CreditJourneyCardProps) {
         <Button
           variant="secondary"
           onClick={onViewScore}
-          className="bg-white text-[#0060A9] hover:bg-blue-50 font-semibold rounded-full px-6 transition-transform duration-150 active:scale-95"
+          className="bg-white text-[#0060A9] hover:bg-blue-50 font-semibold rounded-full px-6"
         >
           See latest score
         </Button>

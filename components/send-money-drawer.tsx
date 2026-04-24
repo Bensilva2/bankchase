@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,28 +29,11 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
     useBanking()
   const [isLoading, setIsLoading] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState(accounts[0]?.id || "")
-  const [isDrawerReady, setIsDrawerReady] = useState(false)
 
   const [showAddContact, setShowAddContact] = useState(false)
   const [newContactName, setNewContactName] = useState("")
   const [newContactEmail, setNewContactEmail] = useState("")
   const [newContactPhone, setNewContactPhone] = useState("")
-
-  // Preload data when drawer opens for smooth rendering
-  useEffect(() => {
-    if (open) {
-      setIsDrawerReady(true)
-    } else {
-      // Reset when closing
-      setIsDrawerReady(false)
-      setStep("select")
-      setRecipient("")
-      setAmount("")
-      setMemo("")
-      setSearchQuery("")
-      setSelectedContact(null)
-    }
-  }, [open])
 
   const recentContacts = [
     { id: "1", name: "Sarah Johnson", email: "sarah.j@email.com", phone: "", avatar: "SJ" },
@@ -150,7 +133,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
     if (!account || sendAmount > account.balance) {
       toast({
         title: "Insufficient Funds",
-        description: `Your available balance is $${(account?.balance ?? 0).toFixed(2)}`,
+        description: `Your available balance is $${account?.balance.toFixed(2) || "0.00"}`,
         variant: "destructive",
       })
       return
@@ -159,86 +142,52 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
     setIsLoading(true)
     setStep("confirm")
 
-    // Call real Chase Bank Zelle API
-    fetch('/api/transfers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': localStorage.getItem('userId') || ''
-      },
-      body: JSON.stringify({
-        action: 'zelle',
-        fromAccountId: selectedAccount,
+    setTimeout(() => {
+      updateBalance(selectedAccount, -sendAmount)
+
+      const transaction = addTransaction({
+        description: `Zelle to ${selectedContact?.name || recipient}`,
         amount: sendAmount,
-        recipientEmail: selectedContact?.email || recipient,
-        recipientPhone: selectedContact?.phone,
+        type: "debit",
+        category: "Transfers",
+        status: "completed",
         recipientName: selectedContact?.name || recipient,
+        reference: `ZELLE-${Date.now()}`,
+        accountId: selectedAccount,
+        accountFrom: account.name,
       })
-    })
-      .then(res => res.json())
-      .then(result => {
-        console.log('[v0] Zelle API response:', result)
-        
-        updateBalance(selectedAccount, -sendAmount)
 
-        const transaction = addTransaction({
-          description: `Zelle to ${selectedContact?.name || recipient}`,
-          amount: sendAmount,
-          type: "debit",
-          category: "Transfers",
-          status: "completed",
-          recipientName: selectedContact?.name || recipient,
-          reference: result.zelleTransferId || `ZELLE-${Date.now()}`,
-          accountId: selectedAccount,
-          accountFrom: account.name,
-        })
-
-        addNotification({
-          title: "Money Sent",
-          message: result.message || `$${sendAmount.toFixed(2)} sent to ${selectedContact?.name || recipient} via Zelle`,
-          type: "success",
-          category: "Transfers",
-        })
-
-        addActivity({
-          action: `Sent $${sendAmount.toFixed(2)} to ${selectedContact?.name || recipient} via Zelle`,
-          device: navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Desktop Browser",
-          location: "Current Session",
-        })
-
-        setStep("success")
-        setIsLoading(false)
-
-        toast({
-          title: "Money Sent!",
-          description: `Successfully sent $${sendAmount.toFixed(2)} via Zelle`,
-          action: (
-            <ToastAction altText="View Receipt" onClick={() => onReceiptOpen?.(transaction.id)}>
-              Receipt
-            </ToastAction>
-          ),
-        })
-
-        setTimeout(() => {
-          resetDrawer()
-          onOpenChange(false)
-        }, 2000)
+      addNotification({
+        title: "Money Sent",
+        message: `$${sendAmount.toFixed(2)} sent to ${selectedContact?.name || recipient} via Zelle`,
+        type: "success",
+        category: "Transfers",
       })
-      .catch(error => {
-        console.error('[v0] Zelle transfer error:', error)
-        setIsLoading(false)
-        addNotification({
-          title: "Transfer Failed",
-          message: error.message || 'Failed to send money via Zelle',
-          type: "alert",
-          category: "Errors",
-        })
-        toast({
-          title: "Error",
-          description: error.message || 'Failed to send money',
-          variant: "destructive",
-        })
+
+      addActivity({
+        action: `Sent $${sendAmount.toFixed(2)} to ${selectedContact?.name || recipient} via Zelle`,
+        device: navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Desktop Browser",
+        location: "Current Session",
       })
+
+      setStep("success")
+      setIsLoading(false)
+
+      toast({
+        title: "Money Sent!",
+        description: `Successfully sent $${sendAmount.toFixed(2)} via Zelle`,
+        action: (
+          <ToastAction altText="View Receipt" onClick={() => onReceiptOpen?.(transaction.id)}>
+            Receipt
+          </ToastAction>
+        ),
+      })
+
+      setTimeout(() => {
+        resetDrawer()
+        onOpenChange(false)
+      }, 2000)
+    }, 1500)
   }
 
   const resetDrawer = () => {
@@ -275,7 +224,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
           </div>
         </DrawerHeader>
 
-        <div className="px-4 space-y-4 overflow-y-auto pb-4 flex-1 overscroll-contain touch-pan-y scroll-smooth">
+        <div className="px-4 space-y-4 overflow-y-auto pb-4 flex-1">
           {step === "select" && !showAddContact && (
             <>
               <div>
@@ -420,7 +369,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
                       .filter((a) => a.type === "Checking" || a.type === "checking")
                       .map((acc) => (
                         <SelectItem key={acc.id} value={acc.id}>
-                          {acc.name} (${(acc.balance ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })})
+                          {acc.name} (${acc.balance.toLocaleString()})
                         </SelectItem>
                       ))}
                   </SelectContent>

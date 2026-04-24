@@ -58,10 +58,9 @@ export function AccountDetailsDrawer({ open, onOpenChange, accountId, onReceiptO
 
   const pendingTransactions = transactions.filter((tx) => tx.status === "pending")
 
-  const formatBalance = (balance?: number) => {
+  const formatBalance = (balance: number) => {
     if (!showBalance) return "••••••"
-    const safeBalance = balance ?? 0
-    return safeBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
   const getStatusColor = (status: string) => {
@@ -93,24 +92,14 @@ export function AccountDetailsDrawer({ open, onOpenChange, accountId, onReceiptO
         </DrawerHeader>
 
         <div className="flex-1 overflow-auto px-4 pb-6">
-          {/* Balance Card - Updated all € to $ */}
+          {/* Balance Card */}
           <Card className="p-6 my-4 bg-gradient-to-r from-[#0a4fa6] to-[#117aca] text-white">
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-white/80 mb-1">Available Balance</p>
-                <p className="text-4xl font-bold">${formatBalance(account.availableBalance ?? account.balance)}</p>
-              </div>
-              <div className="border-t border-white/20 pt-3">
-                <p className="text-sm text-white/80 mb-1">Present Balance</p>
-                <p className="text-2xl font-semibold">${formatBalance(account.balance)}</p>
-              </div>
-            </div>
+            <p className="text-sm text-white/80 mb-1">Available Balance</p>
+            <p className="text-4xl font-bold">${formatBalance(account.balance)}</p>
             <div className="flex items-center gap-4 mt-4 text-sm">
               <div>
                 <p className="text-white/70">Account Number</p>
-                <p className="font-medium">
-                  {account.id === "1" ? account.accountNumber : `...${account.accountNumber}`}
-                </p>
+                <p className="font-medium">...{account.accountNumber}</p>
               </div>
               <div>
                 <p className="text-white/70">Routing Number</p>
@@ -119,7 +108,7 @@ export function AccountDetailsDrawer({ open, onOpenChange, accountId, onReceiptO
             </div>
           </Card>
 
-          {/* Quick Stats - Updated all € to $ */}
+          {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-3 mb-4">
             <Card className="p-3 text-center">
               <TrendingUp className="h-5 w-5 text-green-600 mx-auto mb-1" />
@@ -193,7 +182,7 @@ export function AccountDetailsDrawer({ open, onOpenChange, accountId, onReceiptO
                 </SelectContent>
               </Select>
 
-              {/* Transactions List - Updated all € to $ */}
+              {/* Transactions List */}
               <div className="space-y-2">
                 {accountTransactions.length > 0 ? (
                   accountTransactions.map((transaction) => (
@@ -258,18 +247,12 @@ export function AccountDetailsDrawer({ open, onOpenChange, accountId, onReceiptO
                 <h3 className="font-semibold mb-4">Account Information</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between py-2 border-b">
-                    <span className="text-muted-foreground">Account Name</span>
-                    <span className="font-medium">{account.name}</span>
-                  </div>
-                  <div className="flex justify-between py-2 border-b">
                     <span className="text-muted-foreground">Account Type</span>
-                    <span className="font-medium capitalize">{account.type}</span>
+                    <span className="font-medium">{account.type}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-muted-foreground">Account Number</span>
-                    <span className="font-medium">
-                      {account.id === "1" ? account.accountNumber : `...${account.accountNumber}`}
-                    </span>
+                    <span className="font-medium">...{account.accountNumber}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-muted-foreground">Routing Number</span>
@@ -283,13 +266,7 @@ export function AccountDetailsDrawer({ open, onOpenChange, accountId, onReceiptO
                   )}
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-muted-foreground">Available Balance</span>
-                    <span className="font-medium text-green-600">
-                      ${formatBalance(account.availableBalance ?? account.balance)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-2 border-b">
-                    <span className="text-muted-foreground">Present Balance</span>
-                    <span className="font-medium text-blue-600">${formatBalance(account.balance)}</span>
+                    <span className="font-medium text-green-600">${formatBalance(account.balance)}</span>
                   </div>
                 </div>
               </Card>

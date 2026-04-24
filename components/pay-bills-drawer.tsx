@@ -19,18 +19,18 @@ interface PayBillsDrawerProps {
 }
 
 const defaultPayees = [
-  { id: "1", name: "Electric Company", category: "Utilities", lastAmount: 0, accountNumber: "****1234" },
-  { id: "2", name: "Water & Sewer", category: "Utilities", lastAmount: 0, accountNumber: "****5678" },
-  { id: "3", name: "Gas Company", category: "Utilities", lastAmount: 0, accountNumber: "****9012" },
-  { id: "4", name: "Internet Provider", category: "Utilities", lastAmount: 0, accountNumber: "****3456" },
-  { id: "5", name: "Phone Bill", category: "Utilities", lastAmount: 0, accountNumber: "****7890" },
-  { id: "6", name: "Credit Card - Chase", category: "Credit Cards", lastAmount: 0, accountNumber: "****4567" },
-  { id: "7", name: "Credit Card - Amex", category: "Credit Cards", lastAmount: 0, accountNumber: "****8901" },
-  { id: "8", name: "Mortgage - Wells Fargo", category: "Loans", lastAmount: 0, accountNumber: "****2345" },
-  { id: "9", name: "Auto Loan - Capital One", category: "Loans", lastAmount: 0, accountNumber: "****6789" },
-  { id: "10", name: "Insurance - State Farm", category: "Insurance", lastAmount: 0, accountNumber: "****0123" },
-  { id: "11", name: "Netflix", category: "Subscriptions", lastAmount: 0, accountNumber: "****4567" },
-  { id: "12", name: "Spotify", category: "Subscriptions", lastAmount: 0, accountNumber: "****8901" },
+  { id: "1", name: "Electric Company", category: "Utilities", lastAmount: 125.0, accountNumber: "****1234" },
+  { id: "2", name: "Water & Sewer", category: "Utilities", lastAmount: 45.0, accountNumber: "****5678" },
+  { id: "3", name: "Gas Company", category: "Utilities", lastAmount: 78.5, accountNumber: "****9012" },
+  { id: "4", name: "Internet Provider", category: "Utilities", lastAmount: 89.99, accountNumber: "****3456" },
+  { id: "5", name: "Phone Bill", category: "Utilities", lastAmount: 65.0, accountNumber: "****7890" },
+  { id: "6", name: "Credit Card - Chase", category: "Credit Cards", lastAmount: 500.0, accountNumber: "****4567" },
+  { id: "7", name: "Credit Card - Amex", category: "Credit Cards", lastAmount: 350.0, accountNumber: "****8901" },
+  { id: "8", name: "Mortgage - Wells Fargo", category: "Loans", lastAmount: 1850.0, accountNumber: "****2345" },
+  { id: "9", name: "Auto Loan - Capital One", category: "Loans", lastAmount: 425.0, accountNumber: "****6789" },
+  { id: "10", name: "Insurance - State Farm", category: "Insurance", lastAmount: 150.0, accountNumber: "****0123" },
+  { id: "11", name: "Netflix", category: "Subscriptions", lastAmount: 15.99, accountNumber: "****4567" },
+  { id: "12", name: "Spotify", category: "Subscriptions", lastAmount: 9.99, accountNumber: "****8901" },
 ]
 
 interface ScheduledPayment {
@@ -51,22 +51,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
   const [frequency, setFrequency] = useState<"once" | "weekly" | "monthly">("once")
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState<"select" | "details" | "confirm" | "success">("select")
-  const [isDrawerReady, setIsDrawerReady] = useState(false)
   const { toast } = useToast()
-
-  // Preload data when drawer opens
-  useEffect(() => {
-    if (open) {
-      setIsDrawerReady(true)
-    } else {
-      setIsDrawerReady(false)
-      setStep("select")
-      setSelectedPayee("")
-      setAmount("")
-      setDate("")
-      setFrequency("once")
-    }
-  }, [open])
   const {
     addTransaction,
     accounts,
@@ -130,7 +115,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
     if (Number(amount) > account.balance) {
       toast({
         title: "Insufficient Funds",
-        description: `Your available balance is $${(account?.balance ?? 0).toFixed(2)}`,
+        description: `Your available balance is $${account.balance.toFixed(2)}`,
         variant: "destructive",
       })
       return
@@ -139,97 +124,62 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
     setIsLoading(true)
     setStep("confirm")
 
-    // Call real Chase Bank bill pay API
-    fetch('/api/bill-pay', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': localStorage.getItem('userId') || ''
-      },
-      body: JSON.stringify({
-        fromAccountId: selectedAccount,
+    setTimeout(() => {
+      updateBalance(selectedAccount, -Number(amount))
+
+      const transaction = addTransaction({
+        description: `Bill Payment - ${payee.name}`,
         amount: Number(amount),
-        payee: payee.name,
-        dueDate: date,
-        scheduledDate: frequency !== "once" ? date : undefined,
-        frequency: frequency !== "once" ? frequency : undefined,
-        category: payee.category,
+        type: "debit",
+        category: "Bills & Utilities",
+        status: "completed",
+        recipientName: payee.name,
+        accountFrom: account.name,
+        accountId: selectedAccount,
+        reference: `BILL-${Date.now()}`,
       })
-    })
-      .then(res => res.json())
-      .then(result => {
-        console.log('[v0] Bill pay API response:', result)
-        
-        updateBalance(selectedAccount, -Number(amount))
 
-        const transaction = addTransaction({
-          description: `Bill Payment - ${payee.name}`,
+      if (frequency !== "once") {
+        addScheduledPayment({
+          payeeId: selectedPayee,
+          payeeName: payee.name,
           amount: Number(amount),
-          type: "debit",
-          category: "Bills & Utilities",
-          status: "completed",
-          recipientName: payee.name,
-          accountFrom: account.name,
-          accountId: selectedAccount,
-          reference: result.billPaymentId || `BILL-${Date.now()}`,
+          scheduledDate: getNextDate(date, frequency),
+          frequency,
+          fromAccountId: selectedAccount,
         })
+      }
 
-        if (frequency !== "once") {
-          addScheduledPayment({
-            payeeId: selectedPayee,
-            payeeName: payee.name,
-            amount: Number(amount),
-            scheduledDate: getNextDate(date, frequency),
-            frequency,
-            fromAccountId: selectedAccount,
-          })
-        }
-
-        addNotification({
-          title: "Bill Paid",
-          message: result.message || `$${Number(amount).toFixed(2)} paid to ${payee.name}`,
-          type: "success",
-          category: "Bills",
-        })
-
-        addActivity({
-          action: `Paid $${Number(amount).toFixed(2)} to ${payee.name}`,
-          device: navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Desktop Browser",
-          location: "Current Session",
-        })
-
-        setStep("success")
-        setIsLoading(false)
-
-        toast({
-          title: "Bill Payment Scheduled!",
-          description: `Payment of $${Number(amount).toFixed(2)} to ${payee.name} scheduled for ${new Date(date).toLocaleDateString()}`,
-          action: (
-            <ToastAction altText="View Receipt" onClick={() => onReceiptOpen?.(transaction.id)}>
-              Receipt
-            </ToastAction>
-          ),
-        })
-
-        setTimeout(() => {
-          resetDrawer()
-        }, 2000)
+      addNotification({
+        title: "Bill Paid",
+        message: `$${Number(amount).toFixed(2)} paid to ${payee.name}`,
+        type: "success",
+        category: "Bills",
       })
-      .catch(error => {
-        console.error('[v0] Bill pay error:', error)
-        setIsLoading(false)
-        addNotification({
-          title: "Payment Failed",
-          message: error.message || 'Failed to process bill payment',
-          type: "alert",
-          category: "Errors",
-        })
-        toast({
-          title: "Error",
-          description: error.message || 'Failed to pay bill',
-          variant: "destructive",
-        })
+
+      addActivity({
+        action: `Paid $${Number(amount).toFixed(2)} to ${payee.name}`,
+        device: navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Desktop Browser",
+        location: "Current Session",
       })
+
+      setStep("success")
+      setIsLoading(false)
+
+      toast({
+        title: "Bill Payment Scheduled!",
+        description: `Payment of $${Number(amount).toFixed(2)} to ${payee.name} scheduled for ${new Date(date).toLocaleDateString()}`,
+        action: (
+          <ToastAction altText="View Receipt" onClick={() => onReceiptOpen?.(transaction.id)}>
+            Receipt
+          </ToastAction>
+        ),
+      })
+
+      setTimeout(() => {
+        resetDrawer()
+      }, 2000)
+    }, 1500)
   }
 
   const getNextDate = (currentDate: string, freq: "weekly" | "monthly"): string => {
@@ -360,7 +310,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
                         .filter((a) => a.type === "Checking" || a.type === "checking")
                         .map((acc) => (
                           <SelectItem key={acc.id} value={acc.id}>
-                            {acc.name} (${(acc.balance ?? 0).toLocaleString("de-DE", { minimumFractionDigits: 2 })})
+                            {acc.name} (${acc.balance.toLocaleString()})
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -374,7 +324,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
                     <Input
                       id="bill-amount"
                       type="number"
-                      placeholder="0,00"
+                      placeholder="0.00"
                       className="pl-7 text-xl h-12"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
@@ -447,7 +397,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
                     <div>
                       <p className="font-medium">{payment.payeeName}</p>
                       <p className="text-sm text-muted-foreground">
-                        ${(payment.amount ?? 0).toFixed(2)} • {payment.frequency}
+                        ${payment.amount.toFixed(2)} • {payment.frequency}
                       </p>
                       <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />

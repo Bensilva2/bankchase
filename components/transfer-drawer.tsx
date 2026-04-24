@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -47,16 +47,6 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
   const [extAccountType, setExtAccountType] = useState("Checking")
 
   const [bankSelectorOpen, setBankSelectorOpen] = useState(false)
-  const [isDrawerReady, setIsDrawerReady] = useState(false)
-
-  // Preload data when drawer opens
-  useEffect(() => {
-    if (open) {
-      setIsDrawerReady(true)
-    } else {
-      setIsDrawerReady(false)
-    }
-  }, [open])
 
   const validateRoutingNumber = (routing: string) => /^\d{9}$/.test(routing)
   const validateAccountNumber = (account: string) => /^\d{8,}$/.test(account)
@@ -79,44 +69,25 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
     if (Number(amount) > fromAccountData.balance) {
       toast({
         title: "Insufficient Funds",
-        description: `Your available balance is $${(fromAccountData?.balance ?? 0).toFixed(2)}`,
+        description: `Your available balance is $${fromAccountData.balance.toFixed(2)}`,
         variant: "destructive",
       })
       return
     }
 
     setIsLoading(true)
-    
-    // Call real Chase Bank transfer API
-    fetch('/api/transfers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': localStorage.getItem('userId') || ''
-      },
-      body: JSON.stringify({
-        action: 'internal',
-        fromAccountId: fromAccount,
-        toAccountId: toAccount,
-        amount: Number(amount),
-        description: `Transfer to ${toAccountData.name}`,
-      })
-    })
-      .then(res => res.json())
-      .then(result => {
-        console.log('[v0] Transfer API response:', result)
-        
-        const transaction = transferFunds(fromAccount, toAccount, Number(amount), `Transfer to ${toAccountData.name}`, 0)
+    setTimeout(() => {
+      const transaction = transferFunds(fromAccount, toAccount, Number(amount), `Transfer to ${toAccountData.name}`, 0)
 
-        toast({
-          title: "Transfer Successful",
-          description: result.message || `Transferred $${Number(amount).toFixed(2)} successfully.`,
-          action: (
-            <ToastAction altText="View Receipt" onClick={() => onReceiptOpen?.(transaction.id)}>
-              Receipt
-            </ToastAction>
-          ),
-        })
+      toast({
+        title: "Transfer Successful",
+        description: `Transferred $${Number(amount).toFixed(2)} successfully.`,
+        action: (
+          <ToastAction altText="View Receipt" onClick={() => onReceiptOpen?.(transaction.id)}>
+            Receipt
+          </ToastAction>
+        ),
+      })
       setIsLoading(false)
       onOpenChange(false)
       setAmount("")
@@ -157,7 +128,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
     if (fromAccountData && Number(amount) > fromAccountData.balance) {
       toast({
         title: "Insufficient Funds",
-        description: `Your available balance is $${(fromAccountData?.balance ?? 0).toFixed(2)}`,
+        description: `Your available balance is $${fromAccountData.balance.toFixed(2)}`,
         variant: "destructive",
       })
       return
@@ -226,7 +197,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
     if (Number(amount) > fromAccountData.balance) {
       toast({
         title: "Insufficient Funds",
-        description: `Your available balance is $${(fromAccountData?.balance ?? 0).toFixed(2)}`,
+        description: `Your available balance is $${fromAccountData.balance.toFixed(2)}`,
         variant: "destructive",
       })
       return
@@ -278,12 +249,12 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
   return (
     <>
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[90vh] h-[90dvh] overflow-hidden">
+        <DrawerContent className="h-[90vh]">
           <DrawerHeader>
             <DrawerTitle>Transfer Funds</DrawerTitle>
           </DrawerHeader>
 
-          <Tabs defaultValue="internal" className="px-4 flex-1 overflow-auto overscroll-contain touch-pan-y scroll-smooth">
+          <Tabs defaultValue="internal" className="px-4 flex-1 overflow-auto">
             <TabsList className="grid w-full grid-cols-3 mb-4">
               <TabsTrigger value="internal">Between Accounts</TabsTrigger>
               <TabsTrigger value="external">Another Bank</TabsTrigger>
@@ -301,7 +272,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
                   <SelectContent>
                     {accounts.map((acc) => (
                       <SelectItem key={acc.id} value={acc.id}>
-                        {acc.name} (${(acc.balance ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })})
+                        {acc.name} (${acc.balance.toLocaleString()})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -319,7 +290,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
                       .filter((acc) => acc.id !== fromAccount)
                       .map((acc) => (
                         <SelectItem key={acc.id} value={acc.id}>
-                          {acc.name} (${(acc.balance ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })})
+                          {acc.name} (${acc.balance.toLocaleString()})
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -361,7 +332,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
                   <SelectContent>
                     {accounts.map((acc) => (
                       <SelectItem key={acc.id} value={acc.id}>
-                        {acc.name} (${(acc.balance ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })})
+                        {acc.name} (${acc.balance.toLocaleString()})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -485,7 +456,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
                       <SelectContent>
                         {accounts.map((acc) => (
                           <SelectItem key={acc.id} value={acc.id}>
-                            {acc.name} (${(acc.balance ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2 })})
+                            {acc.name} (${acc.balance.toLocaleString()})
                           </SelectItem>
                         ))}
                       </SelectContent>

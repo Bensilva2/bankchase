@@ -142,13 +142,23 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
               filteredNotifications.map((notification) => (
                 <Card
                   key={notification.id}
-                  className={`p-4 cursor-pointer transition-colors ${
-                    !notification.read ? "border-l-4 border-l-[#0a4fa6]" : ""
+                  className={`p-4 cursor-pointer transition-colors hover:bg-muted/50 ${
+                    !notification.read ? "border-l-4 border-l-[#0a4fa6] bg-[#0a4fa6]/5" : ""
                   }`}
                   onClick={() => markNotificationRead(notification.id)}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div
+                      className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        notification.type === "success"
+                          ? "bg-green-100"
+                          : notification.type === "warning"
+                            ? "bg-amber-100"
+                            : notification.type === "alert"
+                              ? "bg-red-100"
+                              : "bg-blue-100"
+                      }`}
+                    >
                       {getNotificationIcon(notification.type, notification.category)}
                     </div>
                     <div className="flex-1 min-w-0">

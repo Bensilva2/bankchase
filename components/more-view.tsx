@@ -1,108 +1,76 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef, useEffect, useCallback } from "react"
-import { ChevronLeft, ChevronRight, Edit, Camera, User, Mail, Phone, Calendar, Shield, Award, Gift, CreditCard, Smartphone, Bell, HelpCircle, FileText, Settings, LogOut, Send, History, Plane, Euro, DollarSign, Target, Plus, Trash2, CheckCircle, XCircle, Eye, EyeOff, Lock, Unlock, Key, Copy, Download, MapPin, Search, MessageCircle, ArrowLeft, Loader2, RefreshCw, Monitor, Tablet, Globe, Clock, UserCog, ShieldCheck, PieChart, Ticket, Bot, ChevronDown, QrCode, CheckCheck, AlertCircle, AlertTriangle, Info, X, Paperclip, ArrowRightLeft, Receipt, Navigation, Home, Car, TrendingDown, Link2 } from "lucide-react"
-import { SavingsGoalsView } from "@/components/savings-goals-view"
-import { SpendingAnalysisView } from "@/components/spending-analysis-view"
-import { LinkedDevicesManager } from "@/components/linked-devices-manager"
-import { AccountSettingsPanel } from "@/components/account-settings-panel"
-import { EnhancedAccountSettings } from "@/components/enhanced-account-settings"
+import { useState, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import {
+  User,
+  Settings,
+  Bell,
+  Shield,
+  CreditCard,
+  HelpCircle,
+  ChevronRight,
+  ChevronLeft,
+  LogOut,
+  Smartphone,
+  Lock,
+  Unlock,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Clock,
+  Edit,
+  Camera,
+  Award,
+  Target,
+  PieChart,
+  Trash2,
+  Plus,
+  DollarSign,
+  AlertTriangle,
+  Gift,
+  Send,
+  Plane,
+  Car,
+  Home,
+  ShieldCheck,
+  FileText,
+  MessageCircle,
+  Ticket,
+  Bot,
+  ChevronDown,
+  Copy,
+  CheckCircle,
+  XCircle,
+  Search,
+  Navigation,
+  Monitor,
+  Tablet,
+  Globe,
+  Download,
+  Link,
+  UserCog,
+  History,
+  ArrowRightLeft,
+  Receipt,
+  Key,
+  QrCode,
+  RefreshCw,
+  Loader2,
+} from "lucide-react"
 import { useBanking } from "@/lib/banking-context"
 import { useToast } from "@/hooks/use-toast"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
-import { formatDistanceToNow, format } from "date-fns" // Added for date formatting
-import { Separator } from "@/components/ui/separator" // Added for message detail view
-
-const detectDeviceInfo = () => {
-  const ua = navigator.userAgent
-  let deviceName = "Unknown Device"
-  let deviceType = "desktop"
-  let browser = "Unknown Browser"
-  let os = "Unknown OS"
-
-  // Detect OS
-  if (ua.includes("Windows NT 10")) os = "Windows 10"
-  else if (ua.includes("Windows NT 11") || (ua.includes("Windows NT 10") && ua.includes("Win64"))) os = "Windows 11"
-  else if (ua.includes("Mac OS X")) {
-    const match = ua.match(/Mac OS X (\d+[._]\d+)/)
-    os = match ? `macOS ${match[1].replace("_", ".")}` : "macOS"
-  } else if (ua.includes("iPhone OS")) {
-    const match = ua.match(/iPhone OS (\d+_\d+)/)
-    os = match ? `iOS ${match[1].replace("_", ".")}` : "iOS"
-  } else if (ua.includes("iPad")) {
-    const match = ua.match(/OS (\d+_\d+)/)
-    os = match ? `iPadOS ${match[1].replace("_", ".")}` : "iPadOS"
-  } else if (ua.includes("Android")) {
-    const match = ua.match(/Android (\d+\.?\d*)/)
-    os = match ? `Android ${match[1]}` : "Android"
-  } else if (ua.includes("Linux")) os = "Linux"
-
-  // Detect Browser
-  if (ua.includes("Chrome") && !ua.includes("Edg")) browser = "Chrome"
-  else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari"
-  else if (ua.includes("Firefox")) browser = "Firefox"
-  else if (ua.includes("Edg")) browser = "Microsoft Edge"
-  else if (ua.includes("Opera") || ua.includes("OPR")) browser = "Opera"
-
-  // Detect Device Type and Name
-  if (ua.includes("iPhone")) {
-    deviceType = "mobile"
-    if (ua.includes("iPhone15")) deviceName = "iPhone 15 Pro Max"
-    else if (ua.includes("iPhone14")) deviceName = "iPhone 14"
-    else deviceName = "iPhone"
-  } else if (ua.includes("iPad")) {
-    deviceType = "tablet"
-    deviceName = "iPad"
-  } else if (ua.includes("Android")) {
-    if (ua.includes("Mobile")) {
-      deviceType = "mobile"
-      deviceName = "Android Phone"
-    } else {
-      deviceType = "tablet"
-      deviceName = "Android Tablet"
-    }
-  } else if (ua.includes("Macintosh")) {
-    deviceType = "desktop"
-    deviceName = "Mac"
-  } else if (ua.includes("Windows")) {
-    deviceType = "desktop"
-    deviceName = "Windows PC"
-  } else {
-    deviceType = "desktop"
-    deviceName = "Desktop Computer"
-  }
-
-  // More specific device naming based on browser
-  if (deviceType === "desktop") {
-    deviceName = `${deviceName} (${browser})`
-  }
-
-  return { deviceName, deviceType, browser, os }
-}
-
-const getDeviceLocation = async (): Promise<string> => {
-  try {
-    const response = await fetch("https://ipapi.co/json/")
-    const data = await response.json()
-    return `${data.city}, ${data.region_code || data.region}`
-  } catch {
-    return "Unknown Location"
-  }
-}
-
-const generateDemoIP = () => {
-  return `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`
-}
 
 const defaultUserProfile = {
   id: "user1",
@@ -149,7 +117,6 @@ type ViewType =
   | "loginHistory" // Add devices view type to ViewType union
   | "accountManagement"
   | "changeUsername"
-  | "enhancedSettings"
   | "linkExternal"
   | "viewStatements"
   | "closeAccount"
@@ -224,8 +191,6 @@ export function MoreView({ onLogout }: MoreViewProps) {
     updateAppSettings,
     linkedDevices,
     removeDevice,
-    addDevice, // Added: Function to add a new device
-    updateDevice, // Added: Function to update an existing device
     creditCards,
     toggleCardLock,
     updateCardSettings,
@@ -261,80 +226,13 @@ export function MoreView({ onLogout }: MoreViewProps) {
     activateOffer, // Existing import, kept for completeness
     closeTicket, // Existing import, kept for completeness
     markFaqHelpful, // Existing import, kept for completeness
-    markAllNotificationsRead, // Added for notification center
-    clearAllNotifications: clearAllNotificationsAction, // Renamed to avoid conflict
   } = useBanking()
 
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [currentView, setCurrentViewDirect] = useState<ViewType>("main")
-  const [isViewLoading, setIsViewLoading] = useState(false)
-  const [viewAnimClass, setViewAnimClass] = useState("")
-  const viewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const currentViewRef = useRef<ViewType>("main")
-
-  // Keep ref in sync
-  useEffect(() => {
-    currentViewRef.current = currentView
-  }, [currentView])
-
-  // Smooth view transition handler with loading state
-  const setCurrentView = useCallback((newView: ViewType) => {
-    const current = currentViewRef.current
-    if (newView === current) return
-
-    // Clean up previous timers
-    if (viewTimerRef.current) clearTimeout(viewTimerRef.current)
-
-    const isBackToMain = newView === "main"
-    const isSubToSub = current !== "main" && newView !== "main"
-
-    if (isBackToMain) {
-      // Going back to main - slide out then swap
-      setViewAnimClass("more-view-exit")
-      viewTimerRef.current = setTimeout(() => {
-        setCurrentViewDirect("main")
-        setViewAnimClass("")
-        setIsViewLoading(false)
-      }, 180)
-    } else if (isSubToSub) {
-      // Sub to sub - quick cross-slide
-      setViewAnimClass("more-view-exit")
-      viewTimerRef.current = setTimeout(() => {
-        setCurrentViewDirect(newView)
-        setViewAnimClass("more-view-enter")
-        viewTimerRef.current = setTimeout(() => {
-          setViewAnimClass("")
-        }, 320)
-      }, 140)
-    } else {
-      // Main to sub - show loading then slide in
-      setIsViewLoading(true)
-      setViewAnimClass("")
-
-      viewTimerRef.current = setTimeout(() => {
-        setCurrentViewDirect(newView)
-        setIsViewLoading(false)
-        setViewAnimClass("more-view-enter")
-
-        viewTimerRef.current = setTimeout(() => {
-          setViewAnimClass("")
-        }, 320)
-      }, 280)
-    }
-  }, [])
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (viewTimerRef.current) clearTimeout(viewTimerRef.current)
-    }
-  }, [])
-
+  const [currentView, setCurrentView] = useState<ViewType>("main")
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null)
   const [selectedNotification, setSelectedNotification] = useState<string | null>(null)
-  const [selectedNotificationCategory, setSelectedNotificationCategory] = useState<string>("all") // Added for notification center
-  const [selectedMessageCategory, setSelectedMessageCategory] = useState<string>("all") // Added for messages view
 
   const safeUserProfile = userProfile || defaultUserProfile
   const safeRecentActivity = recentActivity || [] // Safe recentActivity
@@ -342,26 +240,16 @@ export function MoreView({ onLogout }: MoreViewProps) {
   const safeLinkedDevices = linkedDevices || [] // Safe linked devices
 
   const [editForm, setEditForm] = useState({ ...safeUserProfile })
-  // Add password and pin related states
-  const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" })
-  const [pinForm, setPinForm] = useState({ current: "", new: "", confirm: "" })
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false) // Add state for confirm password visibility
-  const [passwordLoading, setPasswordLoading] = useState(false)
-  const [pinLoading, setPinLoading] = useState(false)
-  const [showCurrentPin, setShowCurrentPin] = useState(false)
-  const [showNewPin, setShowNewPin] = useState(false)
-  const [showConfirmPin, setShowConfirmPin] = useState(false)
-
+  const [showPassword, setShowPassword] = useState(false)
   const [newGoalOpen, setNewGoalOpen] = useState(false)
   const [newGoal, setNewGoal] = useState({ name: "", targetAmount: "", deadline: "", category: "General" })
   const [redeemAmount, setRedeemAmount] = useState("")
   const [redeemType, setRedeemType] = useState<"cashback" | "travel" | "giftcard" | "statement">("cashback")
 
-  // Removed showPassword, showCurrentPassword, showNewPassword states as they are now managed with more specific states
-  // const [showPassword, setShowPassword] = useState(false)
-
+  const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" })
+  const [pinForm, setPinForm] = useState({ current: "", new: "", confirm: "" })
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
   const [twoFactorSetup, setTwoFactorSetup] = useState({ method: appSettings?.twoFactorMethod || "sms", code: "" })
 
   const [twoFactorStep, setTwoFactorStep] = useState<"method" | "verify" | "backup" | "complete">("method")
@@ -451,55 +339,6 @@ export function MoreView({ onLogout }: MoreViewProps) {
     },
   ])
 
-  useEffect(() => {
-    const registerCurrentDevice = async () => {
-      const { deviceName, deviceType, browser, os } = detectDeviceInfo()
-      const location = await getDeviceLocation()
-      const currentDeviceId = localStorage.getItem("chase_device_id")
-
-      if (!currentDeviceId) {
-        // Register new device
-        const newDeviceId = `dev_${Date.now()}`
-        localStorage.setItem("chase_device_id", newDeviceId)
-
-        // Check if this device already exists in linked devices
-        const existingDevice = linkedDevices?.find((d) => d.browser === browser && d.os === os)
-        if (!existingDevice && addDevice) {
-          addDevice({
-            id: newDeviceId, // Assign a unique ID
-            name: deviceName,
-            type: deviceType,
-            lastActive: new Date().toISOString(),
-            location: location || "Unknown Location",
-            current: true,
-            browser,
-            os,
-            ip: generateDemoIP(),
-          })
-        }
-      } else {
-        // Update current device status
-        const deviceToUpdate = linkedDevices?.find((d) => d.id === currentDeviceId)
-        if (deviceToUpdate && updateDevice) {
-          updateDevice(currentDeviceId, {
-            current: true,
-            lastActive: new Date().toISOString(),
-            location: location || deviceToUpdate.location,
-          })
-        }
-
-        // Ensure other devices are marked as not current
-        linkedDevices?.forEach((device) => {
-          if (device.id !== currentDeviceId && device.current) {
-            updateDevice?.(device.id, { current: false })
-          }
-        })
-      }
-    }
-
-    registerCurrentDevice()
-  }, [linkedDevices, addDevice, updateDevice]) // Added dependencies
-
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
   const spendingData = getSpendingByCategory ? getSpendingByCategory(currentMonth, currentYear) : []
@@ -528,7 +367,6 @@ export function MoreView({ onLogout }: MoreViewProps) {
   const handleLogout = () => {
     localStorage.removeItem("chase_logged_in")
     localStorage.removeItem("chase_username")
-    localStorage.removeItem("chase_device_id") // Remove device ID on logout
 
     toast({
       title: "Signed Out",
@@ -537,8 +375,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
 
     addActivity({
       action: "Signed out",
-      device: detectDeviceInfo().deviceName, // Use detected device info
-      location: "Current Location", // Simplified location
+      device: "iPhone 15 Pro Max",
+      location: "New York, NY",
     })
 
     if (onLogout) {
@@ -551,65 +389,11 @@ export function MoreView({ onLogout }: MoreViewProps) {
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select an image under 5MB.",
-          variant: "destructive",
-        })
-        return
-      }
-
       const reader = new FileReader()
       reader.onloadend = () => {
-        const base64Image = reader.result as string
-
-        // Compress image for localStorage persistence across devices
-        const img = new window.Image()
-        img.crossOrigin = "anonymous"
-        img.onload = () => {
-          const canvas = document.createElement("canvas")
-          const maxSize = 400
-          let width = img.width
-          let height = img.height
-
-          if (width > height && width > maxSize) {
-            height = (height * maxSize) / width
-            width = maxSize
-          } else if (height > maxSize) {
-            width = (width * maxSize) / height
-            height = maxSize
-          }
-
-          canvas.width = width
-          canvas.height = height
-          const ctx = canvas.getContext("2d")
-          ctx?.drawImage(img, 0, 0, width, height)
-
-          const compressedImage = canvas.toDataURL("image/jpeg", 0.8)
-          updateUserProfile({ profilePicture: compressedImage })
-
-          toast({
-            title: "Profile Picture Updated",
-            description: "Your new profile picture has been saved and synced across devices.",
-          })
-          addActivity({
-            action: "Profile picture updated",
-            device: detectDeviceInfo().deviceName,
-            location: "Current Location",
-          })
-        }
-        img.onerror = () => {
-          // If compression fails, use original
-          updateUserProfile({ profilePicture: base64Image })
-          toast({ title: "Profile Picture Updated", description: "Your new profile picture has been saved." })
-          addActivity({
-            action: "Profile picture updated",
-            device: detectDeviceInfo().deviceName,
-            location: "Current Location",
-          })
-        }
-        img.src = base64Image
+        updateUserProfile({ profilePicture: reader.result as string })
+        toast({ title: "Profile Picture Updated", description: "Your new profile picture has been saved." })
+        addActivity({ action: "Profile picture updated", device: "iPhone 15 Pro Max", location: "New York, NY" })
       }
       reader.readAsDataURL(file)
     }
@@ -619,59 +403,48 @@ export function MoreView({ onLogout }: MoreViewProps) {
     toast({ title: `${setting} ${value ? "Enabled" : "Disabled"}`, description: "Your preference has been saved." })
     addActivity({
       action: `Settings Change: ${setting} ${value ? "enabled" : "disabled"}`,
-      device: detectDeviceInfo().deviceName,
-      location: "Current Location",
+      device: "iPhone 15 Pro Max",
+      location: "New York, NY",
     })
   }
 
   const handleRedeemPoints = () => {
     const points = Number.parseInt(redeemAmount)
-    if (!points || points <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid points amount",
-        variant: "destructive",
-      })
+    if (!points || points < 1000) {
+      toast({ title: "Invalid Amount", description: "Minimum redemption is 1,000 points", variant: "destructive" })
       return
     }
-
     if (points > safeUserProfile.ultimateRewardsPoints) {
-      toast({
-        title: "Insufficient Points",
-        description: "You don't have enough points for this redemption",
-        variant: "destructive",
-      })
+      toast({ title: "Insufficient Points", description: "You don't have enough points", variant: "destructive" })
       return
     }
 
-    const value = points * (redeemType === "travel" ? 0.0125 : 0.01)
-    const descriptions = {
-      travel: "Travel Credit",
-      cashback: "Cash Back",
-      giftcard: "Gift Card",
+    const valueMultiplier = redeemType === "travel" ? 0.0125 : 0.01
+    const value = points * valueMultiplier
+
+    const descriptions: Record<string, string> = {
+      cashback: "Cash Back to Account",
+      travel: "Chase Travel Credit",
+      giftcard: "Gift Card Purchase",
       statement: "Statement Credit",
     }
 
-    updateUserProfile({
-      ultimateRewardsPoints: safeUserProfile.ultimateRewardsPoints - points,
-    })
-
     redeemPoints({
-      pointsUsed: points,
-      value: value,
       type: redeemType,
+      pointsUsed: points,
+      value,
       description: descriptions[redeemType],
     })
 
     addActivity({
-      action: `Redeemed ${points.toLocaleString()} points for $${value.toFixed(2)} ${descriptions[redeemType]}`, // Changed currency symbol
-      device: detectDeviceInfo().deviceName,
-      location: "Current Location",
+      action: `Redeemed ${points.toLocaleString()} points for $${value.toFixed(2)} ${descriptions[redeemType]}`,
+      device: "iPhone 15 Pro Max",
+      location: "New York, NY",
     })
 
     toast({
       title: "Points Redeemed!",
-      description: `${points.toLocaleString()} points redeemed for $${value.toFixed(2)}`, // Changed currency symbol
+      description: `${points.toLocaleString()} points redeemed for $${value.toFixed(2)}`,
     })
     setRedeemAmount("")
     setCurrentView("rewards")
@@ -682,8 +455,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
     const action = card.locked ? `Card unlocked: ${card.name}` : `Card locked: ${card.name}`
     addActivity({
       action,
-      device: detectDeviceInfo().deviceName,
-      location: "Current Location",
+      device: "iPhone 15 Pro Max",
+      location: "New York, NY",
     })
     toast({
       title: card.locked ? "Card Unlocked" : "Card Locked",
@@ -703,8 +476,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
     updateUserProfile({ name: newUsername })
     addActivity({
       action: "Username changed",
-      device: detectDeviceInfo().deviceName,
-      location: "Current Location",
+      device: "iPhone 15 Pro Max",
+      location: "New York, NY",
     })
     toast({ title: "Username Updated", description: "Your username has been changed successfully." })
     setNewUsername("")
@@ -721,7 +494,6 @@ export function MoreView({ onLogout }: MoreViewProps) {
       return
     }
     addExternalRecipient({
-      id: `external_${Date.now()}`, // Added unique ID
       name: linkAccountForm.nickname || linkAccountForm.bankName,
       bankName: linkAccountForm.bankName,
       routingNumber: linkAccountForm.routingNumber,
@@ -730,8 +502,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
     })
     addActivity({
       action: `Linked external account: ${linkAccountForm.bankName}`,
-      device: detectDeviceInfo().deviceName,
-      location: "Current Location",
+      device: "iPhone 15 Pro Max",
+      location: "New York, NY",
     })
     toast({ title: "Account Linked", description: "External account has been linked successfully." })
     setLinkAccountForm({ bankName: "", routingNumber: "", accountNumber: "", accountType: "checking", nickname: "" })
@@ -780,9 +552,9 @@ export function MoreView({ onLogout }: MoreViewProps) {
     const lowerInput = chatInput.toLowerCase()
     let botResponse = "I'm here to help! Could you please provide more details about your question?"
 
-    if (lowerInput.includes("balance") || lowerInput.includes("money") || lowerInput.includes("how much")) {
-      const totalBalance = accounts?.reduce((sum, acc) => sum + (acc.balance || 0), 0) || 0
-      botResponse = `Your total balance across all accounts is $${totalBalance.toLocaleString()}. Would you like to see individual account balances?` // Changed currency symbol
+    if (lowerInput.includes("balance")) {
+      const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0)
+      botResponse = `Your total balance across all accounts is $${totalBalance.toLocaleString()}. Would you like to see individual account balances?`
     } else if (lowerInput.includes("transfer")) {
       botResponse =
         "You can transfer money by going to Pay & Transfer > Transfer. You can transfer between your accounts or to external accounts instantly."
@@ -790,7 +562,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
       botResponse =
         "To manage your cards, go to Card Management from the More menu. You can lock/unlock cards, set spending limits, and more."
     } else if (lowerInput.includes("points") || lowerInput.includes("rewards")) {
-      botResponse = `You have ${safeUserProfile.ultimateRewardsPoints.toLocaleString()} Ultimate Rewards points. That's worth up to $${(safeUserProfile.ultimateRewardsPoints * 0.0125).toFixed(2)} in travel!` // Changed currency symbol
+      botResponse = `You have ${safeUserProfile.ultimateRewardsPoints.toLocaleString()} Ultimate Rewards points. That's worth up to $${(safeUserProfile.ultimateRewardsPoints * 0.0125).toFixed(2)} in travel!`
     } else if (lowerInput.includes("human") || lowerInput.includes("agent") || lowerInput.includes("representative")) {
       botResponse =
         "I'll connect you with a customer service representative. Please call 1-800-935-9935 or email chase.org_info247@zohomail.com for immediate assistance."
@@ -822,8 +594,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
     createSupportTicket(newTicketSubject, newTicketCategory, newTicketMessage)
     addActivity({
       action: "Created support ticket",
-      device: detectDeviceInfo().deviceName,
-      location: "Current Location",
+      device: "iPhone 15 Pro Max",
+      location: "New York, NY",
     })
     toast({ title: "Ticket Created", description: "Your support ticket has been submitted." })
     setNewTicketSubject("")
@@ -880,7 +652,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
       icon: PieChart,
       view: "spending" as ViewType,
     },
-    { label: "Settings", description: "Customize your app preferences", icon: Settings, view: "enhancedSettings" as ViewType },
+    { label: "Settings", description: "Customize your app preferences", icon: Settings, view: "settings" as ViewType },
     {
       label: "Security & Privacy",
       description: "Manage your account security",
@@ -897,23 +669,11 @@ export function MoreView({ onLogout }: MoreViewProps) {
     { label: "Linked Devices", description: "Manage logged-in devices", icon: Smartphone, view: "devices" as ViewType },
   ]
 
-  // Loading overlay for sub-view transitions
-  if (isViewLoading) {
-    return (
-      <div className="pb-24 touch-pan-y overscroll-contain">
-        <div className="flex flex-col items-center justify-center min-h-[40dvh] vt-loading-enter">
-          <div className="chase-spinner" />
-          <p className="text-xs text-muted-foreground mt-3 font-medium tracking-wide">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
   // Main Menu View
   if (currentView === "main") {
     return (
-      <div className="pb-24 touch-pan-y overscroll-contain">
-        <Card className="p-4 mb-4 chase-card-shadow option-press cursor-pointer" onClick={() => setCurrentView("profile")}>
+      <div className="pb-24">
+        <Card className="p-4 mb-4 chase-card-shadow">
           <div className="flex items-center gap-4">
             <div className="relative">
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#0a4fa6] to-[#117aca] flex items-center justify-center overflow-hidden">
@@ -933,7 +693,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                 )}
               </div>
               <button
-                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
+                onClick={() => fileInputRef.current?.click()}
                 className="absolute -bottom-1 -right-1 h-6 w-6 bg-white rounded-full shadow-md flex items-center justify-center border"
               >
                 <Camera className="h-3 w-3 text-gray-600" />
@@ -961,7 +721,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
           {menuItems.map((item) => (
             <Card
               key={item.label}
-              className="p-4 cursor-pointer hover:bg-accent transition-all duration-150 chase-card-shadow option-press"
+              className="p-4 cursor-pointer hover:bg-accent transition-colors chase-card-shadow"
               onClick={() => setCurrentView(item.view)}
             >
               <div className="flex items-center gap-4">
@@ -985,7 +745,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
           ))}
 
           <Card
-            className="p-4 cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/20 transition-all duration-150 chase-card-shadow mt-4 option-press"
+            className="p-4 cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors chase-card-shadow mt-4"
             onClick={handleLogout}
           >
             <div className="flex items-center gap-4">
@@ -1011,7 +771,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
 
   if (currentView === "activity") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1061,7 +821,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
 
   if (currentView === "accountManagement") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1073,7 +833,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
           {[
             { label: "Update Personal Information", icon: User, view: "editProfile" as ViewType },
             { label: "Change Username", icon: Edit, view: "changeUsername" as ViewType },
-            { label: "Link External Accounts", icon: Link2, view: "linkExternal" as ViewType },
+            { label: "Link External Accounts", icon: Link, view: "linkExternal" as ViewType },
             { label: "View Account Statements", icon: FileText, view: "viewStatements" as ViewType },
             { label: "Close Account", icon: XCircle, view: "closeAccount" as ViewType },
           ].map((item) => (
@@ -1116,11 +876,6 @@ export function MoreView({ onLogout }: MoreViewProps) {
                     onClick={() => {
                       removeExternalRecipient(recipient.id)
                       toast({ title: "Account Removed", description: "External account has been unlinked." })
-                      addActivity({
-                        action: `Unlinked external account: ${recipient.bankName}`,
-                        device: detectDeviceInfo().deviceName,
-                        location: "Current Location",
-                      })
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -1138,7 +893,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
 
   if (currentView === "changeUsername") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("accountManagement")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1170,7 +925,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
 
   if (currentView === "linkExternal") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("accountManagement")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1246,7 +1001,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
     ]
 
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("accountManagement")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1288,7 +1043,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
 
   if (currentView === "closeAccount") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("accountManagement")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1342,11 +1097,6 @@ export function MoreView({ onLogout }: MoreViewProps) {
                 title: "Account Closure Request",
                 description: "Please call 1-800-935-9935 or visit a branch to complete the account closure process.",
               })
-              addActivity({
-                action: "Initiated account closure request",
-                device: detectDeviceInfo().deviceName,
-                location: "Current Location",
-              })
             }}
           >
             Request Account Closure
@@ -1361,7 +1111,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
 
   if (currentView === "cards") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1400,23 +1150,19 @@ export function MoreView({ onLogout }: MoreViewProps) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Current Balance</p>
-                  <p className="font-bold text-lg">${(card.balance || 0).toLocaleString()}</p>{" "}
-                  {/* Changed currency symbol */}
+                  <p className="font-bold text-lg">${card.balance.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Credit Limit</p>
-                  <p className="font-bold text-lg">${(card.creditLimit || 0).toLocaleString()}</p>{" "}
-                  {/* Changed currency symbol */}
+                  <p className="font-bold text-lg">${card.creditLimit.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Available Credit</p>
-                  <p className="font-bold text-green-600">
-                    ${((card.creditLimit || 0) - (card.balance || 0)).toLocaleString()} {/* Changed currency symbol */}
-                  </p>
+                  <p className="font-bold text-green-600">${(card.creditLimit - card.balance).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Rewards Points</p>
-                  <p className="font-bold text-[#0a4fa6]">{(card.rewards || 0).toLocaleString()}</p>
+                  <p className="font-bold text-[#0a4fa6]">{card.rewards.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -1465,8 +1211,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
                       updateCardSettings(selectedCard.id, { internationalEnabled: checked })
                       addActivity({
                         action: `Settings Change: International transactions ${checked ? "enabled" : "disabled"} for ${selectedCard.name}`,
-                        device: detectDeviceInfo().deviceName,
-                        location: "Current Location",
+                        device: "iPhone 15 Pro Max",
+                        location: "New York, NY",
                       })
                       toast({ title: "Settings Updated" })
                     }}
@@ -1483,8 +1229,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
                       updateCardSettings(selectedCard.id, { contactlessEnabled: checked })
                       addActivity({
                         action: `Settings Change: Contactless payments ${checked ? "enabled" : "disabled"} for ${selectedCard.name}`,
-                        device: detectDeviceInfo().deviceName,
-                        location: "Current Location",
+                        device: "iPhone 15 Pro Max",
+                        location: "New York, NY",
                       })
                       toast({ title: "Settings Updated" })
                     }}
@@ -1511,10 +1257,66 @@ export function MoreView({ onLogout }: MoreViewProps) {
     )
   }
 
-  if (currentView === "security-devices" || currentView === "devices") {
+  if (currentView === "security-devices") {
     return (
-      <div className={`pb-24 ${viewAnimClass}`}>
-        <LinkedDevicesManager onBack={() => setCurrentView(currentView === "devices" ? "main" : "security")} />
+      <div className="pb-24 space-y-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Button variant="ghost" size="icon" onClick={() => setCurrentView("security")}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h2 className="text-2xl font-semibold">Linked Devices</h2>
+        </div>
+
+        <Card className="p-4 space-y-4">
+          {safeLinkedDevices.map((device) => (
+            <div key={device.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`h-10 w-10 rounded-full flex items-center justify-center ${device.current ? "bg-green-100" : "bg-muted"}`}
+                >
+                  {device.type === "mobile" ? (
+                    <Smartphone className={`h-5 w-5 ${device.current ? "text-green-600" : "text-muted-foreground"}`} />
+                  ) : device.type === "tablet" ? (
+                    <Tablet className={`h-5 w-5 ${device.current ? "text-green-600" : "text-muted-foreground"}`} />
+                  ) : (
+                    <Monitor className={`h-5 w-5 ${device.current ? "text-green-600" : "text-muted-foreground"}`} />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{device.name}</p>
+                    {device.current && <Badge className="bg-green-500 text-xs">Current</Badge>}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{device.location}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Last active: {new Date(device.lastActive).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              {!device.current && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500"
+                  onClick={() => {
+                    removeDevice(device.id)
+                    addActivity({
+                      action: `Device removed: ${device.name}`,
+                      device: "iPhone 15 Pro Max",
+                      location: "New York, NY",
+                    })
+                    toast({
+                      title: "Device Removed",
+                      description: `${device.name} has been removed from your account.`,
+                    })
+                  }}
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+          ))}
+        </Card>
       </div>
     )
   }
@@ -1549,7 +1351,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
     ]
 
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("security")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1605,9 +1407,10 @@ export function MoreView({ onLogout }: MoreViewProps) {
     )
   }
 
+  // Profile View
   if (currentView === "profile") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
@@ -1671,13 +1474,12 @@ export function MoreView({ onLogout }: MoreViewProps) {
                     <p className="font-medium">{account.name}</p>
                     <p className="text-sm text-muted-foreground">{account.accountNumber}</p>
                   </div>
-                  <p className="font-bold">${(account.balance || 0).toLocaleString()}</p>
+                  <p className="font-bold">${account.balance.toLocaleString()}</p>
                 </div>
               ))}
           </div>
         </Card>
 
-        {/* ... rest of profile view ... */}
         <Card className="p-4 space-y-4">
           <h3 className="font-semibold text-[#0a4fa6]">Personal Information</h3>
           <div className="space-y-3">
@@ -1707,21 +1509,22 @@ export function MoreView({ onLogout }: MoreViewProps) {
               <div>
                 <p className="text-sm text-muted-foreground">Date of Birth</p>
                 <p className="font-medium">
-                  {safeUserProfile.dateOfBirth
-                    ? new Date(safeUserProfile.dateOfBirth).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    : "Not set"}
+                  {safeUserProfile.dateOfBirth ? new Date(safeUserProfile.dateOfBirth).toLocaleDateString() : "Not set"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">Social Security</p>
-                <p className="font-medium">•••-••-{safeUserProfile.ssn?.slice(-4) || "••••"}</p>
+                <p className="text-sm text-muted-foreground">SSN</p>
+                <p className="font-medium">{safeUserProfile.ssn}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm text-muted-foreground">Member Since</p>
+                <p className="font-medium">{safeUserProfile.memberSince}</p>
               </div>
             </div>
           </div>
@@ -1733,7 +1536,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
   // Edit Profile View
   if (currentView === "editProfile") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("profile")}>
             <ChevronLeft className="h-5 w-5" />
@@ -1770,11 +1573,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
             onClick={() => {
               updateUserProfile(editForm)
               toast({ title: "Profile Updated", description: "Your changes have been saved." })
-              addActivity({
-                action: "Profile updated",
-                device: detectDeviceInfo().deviceName,
-                location: "Current Location",
-              })
+              addActivity({ action: "Profile updated", device: "iPhone 15 Pro Max", location: "New York, NY" })
               setCurrentView("profile")
             }}
           >
@@ -1789,7 +1588,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
   if (currentView === "help") {
     // ... existing help view code
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button
             variant="ghost"
@@ -1933,7 +1732,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                 placeholder="Type your message..."
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
+                onKeyPress={(e) => e.key === "Enter" && handleSendChat()}
               />
               <Button className="bg-[#0a4fa6] hover:bg-[#083d80]" onClick={handleSendChat}>
                 <Send className="h-4 w-4" />
@@ -2124,7 +1923,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                 placeholder="Enter City, State, or ZIP Code"
                 value={locationSearch}
                 onChange={(e) => setLocationSearch(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && searchLocations()}
+                onKeyPress={(e) => e.key === "Enter" && searchLocations()}
               />
               <Button className="bg-[#0a4fa6] hover:bg-[#083d80]" onClick={searchLocations}>
                 <Search className="h-4 w-4" />
@@ -2259,8 +2058,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
               <p className="text-sm opacity-80">Your Points Balance</p>
               <p className="text-3xl font-bold">{safeUserProfile.ultimateRewardsPoints.toLocaleString()}</p>
               <p className="text-sm opacity-80">
-                Worth up to ${(safeUserProfile.ultimateRewardsPoints * 0.0125).toFixed(2)} in travel{" "}
-                {/* Changed currency symbol */}
+                Worth ${(safeUserProfile.ultimateRewardsPoints * 0.0125).toFixed(2)} in travel
               </p>
             </div>
             <div className="space-y-3">
@@ -2314,36 +2112,27 @@ export function MoreView({ onLogout }: MoreViewProps) {
           </Card>
         )}
 
-        {/* THE SECTION TO UPDATE IS BELOW */}
         {helpSubView === "topic-security" && (
           <Card className="p-4 space-y-4">
             <h3 className="font-semibold text-[#0a4fa6]">Security & Privacy</h3>
-            {/* Fixed security menu items syntax */}
-            {/* Security Menu Items */}
-            <div className="space-y-1">
+            <div className="space-y-3">
               {[
-                { icon: Lock, label: "Change Password", view: "security-password" as ViewType },
-                { icon: Key, label: "Manage Card PIN", view: "security-pin" as ViewType },
-                { icon: Smartphone, label: "Two-Factor Authentication", view: "security-2fa" as ViewType },
-                { icon: Monitor, label: "Linked Devices", view: "security-devices" as ViewType },
-                { icon: History, label: "Login History", view: "security-history" as ViewType },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  className="w-full flex items-center justify-between p-4 hover:bg-muted/50 rounded-lg transition-colors"
-                  onClick={() => setCurrentView(item.view)}
+                { title: "Change Password", action: () => setCurrentView("security") },
+                { title: "Two-Factor Authentication", action: () => setCurrentView("security") },
+                { title: "Linked Devices", action: () => setCurrentView("security-devices") },
+                { title: "Login History", action: () => setCurrentView("security-history") },
+                { title: "Privacy Settings", action: () => setCurrentView("security") },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50 cursor-pointer"
+                  onClick={item.action}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-[#0060A9]/10 flex items-center justify-center">
-                      <item.icon className="h-5 w-5 text-[#0060A9]" />
-                    </div>
-                    <span className="font-medium">{item.label}</span>
-                  </div>
+                  <p className="font-medium">{item.title}</p>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </button>
+                </div>
               ))}
             </div>
-            {/* </CHANGE> */}
           </Card>
         )}
       </div>
@@ -2353,7 +2142,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
   // Security View
   if (currentView === "security") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
             <ChevronLeft className="h-5 w-5" />
@@ -2416,7 +2205,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
   // Chase Ultimate Rewards View
   if (currentView === "rewards") {
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
             <ChevronLeft className="h-5 w-5" />
@@ -2429,8 +2218,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
             <p className="text-white/80">Points Available</p>
             <p className="text-4xl font-bold mt-2">{safeUserProfile.ultimateRewardsPoints.toLocaleString()}</p>
             <p className="text-white/80 mt-1">
-              Worth up to ${(safeUserProfile.ultimateRewardsPoints * 0.0125).toFixed(2)} in travel{" "}
-              {/* Changed currency symbol */}
+              Worth up to ${(safeUserProfile.ultimateRewardsPoints * 0.0125).toFixed(2)} in travel
             </p>
           </div>
         </Card>
@@ -2440,7 +2228,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
           <div className="grid grid-cols-2 gap-3">
             {[
               { type: "travel", label: "Travel", value: "1.25¢/pt", icon: Plane },
-              { type: "cashback", label: "Cash Back", value: "1¢/pt", icon: Euro },
+              { type: "cashback", label: "Cash Back", value: "1¢/pt", icon: DollarSign },
               { type: "giftcard", label: "Gift Cards", value: "1¢/pt", icon: Gift },
               { type: "statement", label: "Statement Credit", value: "1¢/pt", icon: FileText },
             ].map((option) => (
@@ -2483,8 +2271,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
             />
             {redeemAmount && (
               <p className="text-sm text-muted-foreground">
-                Value: ${(Number.parseInt(redeemAmount) * (redeemType === "travel" ? 0.0125 : 0.01)).toFixed(2)}{" "}
-                {/* Changed currency symbol */}
+                Value: ${(Number.parseInt(redeemAmount) * (redeemType === "travel" ? 0.0125 : 0.01)).toFixed(2)}
               </p>
             )}
           </div>
@@ -2504,426 +2291,14 @@ export function MoreView({ onLogout }: MoreViewProps) {
                     <p className="text-sm text-muted-foreground">{new Date(redemption.date).toLocaleDateString()}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-green-600">+${redemption.value.toFixed(2)}</p>{" "}
-                    {/* Changed currency symbol */}
-                    <p className="text-xs text-muted-foreground">-${redemption.pointsUsed.toLocaleString()} pts</p>
+                    <p className="font-bold text-green-600">+${redemption.value.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">-{redemption.pointsUsed.toLocaleString()} pts</p>
                   </div>
                 </div>
               ))}
             </div>
           </Card>
         )}
-      </div>
-    )
-  }
-
-  // Utility function for password validation
-  const validatePassword = (password: string) => {
-    return {
-      length: password.length >= 8,
-      uppercase: /[A-Z]/.test(password),
-      lowercase: /[a-z]/.test(password),
-      number: /[0-9]/.test(password),
-      special: /[^A-Za-z0-9]/.test(password),
-    }
-  }
-
-  const handlePasswordChange = () => {
-    if (passwordForm.new !== passwordForm.confirm) {
-      toast({
-        title: "Passwords Mismatch",
-        description: "New password and confirm password do not match.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const checks = validatePassword(passwordForm.new)
-    if (!checks.length || !checks.uppercase || !checks.lowercase || !checks.number) {
-      toast({
-        title: "Invalid Password",
-        description: "Your new password does not meet the security requirements.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setPasswordLoading(true)
-    setTimeout(() => {
-      setPasswordLoading(false)
-      updateUserProfile({ passwordLastChanged: new Date().toISOString() }) // Update last changed date
-      addActivity({ action: "Password changed", device: detectDeviceInfo().deviceName, location: "Current Location" })
-      toast({ title: "Password Updated", description: "Your password has been changed successfully." })
-      setPasswordForm({ current: "", new: "", confirm: "" })
-      setCurrentView("security")
-    }, 1500)
-  }
-
-  const handlePinChange = () => {
-    if (pinForm.new !== pinForm.confirm) {
-      toast({
-        title: "PINs Mismatch",
-        description: "New PIN and confirm PIN do not match.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (pinForm.new.length !== 4) {
-      toast({
-        title: "Invalid PIN",
-        description: "PIN must be exactly 4 digits.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setPinLoading(true)
-    setTimeout(() => {
-      setPinLoading(false)
-      updateUserProfile({ pinLastChanged: new Date().toISOString() }) // Update last changed date
-      addActivity({ action: "Card PIN changed", device: detectDeviceInfo().deviceName, location: "Current Location" })
-      toast({ title: "PIN Updated", description: "Your card PIN has been changed successfully." })
-      setPinForm({ current: "", new: "", confirm: "" })
-      setCurrentView("security")
-    }, 1500)
-  }
-
-  if (currentView === "security-password") {
-    const checks = validatePassword(passwordForm.new)
-
-    return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
-        <div className="flex items-center gap-3 mb-4">
-          <Button variant="ghost" size="icon" onClick={() => setCurrentView("security")}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h2 className="text-2xl font-semibold">Change Password</h2>
-        </div>
-
-        <Card className="p-4 space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-            <Shield className="h-5 w-5 text-[#0a4fa6]" />
-            <div>
-              <p className="text-sm font-medium text-[#0a4fa6]">Password Security</p>
-              <p className="text-xs text-muted-foreground">
-                Last changed:{" "}
-                {appSettings?.lastPasswordChange
-                  ? new Date(appSettings.lastPasswordChange).toLocaleDateString()
-                  : "Never"}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4 space-y-4">
-          <div className="space-y-2">
-            <Label>Current Password</Label>
-            <div className="relative">
-              <Input
-                type={showCurrentPassword ? "text" : "password"}
-                value={passwordForm.current}
-                onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                placeholder="Enter current password"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              >
-                {showCurrentPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>New Password</Label>
-            <div className="relative">
-              <Input
-                type={showNewPassword ? "text" : "password"}
-                value={passwordForm.new}
-                onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                placeholder="Enter new password"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-              >
-                {showNewPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Confirm New Password</Label>
-            <div className="relative">
-              <Input
-                type={showConfirmPassword ? "text" : "password"}
-                value={passwordForm.confirm}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                placeholder="Confirm new password"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Password Requirements */}
-          <div className="bg-muted/50 p-3 rounded-lg space-y-2">
-            <p className="text-sm font-medium">Password Requirements:</p>
-            <div className="grid grid-cols-1 gap-1 text-sm">
-              <div className={`flex items-center gap-2 ${checks.length ? "text-green-600" : "text-muted-foreground"}`}>
-                {checks.length ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                At least 8 characters
-              </div>
-              <div
-                className={`flex items-center gap-2 ${checks.uppercase ? "text-green-600" : "text-muted-foreground"}`}
-              >
-                {checks.uppercase ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                One uppercase letter
-              </div>
-              <div
-                className={`flex items-center gap-2 ${checks.lowercase ? "text-green-600" : "text-muted-foreground"}`}
-              >
-                {checks.lowercase ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                One lowercase letter
-              </div>
-              <div className={`flex items-center gap-2 ${checks.number ? "text-green-600" : "text-muted-foreground"}`}>
-                {checks.number ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                One number
-              </div>
-              <div className={`flex items-center gap-2 ${checks.special ? "text-green-600" : "text-muted-foreground"}`}>
-                {checks.special ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                One special character (recommended)
-              </div>
-            </div>
-          </div>
-
-          {passwordForm.new && passwordForm.confirm && passwordForm.new !== passwordForm.confirm && (
-            <p className="text-red-500 text-sm">Passwords do not match</p>
-          )}
-
-          <Button
-            className="w-full bg-[#0a4fa6] hover:bg-[#083d80]"
-            onClick={handlePasswordChange}
-            disabled={passwordLoading}
-          >
-            {passwordLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Updating Password...
-              </>
-            ) : (
-              "Change Password"
-            )}
-          </Button>
-        </Card>
-
-        <div className="bg-amber-50 p-3 rounded-md text-sm text-amber-800">
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 mt-0.5" />
-            <div>
-              <p className="font-medium">Security Tips</p>
-              <ul className="text-xs mt-1 space-y-1">
-                <li>• Never share your password with anyone</li>
-                <li>• Chase will never ask for your password via email or phone</li>
-                <li>• Use a unique password not used on other sites</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (currentView === "security-pin") {
-    return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
-        <div className="flex items-center gap-3 mb-4">
-          <Button variant="ghost" size="icon" onClick={() => setCurrentView("security")}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h2 className="text-2xl font-semibold">Manage Card PIN</h2>
-        </div>
-
-        <Card className="p-4 space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-            <CreditCard className="h-5 w-5 text-[#0a4fa6]" />
-            <div>
-              <p className="text-sm font-medium text-[#0a4fa6]">Debit Card PIN</p>
-              <p className="text-xs text-muted-foreground">
-                Last changed:{" "}
-                {appSettings?.lastPinChange ? new Date(appSettings.lastPinChange).toLocaleDateString() : "Never"}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4 space-y-4">
-          <div className="space-y-2">
-            <Label>Current PIN</Label>
-            <div className="relative">
-              <Input
-                type={showCurrentPin ? "text" : "password"}
-                value={pinForm.current}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, "").slice(0, 4)
-                  setPinForm({ ...pinForm, current: value })
-                }}
-                placeholder="••••"
-                maxLength={4}
-                inputMode="numeric"
-                pattern="[0-9]*"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setShowCurrentPin(!showCurrentPin)}
-              >
-                {showCurrentPin ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>New PIN</Label>
-            <div className="relative">
-              <Input
-                type={showNewPin ? "text" : "password"}
-                value={pinForm.new}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, "").slice(0, 4)
-                  setPinForm({ ...pinForm, new: value })
-                }}
-                placeholder="****"
-                maxLength={4}
-                inputMode="numeric"
-                pattern="[0-9]*"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setShowNewPin(!showNewPin)}
-              >
-                {showNewPin ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
-            </div>
-            {pinForm.new && pinForm.new.length < 4 && (
-              <p className="text-xs text-muted-foreground">PIN must be 4 digits</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Confirm New PIN</Label>
-            <div className="relative">
-              <Input
-                type={showConfirmPin ? "text" : "password"}
-                value={pinForm.confirm}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, "").slice(0, 4)
-                  setPinForm({ ...pinForm, confirm: value })
-                }}
-                placeholder="••••"
-                maxLength={4}
-                inputMode="numeric"
-                pattern="[0-9]*"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setShowConfirmPin(!showConfirmPin)}
-              >
-                {showConfirmPin ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {pinForm.new && pinForm.confirm && pinForm.new !== pinForm.confirm && (
-            <p className="text-red-500 text-sm">PINs do not match</p>
-          )}
-
-          <div className="bg-muted/50 p-3 rounded-lg space-y-2">
-            <p className="text-sm font-medium">PIN Requirements:</p>
-            <ul className="text-xs text-muted-foreground space-y-1">
-              <li>• Must be exactly 4 digits</li>
-              <li>• Avoid simple patterns (1234, 0000, etc.)</li>
-              <li>• Don't use your birth year or date</li>
-            </ul>
-          </div>
-
-          <Button className="w-full bg-[#0a4fa6] hover:bg-[#083d80]" onClick={handlePinChange} disabled={pinLoading}>
-            {pinLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Updating PIN...
-              </>
-            ) : (
-              "Change PIN"
-            )}
-          </Button>
-        </Card>
-
-        <Card className="p-4 space-y-3">
-          <h3 className="font-semibold text-[#0a4fa6]">Where to Use Your PIN</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <span>ATM withdrawals and deposits</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <span>Point of sale purchases</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <span>Cash back at checkout</span>
-            </div>
-          </div>
-        </Card>
-
-        <div className="bg-amber-50 p-3 rounded-md text-sm text-amber-800">
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 mt-0.5" />
-            <div>
-              <p className="font-medium">Security Tips</p>
-              <ul className="text-xs mt-1 space-y-1">
-                <li>• Never share your PIN with anyone</li>
-                <li>• Cover the keypad when entering your PIN</li>
-                <li>• Memorize your PIN, don't write it down</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
     )
   }
@@ -2973,8 +2348,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
       })
       addActivity({
         action: "Two-Factor Authentication enabled",
-        device: detectDeviceInfo().deviceName,
-        location: "Current Location",
+        device: "iPhone 15 Pro Max",
+        location: "New York, NY",
       })
       setTwoFactorStep("complete")
       toast({
@@ -2987,8 +2362,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
       updateAppSettings({ twoFactorAuth: false })
       addActivity({
         action: "Two-Factor Authentication disabled",
-        device: detectDeviceInfo().deviceName,
-        location: "Current Location",
+        device: "iPhone 15 Pro Max",
+        location: "New York, NY",
       })
       toast({
         title: "2FA Disabled",
@@ -3020,7 +2395,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
     }
 
     return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
+      <div className="pb-24 space-y-6">
         <div className="flex items-center gap-3 mb-4">
           <Button
             variant="ghost"
@@ -3416,384 +2791,9 @@ export function MoreView({ onLogout }: MoreViewProps) {
     )
   }
 
-  if (currentView === "settings") {
-    return (
-      <div className={`pb-24 ${viewAnimClass}`}>
-        <EnhancedAccountSettings
-          onBack={() => setCurrentView("main")}
-          userId={userProfile?.id}
-        />
-      </div>
-    )
-  }
-
-  // Enhanced Settings View
-  if (currentView === "enhancedSettings") {
-    return (
-      <div className={`pb-24 ${viewAnimClass}`}>
-        <EnhancedAccountSettings
-          onBack={() => setCurrentView("main")}
-          userId={userProfile?.id}
-        />
-      </div>
-    )
-  }
-
-  // Notification Center View
-  if (currentView === "notificationCenter") {
-    return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h2 className="text-2xl font-bold text-[#0a4fa6]">Notifications</h2>
-              <p className="text-sm text-muted-foreground">
-                {unreadNotificationCount} unread {unreadNotificationCount === 1 ? "notification" : "notifications"}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {notifications.some((n) => !n.read) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  markAllNotificationsRead()
-                  toast({
-                    title: "All Marked as Read",
-                    description: "All notifications have been marked as read",
-                  })
-                  addActivity({
-                    action: "Marked all notifications as read",
-                    device: detectDeviceInfo().deviceName,
-                    location: "Current Location",
-                  })
-                }}
-              >
-                <CheckCheck className="h-4 w-4 mr-2" />
-                Mark All Read
-              </Button>
-            )}
-            {notifications.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  clearAllNotificationsAction() // Use the renamed action
-                  toast({
-                    title: "Cleared",
-                    description: "All notifications have been cleared",
-                  })
-                  addActivity({
-                    action: "Cleared all notifications",
-                    device: detectDeviceInfo().deviceName,
-                    location: "Current Location",
-                  })
-                }}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear All
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Notification Filters */}
-        <Card className="p-4">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedNotificationCategory === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedNotificationCategory("all")}
-            >
-              All
-            </Button>
-            {["Transactions", "Bills", "Security", "Rewards", "Alerts", "Payments", "Travel"].map((cat) => (
-              <Button
-                key={cat}
-                variant={selectedNotificationCategory === cat ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedNotificationCategory(cat)}
-              >
-                {cat}
-              </Button>
-            ))}
-          </div>
-        </Card>
-
-        {/* Notifications List */}
-        <div className="space-y-2">
-          {notifications
-            .filter((n) => selectedNotificationCategory === "all" || n.category === selectedNotificationCategory)
-            .map((notification) => (
-              <Card
-                key={notification.id}
-                className={`p-4 cursor-pointer transition-colors hover:bg-accent ${
-                  !notification.read ? "border-l-4 border-l-[#0a4fa6] bg-blue-50/50" : ""
-                }`}
-                onClick={() => {
-                  if (!notification.read) {
-                    markNotificationRead(notification.id)
-                  }
-                  setSelectedNotification(notification.id)
-                }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      {notification.type === "success" && <CheckCircle className="h-5 w-5 text-green-600" />}
-                      {notification.type === "warning" && <AlertCircle className="h-5 w-5 text-yellow-600" />}
-                      {notification.type === "alert" && <AlertTriangle className="h-5 w-5 text-red-600" />}
-                      {notification.type === "info" && <Info className="h-5 w-5 text-blue-600" />}
-                      <h3 className={`font-semibold ${!notification.read ? "text-[#0a4fa6]" : ""}`}>
-                        {notification.title}
-                      </h3>
-                      {!notification.read && <span className="h-2 w-2 rounded-full bg-[#0a4fa6]" />}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <span>{formatDistanceToNow(new Date(notification.date), { addSuffix: true })}</span>
-                      <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                        {notification.category}
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      deleteNotification(notification.id)
-                      toast({
-                        title: "Deleted",
-                        description: "Notification removed",
-                      })
-                      addActivity({
-                        action: "Deleted notification",
-                        device: detectDeviceInfo().deviceName,
-                        location: "Current Location",
-                      })
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          {notifications.filter(
-            (n) => selectedNotificationCategory === "all" || n.category === selectedNotificationCategory,
-          ).length === 0 && (
-            <Card className="p-8 text-center">
-              <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No notifications in this category</p>
-            </Card>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // Messages View
-  if (currentView === "messages") {
-    return (
-      <div className={`pb-24 space-y-6 touch-pan-y overscroll-contain ${viewAnimClass}`}>
-        {/* List View */}
-        {!selectedMessage && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
-                <div>
-                  <h2 className="text-2xl font-bold text-[#0a4fa6]">Messages</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {unreadMessageCount} unread {unreadMessageCount === 1 ? "message" : "messages"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Message Filters */}
-            <Card className="p-4">
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={selectedMessageCategory === "all" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedMessageCategory("all")}
-                >
-                  All
-                </Button>
-                {["Statements", "Offers", "Security", "Rewards", "Mortgage", "Loans"].map((cat) => (
-                  <Button
-                    key={cat}
-                    variant={selectedMessageCategory === cat ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedMessageCategory(cat)}
-                  >
-                    {cat}
-                  </Button>
-                ))}
-              </div>
-            </Card>
-
-            {/* Messages List */}
-            <div className="space-y-2">
-              {messages
-                .filter((m) => selectedMessageCategory === "all" || m.category === selectedMessageCategory)
-                .map((message) => (
-                  <Card
-                    key={message.id}
-                    className={`p-4 cursor-pointer transition-colors hover:bg-accent ${
-                      !message.read ? "border-l-4 border-l-[#0a4fa6] bg-blue-50/50" : ""
-                    }`}
-                    onClick={() => {
-                      if (!message.read) {
-                        markMessageRead(message.id)
-                      }
-                      setSelectedMessage(message.id)
-                    }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-5 w-5 text-[#0a4fa6]" />
-                          <h3 className={`font-semibold ${!message.read ? "text-[#0a4fa6]" : ""}`}>
-                            {message.subject}
-                          </h3>
-                          {!message.read && <span className="h-2 w-2 rounded-full bg-[#0a4fa6]" />}
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">From: {message.from}</p>
-                        <p className="text-sm mt-1">{message.preview}</p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                          <span>{formatDistanceToNow(new Date(message.date), { addSuffix: true })}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{message.category}</span>
-                          {message.attachments && message.attachments.length > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Paperclip className="h-3 w-3" />
-                              {message.attachments.length}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteMessage(message.id)
-                          toast({
-                            title: "Deleted",
-                            description: "Message removed",
-                          })
-                          addActivity({
-                            action: "Deleted message",
-                            device: detectDeviceInfo().deviceName,
-                            location: "Current Location",
-                          })
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              {messages.filter((m) => selectedMessageCategory === "all" || m.category === selectedMessageCategory)
-                .length === 0 && (
-                <Card className="p-8 text-center">
-                  <Mail className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No messages in this category</p>
-                </Card>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Detail View */}
-        {selectedMessage && (
-          <div className="space-y-4">
-            <Button variant="ghost" onClick={() => setSelectedMessage(null)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Messages
-            </Button>
-
-            {(() => {
-              const message = messages.find((m) => m.id === selectedMessage)
-              if (!message) return null
-
-              return (
-                <Card className="p-6">
-                  <div className="space-y-4">
-                    <div>
-                      <h2 className="text-2xl font-bold text-[#0a4fa6]">{message.subject}</h2>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                        <span>From: {message.from}</span>
-                        <span>{format(new Date(message.date), "MMM dd, yyyy 'at' h:mm a")}</span>
-                        <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{message.category}</span>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="whitespace-pre-wrap">{message.content}</div>
-                    {message.attachments && message.attachments.length > 0 && (
-                      <>
-                        <Separator />
-                        <div>
-                          <h3 className="font-semibold mb-2">Attachments</h3>
-                          <div className="space-y-2">
-                            {message.attachments.map((attachment, index) => (
-                              <Button key={index} variant="outline" className="w-full justify-start bg-transparent">
-                                <Paperclip className="h-4 w-4 mr-2" />
-                                {attachment}
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </Card>
-              )
-            })()}
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // Savings Goals View
-  if (currentView === "savings") {
-    return (
-      <div className={`pb-24 touch-pan-y overscroll-contain ${viewAnimClass}`}>
-        <div className="flex items-center gap-3 mb-4">
-          <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-        </div>
-        <SavingsGoalsView />
-      </div>
-    )
-  }
-
-  // Spending Analysis View
-  if (currentView === "spending") {
-    return (
-      <div className={`pb-24 touch-pan-y overscroll-contain ${viewAnimClass}`}>
-        <div className="flex items-center gap-3 mb-4">
-          <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-        </div>
-        <SpendingAnalysisView />
-      </div>
-    )
-  }
-
   // Default fallback - return to main
   return (
-    <div className="pb-24 touch-pan-y overscroll-contain">
+    <div className="pb-24">
       <Button onClick={() => setCurrentView("main")}>Back to Menu</Button>
     </div>
   )
