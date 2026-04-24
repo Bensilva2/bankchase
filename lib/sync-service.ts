@@ -52,6 +52,11 @@ export function setLastSyncTime(time: string): void {
 // Sync data to Supabase (cloud)
 export async function syncToCloud(email: string, data: any): Promise<boolean> {
   try {
+    // Skip if running on server side
+    if (typeof window === "undefined") {
+      return false
+    }
+
     const supabase = createClient()
 
     // Check if record exists
@@ -93,6 +98,11 @@ export async function syncToCloud(email: string, data: any): Promise<boolean> {
 // Fetch data from Supabase (cloud)
 export async function fetchFromCloud(email: string): Promise<any | null> {
   try {
+    // Skip if running on server side
+    if (typeof window === "undefined") {
+      return null
+    }
+
     const supabase = createClient()
 
     const { data, error } = await supabase
@@ -115,14 +125,6 @@ export async function fetchFromCloud(email: string): Promise<any | null> {
     if (error?.message?.includes("Could not find the table")) {
       return null
     }
-    console.error("Failed to fetch from cloud:", error)
-    return null
-  }
-      throw error
-    }
-
-    return data?.data || null
-  } catch (error) {
     console.error("Failed to fetch from cloud:", error)
     return null
   }

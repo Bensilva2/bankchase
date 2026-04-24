@@ -2,10 +2,16 @@ import { createClient } from '@supabase/supabase-js'
 import { comparePassword, generateToken } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!url || !key) {
+    throw new Error('Supabase environment variables not configured')
+  }
+
+  return createClient(url, key)
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +30,7 @@ export async function POST(request: NextRequest) {
     let userError: any = null
 
     try {
+      const supabase = getSupabase()
       const { data, error } = await supabase
         .from('users')
         .select('*')
