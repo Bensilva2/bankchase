@@ -218,3 +218,98 @@ export async function performSync(
     return { success: false, mergedData: null }
   }
 }
+
+// Check localStorage quota
+export function getStorageQuota(): { used: number; available: number; percentage: number } | null {
+  if (typeof window === "undefined") return null
+
+  try {
+    if (!navigator.storage?.estimate) {
+      return null
+    }
+
+    let used = 0
+    for (let key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        used += localStorage[key].length + key.length
+      }
+    }
+
+    // Approximate quota is typically 5-10MB for most browsers
+    const quota = 5 * 1024 * 1024 // 5MB estimate
+    const available = quota - used
+    const percentage = (used / quota) * 100
+
+    return { used, available, percentage }
+  } catch (error) {
+    console.error("Failed to calculate storage quota:", error)
+    return null
+  }
+}
+
+// Archive old transactions to reduce storage usage
+export function archiveOldTransactions(data: any, daysToKeep: number = 90): any {
+  if (!data || !data.transactions) return data
+
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
+  const cutoffTime = cutoffDate.getTime()
+
+  const recentTransactions = data.transactions.filter((tx: any) => {
+    const txTime = new Date(tx.date).getTime()
+    return txTime > cutoffTime
+  })
+
+  // Archive count for reference
+  const archivedCount = data.transactions.length - recentTransactions.length
+
+  return {
+    ...data,
+    transactions: recentTransactions,
+    archivedAt: new Date().toISOString(),
+    transactionsArchived: archivedCount,
+  }
+}
+
+// Clear old notifications
+export function cleanupOldNotifications(data: any, daysToKeep: number = 30): any {
+  if (!data || !data.notifications) return data
+
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
+  const cutoffTime = cutoffDate.getTime()
+
+  const recentNotifications = data.notifications.filter((notif: any) => {
+    const notifTime = new Date(notif.date).getTime()
+    // Keep unread notifications regardless of age
+    return notifTime > cutoffTime || !notif.read
+  })
+
+  return {
+    ...data,
+    notifications: recentNotifications,
+  }
+}
+
+// Export data for backup
+export function exportDataAsJSON(data: any): string {
+  return JSON.stringify(
+    {
+      ...data,
+      exportedAt: new Date().toISOString(),
+    },
+    null,
+    2,
+  )
+}
+
+// Import data from JSON backup
+export function importDataFromJSON(jsonString: string): any {
+  try {
+    const data = JSON.parse(jsonString)
+    return data
+  } catch (error) {
+    console.error("Failed to import data:", error)
+    throw new Error("Invalid JSON format")
+  }
+}

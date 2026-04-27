@@ -326,6 +326,11 @@ type BankingContextType = {
   getAccountById: (accountId: string) => Account | undefined
   getTransactionById: (transactionId: string) => Transaction | undefined
   getTransactionsByRecipient: (recipientId: string) => Transaction[]
+  getTransactionsByCategory: (category: string) => Transaction[]
+  getTransactionsByDateRange: (startDate: Date, endDate: Date) => Transaction[]
+  getTransactionsByType: (type: 'debit' | 'credit') => Transaction[]
+  getRecentTransactions: (limit?: number) => Transaction[]
+  searchTransactions: (query: string) => Transaction[]
 
   // Payees
   payees: Payee[]
@@ -1426,14 +1431,32 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
 
   const transferFunds = useCallback(
     (fromAccountId: string, toAccountId: string, amount: number, description: string, fee = 0): Transaction => {
-      // Deduct from source account
-      setAccounts((prev) =>
-        prev.map((acc) => (acc.id === fromAccountId ? { ...acc, balance: acc.balance - amount - fee } : acc)),
-      )
+      // Validate inputs
+      if (!fromAccountId || !toAccountId) {
+        throw new Error('Both source and destination accounts are required')
+      }
+      if (amount <= 0) {
+        throw new Error('Transfer amount must be greater than zero')
+      }
+      if (fromAccountId === toAccountId) {
+        throw new Error('Cannot transfer to the same account')
+      }
 
-      // Add to destination account
+      // Update both accounts in a single operation for consistency
       setAccounts((prev) =>
-        prev.map((acc) => (acc.id === toAccountId ? { ...acc, balance: acc.balance + amount } : acc)),
+        prev.map((acc) => {
+          if (acc.id === fromAccountId) {
+            const newBalance = acc.balance - amount - fee
+            if (newBalance < 0) {
+              throw new Error('Insufficient funds for this transfer')
+            }
+            return { ...acc, balance: newBalance }
+          }
+          if (acc.id === toAccountId) {
+            return { ...acc, balance: acc.balance + amount }
+          }
+          return acc
+        }),
       )
 
       const newTransaction: Transaction = {
@@ -1882,6 +1905,51 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
     scheduledPayments,
   ])
 
+  // Transaction filtering and sorting helpers
+  const getTransactionsByCategory = useCallback(
+    (category: string) => {
+      return transactions.filter((tx) => tx.category === category)
+    },
+    [transactions],
+  )
+
+  const getTransactionsByDateRange = useCallback(
+    (startDate: Date, endDate: Date) => {
+      return transactions.filter((tx) => {
+        const txDate = new Date(tx.date)
+        return txDate >= startDate && txDate <= endDate
+      })
+    },
+    [transactions],
+  )
+
+  const getTransactionsByType = useCallback(
+    (type: 'debit' | 'credit') => {
+      return transactions.filter((tx) => tx.type === type)
+    },
+    [transactions],
+  )
+
+  const getRecentTransactions = useCallback(
+    (limit: number = 10) => {
+      return transactions.slice(0, limit)
+    },
+    [transactions],
+  )
+
+  const searchTransactions = useCallback(
+    (query: string) => {
+      const lowerQuery = query.toLowerCase()
+      return transactions.filter((tx) =>
+        tx.description.toLowerCase().includes(lowerQuery) ||
+        tx.category.toLowerCase().includes(lowerQuery) ||
+        tx.reference?.toLowerCase().includes(lowerQuery) ||
+        tx.recipientName?.toLowerCase().includes(lowerQuery),
+      )
+    },
+    [transactions],
+  )
+
   return (
     <BankingContext.Provider
       value={{
@@ -1904,6 +1972,11 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
         getAccountById,
         getTransactionById,
         getTransactionsByRecipient,
+        getTransactionsByCategory,
+        getTransactionsByDateRange,
+        getTransactionsByType,
+        getRecentTransactions,
+        searchTransactions,
         payees,
         addPayee,
         removePayee,

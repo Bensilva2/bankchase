@@ -308,7 +308,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   const handleSignupSubmit = async () => {
     if (signupStep === 1) {
-      if (!signupData.firstName || !signupData.lastName || !signupData.email || !signupData.phone) {
+      if (!signupData.firstName?.trim() || !signupData.lastName?.trim() || !signupData.email?.trim() || !signupData.phone?.trim()) {
         toast({
           title: "Missing Information",
           description: "Please fill in all required fields.",
@@ -316,10 +316,22 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         })
         return
       }
-      if (!signupData.email.includes("@")) {
+      // Better email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(signupData.email)) {
         toast({
           title: "Invalid Email",
           description: "Please enter a valid email address.",
+          variant: "destructive",
+        })
+        return
+      }
+      // Phone number validation (basic 10-digit)
+      const phoneDigits = signupData.phone.replace(/\D/g, '')
+      if (phoneDigits.length < 10) {
+        toast({
+          title: "Invalid Phone",
+          description: "Please enter a valid phone number (at least 10 digits).",
           variant: "destructive",
         })
         return
