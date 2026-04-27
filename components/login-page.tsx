@@ -1667,19 +1667,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         </div>
 
         <div className="flex items-center justify-center gap-3 mt-6 text-sm">
-          <button onClick={() => setModalView("signup")} className="text-[#117aca] hover:underline">
+          <button onClick={() => setModalView("signup")} className="text-white hover:underline">
             Sign up
           </button>
-          <span className="text-[#117aca]">|</span>
-          <button onClick={() => setModalView("open-account")} className="text-[#117aca] hover:underline">
+          <span className="text-white">|</span>
+          <button onClick={() => setModalView("open-account")} className="text-white hover:underline">
             Open an account
           </button>
-          <span className="text-[#117aca]">|</span>
-          <button onClick={() => setModalView("privacy")} className="text-[#117aca] hover:underline">
+          <span className="text-white">|</span>
+          <button onClick={() => setModalView("privacy")} className="text-white hover:underline">
             Privacy
           </button>
-          <span className="text-[#117aca]">|</span>
-          <button onClick={() => setModalView("more-options")} className="text-[#117aca] font-bold hover:underline">
+          <span className="text-white">|</span>
+          <button onClick={() => setModalView("more-options")} className="text-white font-bold hover:underline">
             •••
           </button>
         </div>
