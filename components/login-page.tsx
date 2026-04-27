@@ -41,7 +41,6 @@ type ModalView =
   | "forgot-password"
   | "signup"
   | "signup-form"
-  | "open-account"
   | "account-type"
   | "privacy"
   | "more-options"
@@ -308,7 +307,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   const handleSignupSubmit = async () => {
     if (signupStep === 1) {
-      if (!signupData.firstName || !signupData.lastName || !signupData.email || !signupData.phone) {
+      if (!signupData.firstName?.trim() || !signupData.lastName?.trim() || !signupData.email?.trim() || !signupData.phone?.trim()) {
         toast({
           title: "Missing Information",
           description: "Please fill in all required fields.",
@@ -316,10 +315,22 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         })
         return
       }
-      if (!signupData.email.includes("@")) {
+      // Better email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(signupData.email)) {
         toast({
           title: "Invalid Email",
           description: "Please enter a valid email address.",
+          variant: "destructive",
+        })
+        return
+      }
+      // Phone number validation (basic 10-digit)
+      const phoneDigits = signupData.phone.replace(/\D/g, '')
+      if (phoneDigits.length < 10) {
+        toast({
+          title: "Invalid Phone",
+          description: "Please enter a valid phone number (at least 10 digits).",
           variant: "destructive",
         })
         return
@@ -474,7 +485,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                       if (signupStep > 1) setSignupStep(signupStep - 1)
                       else setModalView("signup")
                     } else if (modalView === "account-type") {
-                      setModalView("open-account")
+                      setModalView("signup")
                     } else if (modalView === "token-setup") {
                       setModalView("none")
                     }
@@ -874,7 +885,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 </button>
 
                 <button
-                  onClick={() => setModalView("open-account")}
+                  onClick={() => {
+                    setModalView("signup")
+                    setSignupStep(1)
+                  }}
                   className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all flex items-center gap-4"
                 >
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -1241,82 +1255,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             </div>
           )}
 
-          {/* Open Account Modal */}
-          {modalView === "open-account" && (
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Open a Chase Account</h2>
-              <p className="text-gray-600 mb-6">Choose the account that's right for you.</p>
-
-              <div className="space-y-3">
-                <button
-                  onClick={() => setModalView("account-type")}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all text-left"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Building2 className="w-6 h-6 text-[#117aca]" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Checking Account</p>
-                      <p className="text-sm text-gray-500">Chase Total Checking - $0 deposit to open</p>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setModalView("account-type")}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all text-left"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <Shield className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Savings Account</p>
-                      <p className="text-sm text-gray-500">Chase Savings - Earn interest on your balance</p>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setModalView("account-type")}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all text-left"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <CreditCard className="w-6 h-6 text-[#117aca]" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Credit Card</p>
-                      <p className="text-sm text-gray-500">Chase Freedom, Sapphire, and more</p>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => window.open("https://www.chase.com/personal/investments", "_blank")}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all text-left"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                      <ExternalLink className="w-6 h-6 text-orange-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">Investment Account</p>
-                      <p className="text-sm text-gray-500">Self-Directed Investing & more</p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-
-              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-                <p className="text-xs text-gray-600">
-                  <strong>Need help choosing?</strong> Call us at 1-800-935-9935 or visit a Chase branch near you.
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* Account Type Details */}
           {modalView === "account-type" && (
             <div className="p-6">
@@ -1667,19 +1605,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         </div>
 
         <div className="flex items-center justify-center gap-3 mt-6 text-sm">
-          <button onClick={() => setModalView("signup")} className="text-[#117aca] hover:underline">
+          <button onClick={() => setModalView("signup")} className="text-white hover:underline">
             Sign up
           </button>
-          <span className="text-[#117aca]">|</span>
-          <button onClick={() => setModalView("open-account")} className="text-[#117aca] hover:underline">
+          <span className="text-white">|</span>
+          <button onClick={() => setModalView("signup")} className="text-white hover:underline">
             Open an account
           </button>
-          <span className="text-[#117aca]">|</span>
-          <button onClick={() => setModalView("privacy")} className="text-[#117aca] hover:underline">
+          <span className="text-white">|</span>
+          <button onClick={() => setModalView("privacy")} className="text-white hover:underline">
             Privacy
           </button>
-          <span className="text-[#117aca]">|</span>
-          <button onClick={() => setModalView("more-options")} className="text-[#117aca] font-bold hover:underline">
+          <span className="text-white">|</span>
+          <button onClick={() => setModalView("more-options")} className="text-white font-bold hover:underline">
             •••
           </button>
         </div>

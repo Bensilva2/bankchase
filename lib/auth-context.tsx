@@ -117,18 +117,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       setError(null)
 
+      // Input validation
+      if (!username || !password) {
+        throw new Error('Username and password are required')
+      }
+
+      if (username.trim().length === 0 || password.trim().length === 0) {
+        throw new Error('Username and password cannot be empty')
+      }
+
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: username.trim(), password }),
       })
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Login failed')
+        throw new Error(data.error || 'Invalid username or password')
       }
 
       const data = await response.json()
+
+      if (!data.token || !data.user) {
+        throw new Error('Invalid authentication response from server')
+      }
 
       localStorage.setItem('auth_token', data.token)
       localStorage.setItem('auth_user', JSON.stringify(data.user))
@@ -136,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(data.token)
       setUser(data.user)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Login failed'
+      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.'
       setError(errorMessage)
       throw err
     } finally {

@@ -28,6 +28,7 @@ import { DisputeTransactionDrawer } from "@/components/dispute-transaction-drawe
 import { useBanking } from "@/lib/banking-context"
 import { useAuth } from "@/lib/auth-context"
 import Image from "next/image"
+import { AccountOpeningModal } from "@/components/account-opening-modal"
 
 export default function BankingDashboard() {
   const { user, loading } = useAuth()
@@ -48,6 +49,7 @@ export default function BankingDashboard() {
   const [transactionsOpen, setTransactionsOpen] = useState(false)
   const [disputeOpen, setDisputeOpen] = useState(false)
   const [disputeTransactionId, setDisputeTransactionId] = useState<string | null>(null)
+  const [accountOpeningOpen, setAccountOpeningOpen] = useState(false)
   const { toast } = useToast()
 
   const { userProfile, addNotification, addActivity, addLoginHistory } = useBanking()
@@ -239,6 +241,9 @@ export default function BankingDashboard() {
 
       {/* Dispute Transaction Drawer */}
       <DisputeTransactionDrawer open={disputeOpen} onOpenChange={setDisputeOpen} transactionId={disputeTransactionId} />
+
+      {/* Account Opening Modal */}
+      <AccountOpeningModal isOpen={accountOpeningOpen} onClose={() => setAccountOpeningOpen(false)} />
     </div>
   )
 }
