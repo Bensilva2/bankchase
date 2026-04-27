@@ -23,7 +23,7 @@ import { TransferDrawer } from "@/components/transfer-drawer"
 import { WireDrawer } from "@/components/wire-drawer"
 import { TransactionReceiptModal } from "@/components/transaction-receipt-modal"
 import { TransactionsDrawer } from "@/components/transactions-drawer"
-import { LoginPage } from "@/components/login-page"
+import { ChaseLoginPage } from "@/components/chase-login-page"
 import { DisputeTransactionDrawer } from "@/components/dispute-transaction-drawer"
 import { useBanking } from "@/lib/banking-context"
 import { useAuth } from "@/lib/auth-context"
@@ -141,7 +141,7 @@ export default function BankingDashboard() {
   }
 
   if (!user) {
-    return <LoginPage onLogin={() => {}} />
+    return <ChaseLoginPage onLogin={() => {}} />
   }
 
   const renderView = () => {
