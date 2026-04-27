@@ -145,19 +145,22 @@ export function ChaseLogin({ onLogin }: ChaseLoginProps) {
           {/* Divider */}
           <div className="my-6 border-t border-gray-200"></div>
 
-          {/* Footer Links - Centered */}
-          <div className="flex flex-col gap-3 items-center justify-center">
-            <a href="#" className="text-blue-600 hover:underline text-sm font-medium">
+          {/* Footer Links - Centered Horizontally */}
+          <div className="flex items-center justify-center gap-1 text-sm mb-4">
+            <a href="#" className="text-blue-600 hover:underline font-medium">
               Sign up
             </a>
-            <a href="#" className="text-blue-600 hover:underline text-sm font-medium">
+            <span className="text-gray-400">|</span>
+            <a href="#" className="text-blue-600 hover:underline font-medium">
               Open an account
             </a>
-            <a href="#" className="text-blue-600 hover:underline text-sm font-medium">
+            <span className="text-gray-400">|</span>
+            <a href="#" className="text-blue-600 hover:underline font-medium">
               Privacy
             </a>
-            <button className="text-blue-600 hover:underline text-sm font-medium">
-              ...
+            <span className="text-gray-400">|</span>
+            <button className="text-blue-600 hover:underline font-medium">
+              •••
             </button>
           </div>
         </div>
