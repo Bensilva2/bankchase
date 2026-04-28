@@ -4,6 +4,8 @@ import {
   detectDriftHybrid,
   updateBaselineEMA,
   createInitialBaseline,
+  adjustRiskForDrift,
+  prepareDriftAuditEntry,
   type BehavioralFeatures,
   type BehavioralBaseline,
   type DriftDetectionResult,
@@ -93,9 +95,24 @@ export async function POST(request: NextRequest) {
       // Run drift detection
       driftResult = detectDriftHybrid(baseline, features, confidence, DEFAULT_CONFIG)
       
+      // Compute risk adjustment based on drift detection
+      const currentOverallRisk = 0.3 // Default low risk baseline (caller can override)
+      const riskAdjustment = adjustRiskForDrift(
+        currentOverallRisk,
+        baseline,
+        driftResult,
+        DEFAULT_CONFIG
+      )
+      
       // Update baseline if appropriate
       if (driftResult.action !== 'escalate' && driftResult.action !== 'flag_review') {
         const updates = updateBaselineEMA(baseline, features, confidence, driftResult, DEFAULT_CONFIG)
+        
+        // Add drift tracking updates
+        updates.consecutive_drift_count = riskAdjustment.consecutive_drift_count
+        updates.rolling_risk_multiplier = riskAdjustment.risk_multiplier
+        updates.recent_drift_score = (baseline.recent_drift_score ?? 0) * 0.7 + driftResult.drift_score * 0.3
+        updates.last_successful_update = new Date().toISOString()
         
         const { error: updateError } = await supabase
           .from('behavioral_baselines')
@@ -105,10 +122,24 @@ export async function POST(request: NextRequest) {
         if (updateError) {
           console.error('Error updating baseline:', updateError)
         }
+      } else {
+        // For escalation/review cases, still update the drift counts
+        const { error: updateError } = await supabase
+          .from('behavioral_baselines')
+          .update({
+            consecutive_drift_count: riskAdjustment.consecutive_drift_count,
+            rolling_risk_multiplier: riskAdjustment.risk_multiplier,
+            recent_drift_score: (baseline.recent_drift_score ?? 0) * 0.7 + driftResult.drift_score * 0.3,
+          })
+          .eq('id', baseline.id)
+
+        if (updateError) {
+          console.error('Error updating drift counts:', updateError)
+        }
       }
     }
 
-    // Log drift detection event
+    // Log drift detection event with risk adjustment
     const auditEntry = {
       user_id,
       org_id,
@@ -136,6 +167,8 @@ export async function POST(request: NextRequest) {
       sample_count: baseline.sample_count,
       drift_result: driftResult,
       risk_penalty: driftResult.drift_score * 0.15,
+      consecutive_drift_count: baseline.consecutive_drift_count ?? 0,
+      rolling_risk_multiplier: baseline.rolling_risk_multiplier ?? 1.0,
     })
   } catch (error) {
     console.error('Drift detection error:', error)

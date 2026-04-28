@@ -32,12 +32,17 @@ export interface BehavioralBaseline {
   confidence_score: number
   update_alpha: number
   drift_score: number
+  recent_drift_score?: number
   last_drift_action: string
   recent_deviations: DeviationRecord[]
   cusum_positive: number
   cusum_negative: number
   cusum_threshold: number
   feature_vector: number[]
+  consecutive_drift_count?: number
+  rolling_risk_multiplier?: number
+  adaptive_alpha?: boolean
+  last_successful_update?: string
   created_at: string
   updated_at: string
   last_session_at: string
@@ -55,10 +60,14 @@ export interface DeviationRecord {
 export interface DriftDetectionResult {
   drift_detected: boolean
   drift_score: number
+  recent_drift_score?: number
+  consecutive_drift_count?: number
   action: 'enroll' | 'normal_update' | 'adaptive_update' | 'flag_review' | 'escalate'
   deviations: Record<string, number>
   risk_level: 'low' | 'medium' | 'high' | 'critical'
   algorithm_used: string
+  risk_multiplier?: number
+  risk_adjustment?: number
   details?: {
     ema_score?: number
     cusum_alert?: boolean
@@ -71,6 +80,7 @@ export interface DriftDetectionConfig {
   ema_alpha: number                    // EMA smoothing factor (0.08-0.15 recommended)
   deviation_threshold: number          // Relative deviation threshold (0.3-0.5)
   drift_score_threshold: number        // Overall drift score threshold (0.7)
+  max_drift_threshold?: number         // Maximum drift threshold before escalation (0.75)
   
   // CUSUM Configuration
   cusum_threshold: number              // CUSUM alert threshold (5.0)
@@ -89,12 +99,18 @@ export interface DriftDetectionConfig {
   // Risk thresholds
   high_confidence_threshold: number    // Confidence threshold for high trust (0.8)
   low_risk_threshold: number           // Overall risk threshold for updates (0.45)
+  
+  // Risk adjustment
+  consecutive_drift_escalation?: number // Escalate risk after N consecutive drifts (3)
+  risk_boost_multiplier?: number        // Multiplier to boost overall risk (1.25)
+  consecutive_drift_decay?: number      // Decay rate for consecutive count (1)
 }
 
 const DEFAULT_CONFIG: DriftDetectionConfig = {
   ema_alpha: 0.1,
   deviation_threshold: 0.5,
   drift_score_threshold: 0.7,
+  max_drift_threshold: 0.75,
   cusum_threshold: 5.0,
   cusum_drift: 0.1,
   mahalanobis_threshold: 3.0,
@@ -103,6 +119,9 @@ const DEFAULT_CONFIG: DriftDetectionConfig = {
   alpha_increase_factor: 1.2,
   high_confidence_threshold: 0.8,
   low_risk_threshold: 0.45,
+  consecutive_drift_escalation: 3,
+  risk_boost_multiplier: 1.25,
+  consecutive_drift_decay: 1,
 }
 
 /**
@@ -512,6 +531,131 @@ export function calculateDriftRiskPenalty(
   
   // Cap penalty
   return Math.min(penalty, 0.3)
+}
+
+/**
+ * Adjust overall risk based on drift detection result
+ * 
+ * Implements the hybrid risk adjustment from the advanced algorithms:
+ * - Tracks consecutive drift events
+ * - Applies risk multiplier for suspected fraud/coercion
+ * - Enables adaptive baseline learning for legitimate changes
+ * 
+ * @param currentRisk Overall risk score (0-1)
+ * @param baseline User behavioral baseline with drift metadata
+ * @param driftResult Result from drift detection
+ * @param config Configuration with risk adjustment parameters
+ * @returns Adjusted risk score and action details
+ */
+export function adjustRiskForDrift(
+  currentRisk: number,
+  baseline: BehavioralBaseline | null,
+  driftResult: DriftDetectionResult,
+  config: DriftDetectionConfig = DEFAULT_CONFIG
+): {
+  adjusted_risk: number
+  risk_multiplier: number
+  consecutive_drift_count: number
+  risk_adjustment: number
+  should_escalate: boolean
+  action: string
+} {
+  if (!baseline) {
+    return {
+      adjusted_risk: currentRisk,
+      risk_multiplier: 1.0,
+      consecutive_drift_count: 0,
+      risk_adjustment: 0,
+      should_escalate: false,
+      action: 'new_user',
+    }
+  }
+
+  // Initialize drift tracking fields
+  let consecutiveDriftCount = baseline.consecutive_drift_count ?? 0
+  let rollingRiskMultiplier = baseline.rolling_risk_multiplier ?? 1.0
+  let isAdaptiveDrift = false
+
+  // Update rolling drift score (0.7 EMA + 0.3 new)
+  const recentDriftScore = (baseline.recent_drift_score ?? 0) * 0.7 + driftResult.drift_score * 0.3
+
+  // Determine if this is a concerning drift
+  const isDriftFlagged = 
+    driftResult.drift_score > (config.max_drift_threshold ?? 0.75) ||
+    recentDriftScore > 0.65
+
+  if (isDriftFlagged) {
+    consecutiveDriftCount++
+
+    // Check if we should allow adaptive learning
+    const canAdaptivelyLearn =
+      driftResult.action === 'adaptive_update' &&
+      consecutiveDriftCount < (config.consecutive_drift_escalation ?? 3)
+
+    if (canAdaptivelyLearn) {
+      // Gradual legitimate drift (aging, habit changes, recovery)
+      isAdaptiveDrift = true
+      rollingRiskMultiplier = Math.max(rollingRiskMultiplier * 1.1, 1.3) // Gentle boost
+      driftResult.action = 'adaptive_drift_update'
+    } else {
+      // Suspicious drift - boost risk significantly
+      rollingRiskMultiplier = Math.min(
+        rollingRiskMultiplier * (config.risk_boost_multiplier ?? 1.25),
+        2.0 // Cap multiplier at 2x
+      )
+    }
+  } else {
+    // Drift resolved - decay consecutive count and risk multiplier
+    const decayRate = config.consecutive_drift_decay ?? 1
+    consecutiveDriftCount = Math.max(0, consecutiveDriftCount - decayRate)
+    rollingRiskMultiplier = Math.max(1.0, rollingRiskMultiplier * 0.9)
+  }
+
+  // Calculate final risk adjustment
+  const riskAdjustment = (rollingRiskMultiplier - 1.0) * (currentRisk + 0.2)
+  const adjustedRisk = Math.min(currentRisk * rollingRiskMultiplier + riskAdjustment * 0.1, 1.0)
+
+  // Determine if escalation is needed
+  const shouldEscalate =
+    driftResult.action === 'escalate' ||
+    (consecutiveDriftCount >= (config.consecutive_drift_escalation ?? 3) && !isAdaptiveDrift)
+
+  return {
+    adjusted_risk: adjustedRisk,
+    risk_multiplier: rollingRiskMultiplier,
+    consecutive_drift_count: consecutiveDriftCount,
+    risk_adjustment: riskAdjustment,
+    should_escalate: shouldEscalate,
+    action: shouldEscalate ? 'escalate_for_manual_review' : driftResult.action,
+  }
+}
+
+/**
+ * Prepare drift detection results for audit logging and compliance
+ */
+export function prepareDriftAuditEntry(
+  baseline: BehavioralBaseline,
+  driftResult: DriftDetectionResult,
+  adjustedRisk: number,
+  sessionId?: string
+) {
+  return {
+    user_id: baseline.user_id,
+    org_id: baseline.org_id,
+    session_id: sessionId,
+    drift_detected: driftResult.drift_detected,
+    drift_score: Number(driftResult.drift_score.toFixed(4)),
+    recent_drift_score: Number((baseline.recent_drift_score ?? 0).toFixed(4)),
+    action_taken: driftResult.action,
+    consecutive_drift_count: baseline.consecutive_drift_count ?? 0,
+    rolling_risk_multiplier: baseline.rolling_risk_multiplier ?? 1.0,
+    risk_adjustment: Number((driftResult.risk_adjustment ?? 0).toFixed(4)),
+    adjusted_overall_risk: Number(adjustedRisk.toFixed(4)),
+    algorithm_used: driftResult.algorithm_used,
+    risk_level: driftResult.risk_level,
+    escalated: driftResult.action === 'escalate',
+    timestamp: new Date().toISOString(),
+  }
 }
 
 export { DEFAULT_CONFIG, FEATURE_KEYS, FEATURE_WEIGHTS }
