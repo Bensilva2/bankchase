@@ -5,7 +5,7 @@ import { canAccessAdminDashboard } from '@/lib/rbac'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, Settings, BarChart3, AlertCircle, Lock, ArrowLeft } from 'lucide-react'
+import { Users, Settings, BarChart3, AlertCircle, Lock, ArrowLeft, Shield, Banknote } from 'lucide-react'
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth()
@@ -115,6 +115,80 @@ export default function AdminDashboard() {
             </div>
           </Card>
         </div>
+
+        {/* Security Section */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow mb-8">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-indigo-100 p-3 rounded-lg">
+                  <Shield className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Security & Biometrics</h3>
+                  <p className="text-sm text-gray-600">Voice behavioral drift detection and security monitoring</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => router.push('/admin/security')}
+                className="bg-[#0a4fa6] hover:bg-[#003087]"
+              >
+                Open Security Center
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">EMA</p>
+                <p className="text-sm text-gray-600">Exponential Moving Average</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">CUSUM</p>
+                <p className="text-sm text-gray-600">Statistical Process Control</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">Distance</p>
+                <p className="text-sm text-gray-600">Mahalanobis Detection</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Demo Money Section */}
+        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow mb-8">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-green-100 p-3 rounded-lg">
+                  <Banknote className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Demo Money Transfer</h3>
+                  <p className="text-sm text-gray-600">Send virtual funds for testing and user onboarding</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => router.push('/admin/demo-money')}
+                className="bg-[#0a4fa6] hover:bg-[#003087]"
+              >
+                Open Demo Money
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">Single</p>
+                <p className="text-sm text-gray-600">Send to one account</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">Bulk</p>
+                <p className="text-sm text-gray-600">Send to all users</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-gray-900">Auto-Refund</p>
+                <p className="text-sm text-gray-600">7-14 day expiry</p>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {/* Features Section */}
         <Card className="border-0 shadow-lg p-8 mb-8">
