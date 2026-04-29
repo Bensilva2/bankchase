@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 import asyncio
 
 from routes import (
+    auth,
     accounts_router,
     transactions_router,
     pay_transfer_router,
@@ -70,6 +71,7 @@ app.add_middleware(
 )
 
 # Register routers
+app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(accounts_router, prefix="/api/accounts", tags=["accounts"])
 app.include_router(transactions_router, prefix="/api/transactions", tags=["transactions"])
 app.include_router(pay_transfer_router, prefix="/api/transfers", tags=["transfers"])
