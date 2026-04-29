@@ -1,105 +1,40 @@
-import { createClient } from '@supabase/supabase-js'
-import { verifyToken, getTokenFromHeader } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
 
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+export async function GET(request: NextRequest) {
+  const token = request.headers.get('authorization')?.replace('Bearer ', '')
 
-  if (!url || !key) {
-    throw new Error('Supabase environment variables not configured')
+  if (!token) {
+    return NextResponse.json({ error: 'No token provided' }, { status: 401 })
   }
 
-  return createClient(url, key)
-}
-
-export async function POST(request: NextRequest) {
   try {
-    const token = getTokenFromHeader(request.headers.get('Authorization'))
+    // Single backend call - timeout after 3 seconds
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
 
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Missing authorization token' },
-        { status: 401 }
-      )
-    }
-
-    // Verify token
-    const payload = verifyToken(token)
-
-    if (!payload) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      )
-    }
-
-    // Get fresh user data from database
-    let user: any = null
-    let dbError: any = null
-
-    try {
-      const supabase = getSupabase()
-      const { data, error: err } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', payload.userId)
-        .single()
-
-      user = data
-      dbError = err
-    } catch (err: any) {
-      dbError = err
-    }
-
-    if (dbError || !user) {
-      // If table doesn't exist, return user data from token (JWT is valid)
-      if (dbError?.message?.includes('relation')) {
-        return NextResponse.json(
-          {
-            success: true,
-            user: {
-              id: payload.userId,
-              username: payload.username,
-              email: payload.email,
-              firstName: payload.firstName,
-              lastName: payload.lastName,
-            },
-          },
-          { status: 200 }
-        )
-      }
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json(
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/verify`,
       {
-        success: true,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          phone: user.phone,
-          ssn: user.ssn,
-          dateOfBirth: user.date_of_birth,
-          address: user.address,
-          city: user.city,
-          state: user.state,
-          zipCode: user.zip_code,
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-      },
-      { status: 200 }
+        signal: controller.signal,
+      }
     )
-  } catch (error) {
-    console.error('Verify error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
+
+    const user = await response.json()
+    return NextResponse.json({ user }, { status: 200 })
+  } catch (error: any) {
+    // No retries - just fail
+    console.error('Token verification error:', error.message)
+    return NextResponse.json({ error: 'Verification failed' }, { status: 500 })
   }
 }
