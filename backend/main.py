@@ -1,9 +1,11 @@
 """
 FastAPI application entry point
-Initializes the app and registers all routes
+Initializes the app and registers all routes with background webhook processor
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+import asyncio
 
 from routes import (
     accounts_router,
@@ -13,12 +15,42 @@ from routes import (
     drift_router,
     webhooks_router,
 )
+from utils.webhook_queue import process_webhook_queue
 
-# Initialize FastAPI app
+
+# Background task variables
+_webhook_processor_task = None
+
+
+async def _start_webhook_processor():
+    """Start the webhook queue processor background task"""
+    global _webhook_processor_task
+    _webhook_processor_task = asyncio.create_task(process_webhook_queue())
+    print("[v0] Webhook queue processor started")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan context manager - handles startup and shutdown"""
+    # Startup
+    await _start_webhook_processor()
+    yield
+    # Shutdown
+    if _webhook_processor_task:
+        _webhook_processor_task.cancel()
+        try:
+            await _webhook_processor_task
+        except asyncio.CancelledError:
+            pass
+    print("[v0] Webhook queue processor stopped")
+
+
+# Initialize FastAPI app with lifespan
 app = FastAPI(
     title="BankChase API",
     description="Banking API with behavioral drift detection and webhook support",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Add CORS middleware
@@ -42,7 +74,7 @@ app.include_router(webhooks_router, prefix="/api/webhooks", tags=["webhooks"])
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "ok"}
+    return {"status": "ok", "webhook_processor": "running" if _webhook_processor_task else "stopped"}
 
 
 if __name__ == "__main__":
