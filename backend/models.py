@@ -35,6 +35,13 @@ class RiskLevel(str, Enum):
     critical = "critical"
 
 
+class WebhookEventType(str, Enum):
+    transfer_completed = "transfer.completed"
+    transfer_pending = "transfer.pending"
+    transfer_failed = "transfer.failed"
+    balance_updated = "balance.updated"
+
+
 # ==================== AUTH SCHEMAS ====================
 
 class UserCreate(BaseModel):
@@ -233,8 +240,13 @@ class DriftDetectionResponse(BaseModel):
 
 class WebhookCreate(BaseModel):
     url: str
-    secret: str
     events: List[str] = ["transfer.completed", "transfer.pending"]
+
+
+class WebhookUpdate(BaseModel):
+    url: Optional[str] = None
+    events: Optional[List[str]] = None
+    is_active: Optional[bool] = None
 
 
 class WebhookResponse(BaseModel):
@@ -243,6 +255,18 @@ class WebhookResponse(BaseModel):
     events: List[str]
     is_active: bool
     created_at: datetime
+
+
+class WebhookEventResponse(BaseModel):
+    id: str
+    webhook_id: str
+    event_type: str
+    payload: dict
+    status: str
+    created_at: datetime
+    last_attempt_at: Optional[datetime] = None
+    next_retry_at: Optional[datetime] = None
+    retry_count: int = 0
 
 
 # ==================== ERROR RESPONSE ====================

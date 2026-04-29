@@ -6,6 +6,7 @@ Pay & Transfer API Routes
 import uuid
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException
+import asyncio
 
 from database import fetch, fetchrow, execute
 from auth import get_current_user
@@ -17,6 +18,7 @@ from models import (
     BanksListResponse,
 )
 from utils.validation import is_valid_account_number, is_valid_routing_number
+from utils.webhook_events import trigger_webhook_event
 
 router = APIRouter(prefix="/pay-transfer", tags=["Pay & Transfer"])
 
@@ -155,6 +157,55 @@ async def send_money(
         request.amount,
         to_account["id"]
     )
+    
+    # 7. Trigger webhooks asynchronously (fire and forget)
+    from_user_id = current_user.user_id
+    to_user_id = to_account["user_id"]
+    
+    # Prepare webhook payloads
+    transfer_event_type = "transfer.completed" if is_internal else "transfer.pending"
+    transfer_payload = {
+        "transfer_id": str(uuid.uuid4()),
+        "from_account": request.from_account_number,
+        "to_account": request.to_account_number,
+        "amount": request.amount,
+        "status": status,
+        "currency": "USD",
+        "timestamp": datetime.utcnow().isoformat(),
+        "debit_transaction_id": str(debit_tx["id"]),
+        "credit_transaction_id": str(credit_tx["id"]),
+    }
+    
+    # Trigger webhooks for sender and receiver
+    asyncio.create_task(trigger_webhook_event(from_user_id, transfer_event_type, transfer_payload))
+    if to_user_id:
+        asyncio.create_task(trigger_webhook_event(to_user_id, transfer_event_type, transfer_payload))
+    
+    # Trigger balance.updated events for both accounts
+    from_account_balance = await fetchrow(
+        "SELECT balance FROM accounts WHERE id = $1",
+        from_account["id"]
+    )
+    to_account_balance = await fetchrow(
+        "SELECT balance FROM accounts WHERE id = $1",
+        to_account["id"]
+    )
+    
+    balance_payload_from = {
+        "account": request.from_account_number,
+        "balance": float(from_account_balance["balance"]),
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    
+    balance_payload_to = {
+        "account": request.to_account_number,
+        "balance": float(to_account_balance["balance"]),
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    
+    asyncio.create_task(trigger_webhook_event(from_user_id, "balance.updated", balance_payload_from))
+    if to_user_id:
+        asyncio.create_task(trigger_webhook_event(to_user_id, "balance.updated", balance_payload_to))
     
     return TransferResponse(
         status="success",
