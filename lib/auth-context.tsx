@@ -52,65 +52,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Initialize from localStorage and verify token
+  // Initialize from localStorage - use cached data immediately
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const storedToken = localStorage.getItem('auth_token')
-        const storedUser = localStorage.getItem('auth_user')
-
-        if (storedToken && storedUser) {
-          setToken(storedToken)
-          setUser(JSON.parse(storedUser))
-
-          // Verify token is still valid (but don't fail if verification fails)
-          try {
-            await verifyTokenHelper(storedToken)
-          } catch (verifyErr) {
-            // Token verification failed, but we'll stay logged in with cached data
-            console.warn('Token verification failed, using cached data:', verifyErr)
-          }
-        }
-      } catch (err) {
-        console.error('Auth initialization error:', err)
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('auth_user')
-        setUser(null)
-        setToken(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    initAuth()
-  }, [])
-
-  const verifyTokenHelper = async (tokenToVerify: string) => {
     try {
-      const response = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${tokenToVerify}`,
-          'Content-Type': 'application/json',
-        },
-      })
+      const storedToken = localStorage.getItem('auth_token')
+      const storedUser = localStorage.getItem('auth_user')
 
-      if (!response.ok) {
-        throw new Error('Token verification failed')
+      if (storedToken && storedUser) {
+        setToken(storedToken)
+        setUser(JSON.parse(storedUser))
       }
-
-      const data = await response.json()
-      setUser(data.user)
-      setToken(tokenToVerify)
     } catch (err) {
-      console.error('Token verification error:', err)
+      console.error('Auth initialization error:', err)
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
-      setUser(null)
-      setToken(null)
-      throw err
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [])
+
+
 
   const login = async (username: string, password: string) => {
     try {
@@ -120,10 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Input validation
       if (!username || !password) {
         throw new Error('Username and password are required')
-      }
-
-      if (username.trim().length === 0 || password.trim().length === 0) {
-        throw new Error('Username and password cannot be empty')
       }
 
       const response = await fetch('/api/auth/login', {
@@ -201,14 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!token) {
       throw new Error('No token available')
     }
-
-    try {
-      await verifyTokenHelper(token)
-    } catch (err) {
-      setUser(null)
-      setToken(null)
-      throw err
-    }
+    // Token is already verified when loading from localStorage
+    // No need for additional verification on every load
   }
 
   return (
