@@ -16,6 +16,9 @@ from routes import (
     webhooks_router,
 )
 from utils.webhook_queue import process_webhook_queue
+from utils.rate_limiting import limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 
 
 # Background task variables
@@ -52,6 +55,10 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Add rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add CORS middleware
 app.add_middleware(
