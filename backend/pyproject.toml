@@ -10,4 +10,9 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
     "httpx>=0.27.0",
+    "cryptography>=41.0.0",
+    "uvicorn[standard]>=0.30.0",
 ]
+
+[project.scripts]
+start = "main:app"
