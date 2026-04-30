@@ -3,11 +3,13 @@
 import { useAccounts } from '@/hooks/useAccounts';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useDemoBalance } from '@/hooks/useDemoFunds';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Navigation } from '@/components/Navigation';
 import { ArrowUpRight, ArrowDownLeft, TrendingUp, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
-export default function AccountsPage() {
+function AccountsContent() {
   const { accounts, totalBalance, isLoading } = useAccounts();
   const { transactions } = useTransactions(undefined, 10);
   const { balance: demoBalance } = useDemoBalance();
@@ -161,5 +163,14 @@ export default function AccountsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function AccountsPage() {
+  return (
+    <ProtectedRoute>
+      <Navigation />
+      <AccountsContent />
+    </ProtectedRoute>
   );
 }

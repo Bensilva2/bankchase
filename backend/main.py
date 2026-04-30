@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 import asyncio
 
 from routes import (
+    auth,
     accounts_router,
     transactions_router,
     pay_transfer_router,
@@ -16,6 +17,9 @@ from routes import (
     webhooks_router,
 )
 from utils.webhook_queue import process_webhook_queue
+from utils.rate_limiting import limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 
 
 # Background task variables
@@ -53,6 +57,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Add rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -63,6 +71,7 @@ app.add_middleware(
 )
 
 # Register routers
+app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(accounts_router, prefix="/api/accounts", tags=["accounts"])
 app.include_router(transactions_router, prefix="/api/transactions", tags=["transactions"])
 app.include_router(pay_transfer_router, prefix="/api/transfers", tags=["transfers"])

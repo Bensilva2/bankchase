@@ -121,6 +121,14 @@ class TransferRequest(BaseModel):
     narration: Optional[str] = None
     country_code: str = "US"
     days_to_refund: int = Field(default=7, ge=1, le=30)
+    pin: str = Field(..., description="4-6 digit PIN for transfer verification")
+
+    @field_validator('pin')
+    @classmethod
+    def validate_pin(cls, v: str) -> str:
+        if not v.isdigit() or not (4 <= len(v) <= 6):
+            raise ValueError("PIN must be 4-6 digits")
+        return v
 
     @field_validator('to_account_number')
     @classmethod
@@ -170,6 +178,22 @@ class BulkDemoTransferRequest(BaseModel):
     note: Optional[str] = None
 
 
+class ReceiptResponse(BaseModel):
+    receipt_id: str
+    receipt_number: str
+    date: str
+    time: str
+    from_account: str
+    to_account: str
+    amount: float
+    currency: str = "USD"
+    status: str
+    reference: str
+    narration: Optional[str] = None
+    balance_before: Optional[float] = None
+    balance_after: Optional[float] = None
+
+
 class TransferResponse(BaseModel):
     status: str
     message: str
@@ -180,6 +204,7 @@ class TransferResponse(BaseModel):
     to_account: str
     amount: float
     will_refund_in_days: Optional[int] = None
+    receipt: Optional[ReceiptResponse] = None
 
 
 # ==================== TRANSACTION SCHEMAS ====================

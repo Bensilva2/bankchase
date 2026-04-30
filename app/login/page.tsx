@@ -1,25 +1,40 @@
-// src/pages/login.tsx
-import React, { useState } from 'react';
-import { useRouter } from 'next/router';
-import { useAuth } from '../context/AuthContext';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import ApiClient from '@/lib/api-client';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login, loading, error } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(email, password);
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await ApiClient.login(email, password);
+      if (response.access_token) {
+        router.push('/accounts');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // If already logged in, redirect to dashboard
-  React.useEffect(() => {
+  // If already logged in, redirect to accounts
+  useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      router.push('/dashboard');
+      router.push('/accounts');
     }
   }, [router]);
 
@@ -93,9 +108,9 @@ export default function LoginPage() {
           {/* Signup Link */}
           <p className="text-center text-gray-600 mt-6">
             Don't have an account?{' '}
-            <a href="/signup" className="text-blue-600 hover:underline font-semibold">
+            <Link href="/signup" className="text-blue-600 hover:underline font-semibold">
               Sign up
-            </a>
+            </Link>
           </p>
 
           {/* Demo Credentials */}
