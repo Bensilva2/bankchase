@@ -52,6 +52,52 @@ export class ApiClient {
     return response.json();
   }
 
+  // Authentication
+  static async login(email: string, password: string) {
+    const data = await this.request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    
+    // Store token
+    if (data.access_token) {
+      this.setToken(data.access_token);
+      localStorage.setItem('access_token', data.access_token);
+    }
+    
+    return data;
+  }
+
+  static async signup(email: string, password: string, firstName: string = '', lastName: string = '') {
+    const data = await this.request('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        email, 
+        password,
+        first_name: firstName,
+        last_name: lastName,
+      }),
+    });
+    
+    // Store token
+    if (data.access_token) {
+      this.setToken(data.access_token);
+      localStorage.setItem('access_token', data.access_token);
+    }
+    
+    return data;
+  }
+
+  static async verifyToken() {
+    return this.request('/auth/verify', { method: 'GET' });
+  }
+
+  static async logout() {
+    await this.request('/auth/logout', { method: 'POST' });
+    this.clearToken();
+    localStorage.removeItem('access_token');
+  }
+
   // Navigation
   static async getNavigation() {
     return this.request('/navigation/main');

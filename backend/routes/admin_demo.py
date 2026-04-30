@@ -20,6 +20,7 @@ from models import (
     BankInfo,
     BanksListResponse,
 )
+from utils.rate_limiting import limiter
 
 router = APIRouter(prefix="/admin", tags=["Admin - Demo"])
 
@@ -80,11 +81,12 @@ async def get_admin_demo_account(
 
 
 @router.post("/demo/transfer", response_model=TransferResponse)
+@limiter.limit("20/minute")
 async def admin_demo_transfer(
     request: DemoTransferRequest,
     current_admin: TokenData = Depends(require_role(["admin", "owner", "SuperAdmin", "OrgAdmin"]))
 ):
-    """Send demo money to an account"""
+    """Send demo money to an account with rate limiting"""
     
     admin_account = await get_or_create_admin_demo_account(
         current_admin.user_id,
