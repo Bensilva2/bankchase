@@ -6,6 +6,7 @@ Pay & Transfer API Routes
 import uuid
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException
+import asyncio
 
 from database import fetch, fetchrow, execute
 from auth import get_current_user
@@ -13,10 +14,15 @@ from models import (
     TokenData,
     TransferRequest,
     TransferResponse,
+    ReceiptResponse,
     BankInfo,
     BanksListResponse,
 )
 from utils.validation import is_valid_account_number, is_valid_routing_number
+from utils.webhook_events import trigger_webhook_event
+from utils.rate_limiting import limiter
+from utils.pin_security import validate_pin
+from utils.receipt_generator import generate_receipt, save_receipt
 
 router = APIRouter(prefix="/pay-transfer", tags=["Pay & Transfer"])
 
@@ -50,11 +56,15 @@ async def get_banks(country_code: str = "US"):
 
 
 @router.post("/send", response_model=TransferResponse)
+@limiter.limit("10/minute")
 async def send_money(
     request: TransferRequest,
     current_user: TokenData = Depends(get_current_user)
 ):
-    """Send money to another account"""
+    """Send money to another account with PIN verification"""
+    
+    # 0. Validate PIN before processing transfer
+    await validate_pin(current_user.user_id, request.pin)
     
     # 1. Validate source account belongs to user
     from_account = await fetchrow(
@@ -156,13 +166,109 @@ async def send_money(
         to_account["id"]
     )
     
+    # 7. Trigger webhooks asynchronously (fire and forget)
+    from_user_id = current_user.user_id
+    to_user_id = to_account["user_id"]
+    
+    # Prepare webhook payloads
+    transfer_event_type = "transfer.completed" if is_internal else "transfer.pending"
+    transfer_payload = {
+        "transfer_id": str(uuid.uuid4()),
+        "from_account": request.from_account_number,
+        "to_account": request.to_account_number,
+        "amount": request.amount,
+        "status": status,
+        "currency": "USD",
+        "timestamp": datetime.utcnow().isoformat(),
+        "debit_transaction_id": str(debit_tx["id"]),
+        "credit_transaction_id": str(credit_tx["id"]),
+    }
+    
+    # Trigger webhooks for sender and receiver
+    asyncio.create_task(trigger_webhook_event(from_user_id, transfer_event_type, transfer_payload))
+    if to_user_id:
+        asyncio.create_task(trigger_webhook_event(to_user_id, transfer_event_type, transfer_payload))
+    
+    # Trigger balance.updated events for both accounts
+    from_account_balance = await fetchrow(
+        "SELECT balance FROM accounts WHERE id = $1",
+        from_account["id"]
+    )
+    to_account_balance = await fetchrow(
+        "SELECT balance FROM accounts WHERE id = $1",
+        to_account["id"]
+    )
+    
+    balance_payload_from = {
+        "account": request.from_account_number,
+        "balance": float(from_account_balance["balance"]),
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    
+    balance_payload_to = {
+        "account": request.to_account_number,
+        "balance": float(to_account_balance["balance"]),
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    
+    asyncio.create_task(trigger_webhook_event(from_user_id, "balance.updated", balance_payload_from))
+    if to_user_id:
+        asyncio.create_task(trigger_webhook_event(to_user_id, "balance.updated", balance_payload_to))
+    
+    # Generate and save receipt
+    transfer_id = str(uuid.uuid4())
+    receipt_data = await generate_receipt(
+        from_account_id=from_account["id"],
+        from_account_number=request.from_account_number,
+        to_account_number=request.to_account_number,
+        amount=request.amount,
+        currency="USD",
+        narration=request.narration,
+        transfer_id=transfer_id,
+        balance_before=None,  # Could fetch previous balance if needed
+        balance_after=float(from_account_balance["balance"])
+    )
+    
+    # Save receipt to database
+    await save_receipt(
+        receipt_number=receipt_data["receipt_number"],
+        transfer_id=transfer_id,
+        from_account_id=from_account["id"],
+        to_account_number=request.to_account_number,
+        amount=request.amount,
+        currency="USD",
+        status=status,
+        balance_before=None,
+        balance_after=float(from_account_balance["balance"]),
+        narration=request.narration
+    )
+    
+    # Convert receipt data to ReceiptResponse model
+    receipt_response = ReceiptResponse(
+        receipt_id=receipt_data["receipt_id"],
+        receipt_number=receipt_data["receipt_number"],
+        date=receipt_data["date"],
+        time=receipt_data["time"],
+        from_account=receipt_data["from_account"],
+        to_account=receipt_data["to_account"],
+        amount=receipt_data["amount"],
+        currency=receipt_data["currency"],
+        status=receipt_data["status"],
+        reference=receipt_data["reference"],
+        narration=receipt_data["narration"],
+        balance_before=receipt_data["balance_before"],
+        balance_after=receipt_data["balance_after"]
+    )
+    
     return TransferResponse(
         status="success",
         message="Transfer completed successfully" if is_internal else "Transfer pending",
+        transfer_id=transfer_id,
         debit_transaction_id=str(debit_tx["id"]),
         credit_transaction_id=str(credit_tx["id"]),
         from_account=request.from_account_number,
         to_account=request.to_account_number,
         amount=request.amount,
-        will_refund_in_days=request.days_to_refund if not is_internal else None
+        will_refund_in_days=request.days_to_refund if not is_internal else None,
+        receipt=receipt_response
     )

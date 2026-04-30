@@ -4,7 +4,7 @@
 -- Create behavioral_baselines table in public schema
 CREATE TABLE IF NOT EXISTS public.behavioral_baselines (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   org_id TEXT NOT NULL DEFAULT 'default',
   
   -- Voice behavioral signals (EMA smoothed values)
