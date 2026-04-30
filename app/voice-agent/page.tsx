@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useVoiceStream } from '@/hooks/useVoiceStream';
-import { useSession } from 'next-auth/react';
 import {
   Mic,
   MicOff,
@@ -14,12 +13,38 @@ import {
 } from 'lucide-react';
 
 export default function VoiceAgentPage() {
-  const { data: session } = useSession();
+  const [userId, setUserId] = useState('');
+  const [orgId, setOrgId] = useState('');
+  const [token, setToken] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const userId = session?.user?.id || '';
-  const orgId = session?.user?.org_id || '';
-  const token = session?.accessToken || '';
+  useEffect(() => {
+    // Get token from localStorage
+    const storedToken = localStorage.getItem('access_token') || '';
+    setToken(storedToken);
+
+    // Try to get user info from sessionStorage or API
+    if (storedToken) {
+      const fetchUserInfo = async () => {
+        try {
+          const response = await fetch('/api/auth/verify', {
+            headers: { 'Authorization': `Bearer ${storedToken}` }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const user = data.user;
+            setUserId(user.id || user.user_id || '');
+            setOrgId(user.org_id || 'default');
+          }
+        } catch (error) {
+          console.error('[v0] Failed to fetch user info:', error);
+        }
+      };
+      
+      fetchUserInfo();
+    }
+  }, []);
 
   const {
     state: voiceState,
