@@ -21,7 +21,7 @@ services:
     networks:
       - bankchase-network
 
-  # Chase Bank Voice Agent API
+  # Chase Bank Voice Agent API (FastAPI Backend)
   api:
     build:
       context: .
@@ -30,21 +30,47 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
+      # Database
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-bankchase}
       POSTGRES_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-bankchase}
+      
+      # Auth
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+      
+      # Workflow Integration
+      WORKFLOW_API_KEY: ${WORKFLOW_API_KEY:-dev-key-change-in-production}
+      WORKFLOW_ENDPOINT: http://web:3000/api/workflows
+      
+      # Notifications
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:-}
+      
+      # Voice Analysis
+      VOICE_MODEL_PATH: ${VOICE_MODEL_PATH:-/app/models}
+      ENABLE_VOICE_ANALYSIS: ${ENABLE_VOICE_ANALYSIS:-true}
+      
+      # App Config
       ENVIRONMENT: ${ENVIRONMENT:-development}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: http://localhost:3000,http://web:3000
+      
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
       - ./scripts:/app/scripts
+      - ./models:/app/models
     networks:
       - bankchase-network
     healthcheck:
@@ -54,7 +80,35 @@ services:
       retries: 3
     restart: unless-stopped
 
-  # Redis for rate limiting and caching (optional)
+  # Next.js Frontend
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bankchase-web
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:8000
+      NEXT_PUBLIC_API_URL_BROWSER: http://localhost:8000
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_TELEMETRY_DISABLED: 1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - bankchase-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Redis for rate limiting and caching
   redis:
     image: redis:7-alpine
     container_name: bankchase-redis

@@ -21,7 +21,33 @@ async def run_migrations():
     
     try:
         scripts_dir = Path(__file__).parent
-        sql_files = sorted(scripts_dir.glob("*.sql"))
+        # Run migrations in specific order for workflow tables
+        migration_order = [
+            '001-create-banking-data-table.sql',
+            '001_create_behavioral_baselines.sql',
+            '002-create-auth-tables.sql',
+            '002_create_drift_audit_log.sql',
+            '003-add-rbac-roles.sql',
+            '003_create_behavioral_baselines_v2.sql',
+            '004_create_drift_audit_log_v2.sql',
+            '005_enhance_behavioral_baselines.sql',
+            '006_create_accounts_table.sql',
+            '007_create_demo_transfers_table.sql',
+            '008_create_webhooks_table.sql',
+            '009_create_webhook_events_table.sql',
+            '010_create_webhook_retries_table.sql',
+            '011_create_webhook_queue_table.sql',
+            '012_create_workflow_runs.sql',
+            '013_create_workflow_events.sql',
+            '014_create_workflow_hooks.sql',
+            '015_create_money_transfers.sql',
+            '016_create_loan_applications.sql',
+            '017_create_payment_disputes.sql',
+            '018_create_account_closures.sql',
+            '019_create_bill_payments.sql',
+            '020_create_account_openings.sql',
+        ]
+        sql_files = [scripts_dir / f for f in migration_order if (scripts_dir / f).exists()]
         
         if not sql_files:
             print("No SQL migration files found")
@@ -71,10 +97,20 @@ async def run_migrations():
                 print(f"  Error: {str(e)}")
                 return False
         
-        print(f"\nMigration Summary:")
-        print(f"  Total files: {len(sql_files)}")
+        print(f"\n=== Migration Summary ===")
+        print(f"  Total migration files: {len(sql_files)}")
         print(f"  Newly executed: {executed_count}")
-        print(f"  Status: {'SUCCESS' if executed_count >= 0 else 'FAILED'}")
+        print(f"  Status: {'✅ SUCCESS' if executed_count >= 0 else '❌ FAILED'}")
+        print(f"\nWorkflow Tables Created:")
+        print(f"  • workflow_runs - Central workflow execution log")
+        print(f"  • workflow_events - Detailed step execution audit trail")
+        print(f"  • workflow_hooks - Pause/resume hook tracking")
+        print(f"  • money_transfers - Transfer workflow data")
+        print(f"  • loan_applications - Loan workflow data")
+        print(f"  • payment_disputes - Dispute workflow data")
+        print(f"  • account_closures - Account closure workflow data")
+        print(f"  • bill_payments - Bill payment automation data")
+        print(f"  • account_openings - Account opening/KYC workflow data")
         
         return True
     
