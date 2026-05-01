@@ -1,8 +1,11 @@
+'use client';
+
 // src/pages/dashboard.tsx
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useAuth } from '../context/AuthContext';
-import { useFetch } from '../hooks/useFetch';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../lib/auth-context';
+import { useFetch } from '../../lib/useFetch';
+import { BalanceCardSkeleton, CardSkeleton } from '../../components/loading-skeletons';
 
 interface Account {
   id: number;
@@ -67,22 +70,27 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Total Balance Card */}
+      {/* Total Balance Card */}
+      {accountsLoading ? (
+        <BalanceCardSkeleton />
+      ) : (
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg shadow-lg p-8 mb-8">
           <p className="text-blue-100 mb-2">Total Balance</p>
           <h2 className="text-5xl font-bold">
             ${accountsData?.total_balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </h2>
         </div>
+      )}
 
         {/* Accounts Grid */}
         <div className="mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Your Accounts</h3>
           
           {accountsLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-              <p className="text-gray-600">Loading accounts...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
             </div>
           ) : accountsData?.accounts && accountsData.accounts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

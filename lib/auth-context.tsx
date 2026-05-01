@@ -1,6 +1,8 @@
+'use client';
+
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface User {
   user_id: string;
