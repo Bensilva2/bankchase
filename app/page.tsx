@@ -17,7 +17,7 @@ export default function RootPage() {
     if (!loading && mounted) {
       // Redirect based on auth status
       if (user) {
-        router.push('/accounts')
+        router.push('/dashboard')
       } else {
         router.push('/login')
       }
