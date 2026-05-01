@@ -99,20 +99,27 @@ export default function SignupPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+            <div 
+              role="alert"
+              className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm"
+            >
               {error}
             </div>
           )}
 
           {/* Signup Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Name Fields Row */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label 
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   First Name
                 </label>
                 <input
+                  id="firstName"
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
@@ -122,10 +129,14 @@ export default function SignupPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label 
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Last Name
                 </label>
                 <input
+                  id="lastName"
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
@@ -138,10 +149,14 @@ export default function SignupPage() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label 
+                htmlFor="signupEmail"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email
               </label>
               <input
+                id="signupEmail"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -149,16 +164,21 @@ export default function SignupPage() {
                 placeholder="you@example.com"
                 required
                 disabled={loading}
+                aria-required="true"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label 
+                htmlFor="signupPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Password
               </label>
               <div className="relative">
                 <input
+                  id="signupPassword"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
@@ -166,12 +186,16 @@ export default function SignupPage() {
                   placeholder="••••••••"
                   required
                   disabled={loading}
+                  aria-required="true"
+                  aria-describedby="password-requirements"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-gray-500"
+                  className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
                   disabled={loading}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
                 >
                   {showPassword ? '👁️' : '🔒'}
                 </button>
@@ -179,7 +203,12 @@ export default function SignupPage() {
 
               {/* Password Requirements */}
               {password && (
-                <div className="mt-2 p-3 bg-gray-50 rounded border border-gray-200">
+                <div 
+                  id="password-requirements"
+                  className="mt-2 p-3 bg-gray-50 rounded border border-gray-200"
+                  role="region"
+                  aria-live="polite"
+                >
                   <p className="text-xs font-semibold text-gray-600 mb-2">Password Requirements:</p>
                   <ul className="text-xs text-gray-600 space-y-1">
                     <li className={password.length >= 8 ? 'text-green-600' : 'text-gray-600'}>
@@ -201,10 +230,14 @@ export default function SignupPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label 
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Confirm Password
               </label>
               <input
+                id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -212,9 +245,15 @@ export default function SignupPage() {
                 placeholder="••••••••"
                 required
                 disabled={loading}
+                aria-required="true"
               />
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-red-600 text-xs mt-1">Passwords do not match</p>
+                <p 
+                  className="text-red-600 text-xs mt-1"
+                  role="alert"
+                >
+                  Passwords do not match
+                </p>
               )}
             </div>
 
@@ -223,6 +262,7 @@ export default function SignupPage() {
               type="submit"
               disabled={loading || passwordErrors.length > 0 || !email || !password || password !== confirmPassword}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition"
+              aria-busy={loading}
             >
               {loading ? 'Creating account...' : 'Sign Up'}
             </button>
