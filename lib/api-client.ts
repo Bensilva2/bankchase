@@ -60,9 +60,9 @@ export class ApiClient {
     });
     
     // Store token
-    if (data.access_token) {
-      this.setToken(data.access_token);
-      localStorage.setItem('access_token', data.access_token);
+    if (data.token) {
+      this.setToken(data.token);
+      localStorage.setItem('access_token', data.token);
     }
     
     return data;

@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       username: newUser.username,
       firstName: newUser.first_name,
       lastName: newUser.last_name,
-      role: 'viewer',
+      role: newUser.role || 'viewer',
     })
 
     // Also trigger Monday.com integration

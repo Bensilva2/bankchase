@@ -10,6 +10,7 @@ export interface TokenPayload {
   username: string
   firstName?: string
   lastName?: string
+  role?: string
 }
 
 export interface JWTToken {

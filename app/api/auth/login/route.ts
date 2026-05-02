@@ -1,4 +1,17 @@
+import { createClient } from '@supabase/supabase-js'
+import { comparePassword, generateToken } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!url || !key) {
+    throw new Error('Supabase environment variables not configured')
+  }
+
+  return createClient(url, key)
+}
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json()
@@ -11,51 +24,58 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Single backend call - 5 second timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const supabase = getSupabase()
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal,
-      }
-    )
+    // Query user from Supabase
+    const { data: user, error: queryError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single()
 
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Login failed' }))
+    if (queryError || !user) {
       return NextResponse.json(
-        { error: error.detail || 'Login failed' },
-        { status: response.status }
+        { error: 'Invalid email or password' },
+        { status: 401 }
       )
     }
 
-    const data = await response.json()
+    // Verify password
+    const passwordMatch = await comparePassword(password, user.password_hash)
+
+    if (!passwordMatch) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      )
+    }
+
+    // Generate JWT token with role
+    const token = generateToken({
+      userId: user.id,
+      email: user.email,
+      username: user.username,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      role: user.role || 'viewer',
+    })
 
     return NextResponse.json(
       {
-        access_token: data.access_token,
-        user: data.user,
-        is_new_user: data.is_new_user || false,
+        token: token.token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          role: user.role || 'viewer',
+        },
       },
       { status: 200 }
     )
   } catch (error: any) {
-    console.error('Login error:', error.message)
-
-    if (error.name === 'AbortError') {
-      return NextResponse.json(
-        { error: 'Login service timeout - please try again' },
-        { status: 504 }
-      )
-    }
+    console.error('Login error:', error)
 
     return NextResponse.json(
       { error: 'Login failed - please try again' },

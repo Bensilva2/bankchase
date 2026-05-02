@@ -20,8 +20,13 @@ export default function LoginPage() {
 
     try {
       const response = await ApiClient.login(email, password);
-      if (response.access_token) {
-        router.push('/accounts');
+      if (response.token) {
+        // Redirect based on role - admin goes to admin dashboard
+        if (response.user?.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/accounts');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');
@@ -115,11 +120,13 @@ export default function LoginPage() {
 
           {/* Demo Credentials */}
           <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-xs text-gray-500 font-semibold mb-2">DEMO CREDENTIALS</p>
-            <code className="text-xs text-gray-700 block">
-              Email: demo@chase.com<br />
-              Password: demo123
+            <p className="text-xs text-gray-500 font-semibold mb-2">ADMIN CREDENTIALS</p>
+            <code className="text-xs text-gray-700 block mb-3">
+              Email: admin@bankchase.com<br />
+              Password: Admin@123456
             </code>
+            <p className="text-xs text-gray-500 font-semibold">USER CREDENTIALS</p>
+            <p className="text-xs text-gray-600">Sign up to create a new user account</p>
           </div>
         </div>
       </div>
