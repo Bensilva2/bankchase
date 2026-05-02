@@ -69,20 +69,21 @@ export class ApiClient {
   }
 
   static async signup(email: string, password: string, firstName: string = '', lastName: string = '') {
-    const data = await this.request('/auth/signup', {
+    const data = await this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ 
+        username: email.split('@')[0], // Generate username from email
         email, 
         password,
-        first_name: firstName,
-        last_name: lastName,
+        firstName,
+        lastName,
       }),
     });
     
     // Store token
-    if (data.access_token) {
-      this.setToken(data.access_token);
-      localStorage.setItem('access_token', data.access_token);
+    if (data.token) {
+      this.setToken(data.token);
+      localStorage.setItem('access_token', data.token);
     }
     
     return data;

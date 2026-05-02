@@ -69,7 +69,7 @@ export default function SignupPage() {
       const response = await ApiClient.signup(email, password, firstName, lastName);
       
       // Store token and redirect
-      if (response.access_token) {
+      if (response.token) {
         router.push('/accounts');
       }
     } catch (err: any) {
