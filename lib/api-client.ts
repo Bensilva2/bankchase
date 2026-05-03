@@ -22,13 +22,13 @@ export class ApiClient {
     this.token = null;
   }
 
-  private static async request<T>(
+  static async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     if (this.token) {
@@ -54,37 +54,37 @@ export class ApiClient {
 
   // Authentication
   static async login(email: string, password: string) {
-    const data = await this.request('/auth/login', {
+    const data = await this.request<{ access_token?: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    
+
     // Store token
     if (data.access_token) {
       this.setToken(data.access_token);
       localStorage.setItem('access_token', data.access_token);
     }
-    
+
     return data;
   }
 
   static async signup(email: string, password: string, firstName: string = '', lastName: string = '') {
-    const data = await this.request('/auth/signup', {
+    const data = await this.request<{ access_token?: string }>('/auth/signup', {
       method: 'POST',
-      body: JSON.stringify({ 
-        email, 
+      body: JSON.stringify({
+        email,
         password,
         first_name: firstName,
         last_name: lastName,
       }),
     });
-    
+
     // Store token
     if (data.access_token) {
       this.setToken(data.access_token);
       localStorage.setItem('access_token', data.access_token);
     }
-    
+
     return data;
   }
 

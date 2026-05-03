@@ -1,6 +1,15 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
 
+// Polyfill fetch for jsdom test environment
+global.fetch = jest.fn();
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  // Reset fetch mock between tests
+  global.fetch.mockReset();
+});
+
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter() {

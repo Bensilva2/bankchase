@@ -18,7 +18,7 @@ export interface AccountsData {
 
 export function useAccounts() {
   const { data, error, isLoading } = useSWR<AccountsData>('/accounts', () =>
-    ApiClient.getAccounts()
+    ApiClient.getAccounts() as Promise<AccountsData>
   );
 
   return {

@@ -24,7 +24,7 @@ export function useTransactions(accountId?: number, limit = 20, offset = 0) {
     : `/transactions/history?limit=${limit}&offset=${offset}`;
 
   const { data, error, isLoading, mutate } = useSWR<TransactionsData>(key, () =>
-    ApiClient.getTransactions(accountId, limit, offset)
+    ApiClient.getTransactions(accountId, limit, offset) as Promise<TransactionsData>
   );
 
   return {
