@@ -93,10 +93,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       const data = await response.json()
-      localStorage.setItem('access_token', data.token)
+      // Support both 'token' and 'access_token' field names
+      const token = data.token || data.access_token
+      localStorage.setItem('access_token', token)
 
       // Decode token to get user info
-      const decodedUser = decodeToken(data.token)
+      const decodedUser = decodeToken(token)
       if (decodedUser) {
         setUser(decodedUser)
 
