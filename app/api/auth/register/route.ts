@@ -14,12 +14,17 @@ function getSupabase() {
 }
 
 export async function POST(request: NextRequest) {
+  const supabase = getSupabase()
+  
   try {
     const body = await request.json()
     const { username, email, password, firstName, lastName, phone, ssn, dateOfBirth, address, city, state, zipCode } = body
 
+    console.log(`[v0] Registration attempt for email: ${email}`)
+
     // Validate required fields
     if (!username || !email || !password) {
+      console.log('[v0] Missing required fields')
       return NextResponse.json(
         { error: 'Username, email, and password are required' },
         { status: 400 }
@@ -29,6 +34,7 @@ export async function POST(request: NextRequest) {
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
+      console.log(`[v0] Invalid email format: ${email}`)
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
@@ -38,141 +44,112 @@ export async function POST(request: NextRequest) {
     // Validate password strength
     const passwordValidation = validatePassword(password)
     if (!passwordValidation.valid) {
+      console.log(`[v0] Weak password for ${email}: ${passwordValidation.errors.join(', ')}`)
       return NextResponse.json(
         { error: 'Password is too weak', details: passwordValidation.errors },
         { status: 400 }
       )
     }
 
+    // Check if user already exists (crucial check)
+    console.log(`[v0] Checking for existing user with email: ${email}`)
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('id, email, username')
+      .or(`username.eq.${username},email.eq.${email}`)
+
+    if (checkError) {
+      console.error('[v0] Error checking existing user:', checkError)
+      throw checkError
+    }
+
+    if (existingUser && existingUser.length > 0) {
+      const existing = existingUser[0]
+      let duplicateField = ''
+      if (existing.email === email) duplicateField = 'email'
+      if (existing.username === username) duplicateField = duplicateField ? 'email and username' : 'username'
+      
+      console.log(`[v0] Duplicate ${duplicateField} detected`)
+      return NextResponse.json(
+        { error: `An account with this ${duplicateField} already exists` },
+        { status: 409 }
+      )
+    }
+
     // Hash password
+    console.log(`[v0] Hashing password for ${email}`)
     const passwordHash = await hashPassword(password)
 
-    let newUser: any = null
-    let userError: any = null
+    // Create user in Supabase
+    console.log(`[v0] Creating user: ${email}`)
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .insert([
+        {
+          username,
+          email,
+          password_hash: passwordHash,
+          first_name: firstName || username,
+          last_name: lastName || '',
+          phone,
+          ssn,
+          date_of_birth: dateOfBirth,
+          address,
+          city,
+          state,
+          zip_code: zipCode,
+          role: 'viewer',
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single()
 
-    // Try to create user in Supabase
-    try {
-      const supabase = getSupabase()
-
-      // Check if user already exists
-      const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('id')
-        .or(`username.eq.${username},email.eq.${email}`)
-        .single()
-
-      if (checkError && !checkError.message?.includes('No rows')) {
-        throw checkError
-      }
-
-      if (existingUser) {
-        return NextResponse.json(
-          { error: 'Username or email already exists' },
-          { status: 409 }
-        )
-      }
-
-      // Create user
-      const { data: user, error } = await supabase
-        .from('users')
-        .insert([
-          {
-            username,
-            email,
-            password_hash: passwordHash,
-            first_name: firstName,
-            last_name: lastName,
-            phone,
-            ssn,
-            date_of_birth: dateOfBirth,
-            address,
-            city,
-            state,
-            zip_code: zipCode,
-          },
-        ])
-        .select()
-        .single()
-
-      newUser = user
-      userError = error
-    } catch (err: any) {
-      console.error('Supabase error:', err)
-      userError = err
-    }
-
-    // If Supabase fails due to table not existing, create user object in memory
-    if (userError && userError.message?.includes('relation')) {
-      newUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        username,
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        phone,
-        ssn,
-        date_of_birth: dateOfBirth,
-        address,
-        city,
-        state,
-        zip_code: zipCode,
-        created_at: new Date().toISOString(),
-      }
-    } else if (userError) {
-      console.error('User creation error:', userError)
+    if (userError) {
+      console.error('[v0] User creation failed:', userError)
       return NextResponse.json(
-        { error: 'Failed to create user' },
+        { error: 'Failed to create user: ' + (userError.message || 'Unknown error') },
         { status: 500 }
       )
     }
+
+    if (!user) {
+      console.error('[v0] User creation returned null')
+      return NextResponse.json(
+        { error: 'Failed to create user: No data returned' },
+        { status: 500 }
+      )
+    }
+
+    console.log(`[v0] User created successfully: ${user.id}`)
+    const newUser = user
 
     // Create default checking account with $0.00 balance
-    let account: any = null
-    let accountError: any = null
+    console.log(`[v0] Creating default checking account for user: ${newUser.id}`)
+    const { data: account, error: accountError } = await supabase
+      .from('accounts')
+      .insert([
+        {
+          user_id: newUser.id,
+          account_type: 'Checking',
+          account_number: generateAccountNumber(),
+          routing_number: '021000021',
+          balance: 0.00,
+          bank_name: 'Chase Bank',
+          is_external: false,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single()
 
-    try {
-      const { data: acc, error: err } = await supabase
-        .from('accounts')
-        .insert([
-          {
-            user_id: newUser.id,
-            account_type: 'Checking',
-            account_number: generateAccountNumber(),
-            routing_number: '021000021',
-            balance: 0.00,
-            bank_name: 'Chase Bank',
-            is_external: false,
-          },
-        ])
-        .select()
-        .single()
-
-      account = acc
-      accountError = err
-    } catch (err: any) {
-      console.error('Supabase account error:', err)
-      accountError = err
-    }
-
-    // If account creation fails due to table not existing, create in memory
-    if (accountError && accountError.message?.includes('relation')) {
-      account = {
-        id: Math.random().toString(36).substr(2, 9),
-        user_id: newUser.id,
-        account_type: 'Checking',
-        account_number: generateAccountNumber(),
-        routing_number: '021000021',
-        balance: 0.00,
-        bank_name: 'Chase Bank',
-        is_external: false,
-        created_at: new Date().toISOString(),
-      }
-    } else if (accountError) {
-      console.error('Account creation error:', accountError)
-      return NextResponse.json(
-        { error: 'Failed to create account' },
-        { status: 500 }
-      )
+    if (accountError) {
+      console.error('[v0] Account creation failed:', accountError)
+      // Don't fail the entire registration if account creation fails
+      // The user is already created and can access the app
+      console.log('[v0] Continuing with registration despite account creation failure')
+    } else {
+      console.log(`[v0] Account created successfully: ${account?.id}`)
     }
 
     // Generate JWT token
