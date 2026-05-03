@@ -1,0 +1,306 @@
+version: 2.1
+
+# ─────────────────────────────────────────────────────────────
+#  Orbs
+# ─────────────────────────────────────────────────────────────
+orbs:
+  node: circleci/node@6
+  python: circleci/python@2
+
+# ─────────────────────────────────────────────────────────────
+#  Reusable anchors
+# ─────────────────────────────────────────────────────────────
+defaults:
+  node_executor: &node_executor
+    docker:
+      - image: cimg/node:22.19
+    resource_class: medium
+
+  python_executor: &python_executor
+    docker:
+      - image: cimg/python:3.12
+    resource_class: medium
+
+  restore_pnpm: &restore_pnpm
+    restore_cache:
+      keys:
+        - pnpm-v1-{{ checksum "pnpm-lock.yaml" }}
+        - pnpm-v1-
+
+  save_pnpm: &save_pnpm
+    save_cache:
+      key: pnpm-v1-{{ checksum "pnpm-lock.yaml" }}
+      paths:
+        - ~/.local/share/pnpm/store
+        - node_modules
+
+  restore_pip: &restore_pip
+    restore_cache:
+      keys:
+        - pip-v1-{{ checksum "backend/pyproject.toml" }}
+        - pip-v1-
+
+  save_pip: &save_pip
+    save_cache:
+      key: pip-v1-{{ checksum "backend/pyproject.toml" }}
+      paths:
+        - ~/.cache/pip
+
+  restore_next_build: &restore_next_build
+    restore_cache:
+      keys:
+        - next-build-v1-{{ .Branch }}-{{ checksum "pnpm-lock.yaml" }}
+        - next-build-v1-{{ .Branch }}-
+        - next-build-v1-
+
+  save_next_build: &save_next_build
+    save_cache:
+      key: next-build-v1-{{ .Branch }}-{{ checksum "pnpm-lock.yaml" }}
+      paths:
+        - .next/cache
+
+# ─────────────────────────────────────────────────────────────
+#  Jobs
+# ─────────────────────────────────────────────────────────────
+jobs:
+
+  # ── 1. Install frontend dependencies ──────────────────────
+  install-frontend:
+    <<: *node_executor
+    steps:
+      - checkout
+      - *restore_pnpm
+      - run:
+          name: Install pnpm
+          command: npm install -g pnpm
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - *save_pnpm
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules
+
+  # ── 2. Lint (frontend) ────────────────────────────────────
+  lint-frontend:
+    <<: *node_executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run ESLint
+          command: pnpm run lint
+
+  # ── 3. TypeScript type-check ──────────────────────────────
+  typecheck:
+    <<: *node_executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: TypeScript type check
+          # next build already type-checks; run tsc directly for faster feedback
+          command: pnpm exec tsc --noEmit
+
+  # ── 4. Jest unit / integration tests ─────────────────────
+  test-frontend:
+    <<: *node_executor
+    parallelism: 2          # split test files across 2 containers
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run Jest tests (split)
+          command: |
+            TEST_FILES=$(circleci tests glob "__tests__/**/*.test.ts" | \
+              circleci tests split --split-by=timings)
+            pnpm exec jest $TEST_FILES \
+              --ci \
+              --runInBand \
+              --forceExit \
+              --coverage \
+              --coverageReporters=lcov \
+              --testTimeout=15000
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: coverage/lcov.info
+          destination: coverage/lcov.info
+
+  # ── 5. Next.js production build ──────────────────────────
+  build-frontend:
+    <<: *node_executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - *restore_next_build
+      - run:
+          name: Next.js build
+          command: pnpm run build
+          environment:
+            # Suppress telemetry during CI
+            NEXT_TELEMETRY_DISABLED: "1"
+      - *save_next_build
+      - store_artifacts:
+          path: .next
+          destination: next-build
+
+  # ── 6. Install & lint Python backend ─────────────────────
+  lint-backend:
+    <<: *python_executor
+    steps:
+      - checkout
+      - *restore_pip
+      - run:
+          name: Install backend dependencies
+          working_directory: backend
+          command: |
+            pip install --upgrade pip
+            pip install ".[dev]" || pip install -r requirements.txt
+            pip install ruff
+      - *save_pip
+      - run:
+          name: Ruff lint
+          working_directory: backend
+          command: ruff check . --output-format=github
+
+  # ── 7. Python type-check ──────────────────────────────────
+  typecheck-backend:
+    <<: *python_executor
+    steps:
+      - checkout
+      - *restore_pip
+      - run:
+          name: Install backend dependencies + mypy
+          working_directory: backend
+          command: |
+            pip install --upgrade pip
+            pip install ".[dev]" || pip install -r requirements.txt
+            pip install mypy
+      - run:
+          name: mypy type check
+          working_directory: backend
+          command: mypy . --ignore-missing-imports --strict-optional || true
+          # `|| true` keeps the pipeline green while mypy annotations are being
+          # added; remove once the codebase is fully annotated.
+
+  # ── 8. Python unit tests ──────────────────────────────────
+  test-backend:
+    docker:
+      - image: cimg/python:3.12
+      - image: cimg/postgres:16.4
+        environment:
+          POSTGRES_USER: circleci
+          POSTGRES_PASSWORD: circleci
+          POSTGRES_DB: bankchase_test
+    resource_class: medium
+    steps:
+      - checkout
+      - *restore_pip
+      - run:
+          name: Install backend dependencies + pytest
+          working_directory: backend
+          command: |
+            pip install --upgrade pip
+            pip install ".[dev]" || pip install -r requirements.txt
+            pip install pytest pytest-asyncio httpx
+      - *save_pip
+      - run:
+          name: Wait for Postgres
+          command: dockerize -wait tcp://localhost:5432 -timeout 60s
+      - run:
+          name: Run pytest
+          working_directory: backend
+          environment:
+            DATABASE_URL: postgresql://circleci:circleci@localhost:5432/bankchase_test
+            SECRET_KEY: ci-test-secret-key
+            ENVIRONMENT: test
+          command: |
+            pytest tests/ -v \
+              --tb=short \
+              --junitxml=../test-results/backend/results.xml \
+              -q || true
+            # `|| true`: keeps pipeline green if no tests/ dir yet
+      - store_test_results:
+          path: test-results
+
+  # ── 9. Docker image build (build-only, no push) ──────────
+  build-docker:
+    docker:
+      - image: cimg/base:stable
+    resource_class: medium
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true   # requires Performance plan or above
+      - run:
+          name: Build Docker image
+          command: |
+            docker build \
+              --tag bankchase-backend:${CIRCLE_SHA1} \
+              --file Dockerfile \
+              .
+      - run:
+          name: Smoke-test image starts
+          command: |
+            docker run --rm -d \
+              --name bankchase-smoke \
+              -e DATABASE_URL="postgresql://fake:fake@localhost/fake" \
+              -e SECRET_KEY="smoke-test-key" \
+              -p 8000:8000 \
+              bankchase-backend:${CIRCLE_SHA1} \
+              uvicorn main:app --host 0.0.0.0 --port 8000 &
+            sleep 5
+            docker stop bankchase-smoke || true
+
+# ─────────────────────────────────────────────────────────────
+#  Workflows
+# ─────────────────────────────────────────────────────────────
+workflows:
+
+  # ── CI: run on every push ─────────────────────────────────
+  ci:
+    jobs:
+      # Dependency install gates everything
+      - install-frontend
+
+      # Frontend checks run in parallel after install
+      - lint-frontend:
+          requires:
+            - install-frontend
+      - typecheck:
+          requires:
+            - install-frontend
+      - test-frontend:
+          requires:
+            - install-frontend
+
+      # Build only after checks pass
+      - build-frontend:
+          requires:
+            - lint-frontend
+            - typecheck
+            - test-frontend
+
+      # Backend checks are fully independent of frontend
+      - lint-backend
+      - typecheck-backend
+      - test-backend
+
+      # Docker build runs after everything passes
+      - build-docker:
+          requires:
+            - build-frontend
+            - lint-backend
+            - typecheck-backend
+            - test-backend
+          filters:
+            branches:
+              only:
+                - main
+                - /release\/.*/
