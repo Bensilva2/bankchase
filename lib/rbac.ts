@@ -74,6 +74,7 @@ export function isViewer(user: User): boolean {
   return hasRole(user, 'viewer')
 }
 
-export function canAccessAdminDashboard(user: User): boolean {
-  return checkPermission(user, 'access', 'admin_dashboard')
+export function canAccessAdminDashboard(user: User | { role?: string } | null | undefined): boolean {
+  if (!user || !('role' in user) || !user.role) return false
+  return checkPermission(user as User, 'access', 'admin_dashboard')
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import ApiClient from './api-client';
 
 interface UseFetchOptions {
   cache?: boolean;
@@ -58,10 +57,21 @@ export function useFetch<T>(
         }
       }
 
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const token = localStorage.getItem('access_token');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       // Try fetching with retries
       for (let attempt = 0; attempt <= retry; attempt++) {
         try {
-          const result = await ApiClient.request<T>(url);
+          const response = await fetch(`${API_BASE_URL}${url}`, { headers });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const result: T = await response.json();
           setData(result);
 
           // Store in cache

@@ -51,7 +51,7 @@ export const useFetch = <T,>(
       }
 
       const token = localStorage.getItem('access_token');
-      const headers = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         ...options.headers,
       };
