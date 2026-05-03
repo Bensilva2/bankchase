@@ -3,11 +3,17 @@
  * Tests account data fetching and state management with SWR
  */
 
+import React from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
+import { SWRConfig } from 'swr';
 import { useAccounts } from '@/hooks/useAccounts';
 import ApiClient from '@/lib/api-client';
 
 jest.mock('@/lib/api-client');
+
+// Wrap each test in a fresh SWR cache to prevent cross-test cache pollution
+const swrWrapper = ({ children }: { children: React.ReactNode }) =>
+  React.createElement(SWRConfig, { value: { provider: () => new Map() } }, children);
 
 describe('useAccounts Hook', () => {
   beforeEach(() => {
@@ -40,7 +46,7 @@ describe('useAccounts Hook', () => {
 
     (ApiClient.getAccounts as jest.Mock).mockResolvedValue(mockAccounts);
 
-    const { result } = renderHook(() => useAccounts());
+    const { result } = renderHook(() => useAccounts(), { wrapper: swrWrapper });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -56,7 +62,7 @@ describe('useAccounts Hook', () => {
       new Error('Network error')
     );
 
-    const { result } = renderHook(() => useAccounts());
+    const { result } = renderHook(() => useAccounts(), { wrapper: swrWrapper });
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
@@ -71,7 +77,7 @@ describe('useAccounts Hook', () => {
       () => new Promise(() => {})
     );
 
-    const { result } = renderHook(() => useAccounts());
+    const { result } = renderHook(() => useAccounts(), { wrapper: swrWrapper });
 
     expect(result.current.isLoading).toBe(true);
   });

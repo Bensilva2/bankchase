@@ -24,6 +24,7 @@ export const useFetch = <T,>(
   const [loading, setLoading] = useState(!!url);
   const [error, setError] = useState<string | null>(null);
   const hasFetched = useRef(false);
+  const prevUrl = useRef(url);
 
   const {
     method = 'GET',
@@ -33,6 +34,10 @@ export const useFetch = <T,>(
   } = options;
 
   const fetcher = useCallback(async () => {
+    if (prevUrl.current !== url) {
+      hasFetched.current = false;
+      prevUrl.current = url;
+    }
     if (!url || hasFetched.current) return;
     hasFetched.current = true;
 
@@ -51,7 +56,7 @@ export const useFetch = <T,>(
       }
 
       const token = localStorage.getItem('access_token');
-      const headers = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         ...options.headers,
       };

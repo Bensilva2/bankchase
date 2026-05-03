@@ -13,7 +13,7 @@ export interface AdminStats {
 export function useAdminStats() {
   const { data, error, isLoading, mutate } = useSWR<AdminStats>(
     '/admin/demo/stats',
-    () => ApiClient.getAdminStats()
+    () => ApiClient.getAdminStats() as Promise<AdminStats>
   );
 
   return {
@@ -25,10 +25,15 @@ export function useAdminStats() {
   };
 }
 
+interface AdminTransfersData {
+  transfers: unknown[];
+  total_count: number;
+}
+
 export function useAdminTransfers(limit = 50, offset = 0) {
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR<AdminTransfersData>(
     `/admin/demo/transfers?limit=${limit}&offset=${offset}`,
-    () => ApiClient.getAdminTransfers(limit, offset)
+    () => ApiClient.getAdminTransfers(limit, offset) as Promise<AdminTransfersData>
   );
 
   return {

@@ -20,12 +20,12 @@ export interface PendingFundsData {
 
 export function useDemoBalance() {
   const { data, error, isLoading } = useSWR<DemoBalance>('/user/demo/balance', () =>
-    ApiClient.getDemoBalance()
+    ApiClient.getDemoBalance() as Promise<DemoBalance>
   );
 
   return {
     balance: data?.balance || 0,
-    isDemo: data?.is_demo || true,
+    isDemo: data?.is_demo ?? false,
     isLoading,
     isError: !!error,
     error,
@@ -35,7 +35,7 @@ export function useDemoBalance() {
 export function usePendingDemoFunds() {
   const { data, error, isLoading, mutate } = useSWR<PendingFundsData>(
     '/user/demo/pending-funds',
-    () => ApiClient.getPendingDemoFunds()
+    () => ApiClient.getPendingDemoFunds() as Promise<PendingFundsData>
   );
 
   return {
