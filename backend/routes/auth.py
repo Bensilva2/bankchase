@@ -99,67 +99,78 @@ async def signup(request: SignupRequest):
     User signup endpoint
     Creates new user account and returns JWT access token
     """
-    email_lower = request.email.lower()
+    try:
+        email_lower = request.email.lower()
 
-    # Check if user already exists
-    existing_user = await fetchrow(
-        "SELECT id FROM users WHERE email = $1",
-        email_lower
-    )
-
-    if existing_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already registered"
+        # Check if user already exists
+        existing_user = await fetchrow(
+            "SELECT id FROM users WHERE email = $1",
+            email_lower
         )
 
-    # Hash password
-    password_hash = get_password_hash(request.password)
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="An account with this email already exists"
+            )
 
-    # Create new user
-    user_id = str(uuid.uuid4())
-    new_user = await fetchrow(
-        """INSERT INTO users (
-            id, email, password_hash, first_name, last_name, role, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        RETURNING id, email, first_name, last_name, role""",
-        user_id,
-        email_lower,
-        password_hash,
-        request.first_name,
-        request.last_name,
-        "user"
-    )
+        # Hash password
+        password_hash = get_password_hash(request.password)
 
-    if not new_user:
+        # Create new user
+        user_id = str(uuid.uuid4())
+        new_user = await fetchrow(
+            """INSERT INTO users (
+                id, email, password_hash, first_name, last_name, role, created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id, email, first_name, last_name, role""",
+            user_id,
+            email_lower,
+            password_hash,
+            request.first_name or "",
+            request.last_name or "",
+            "user"
+        )
+
+        if not new_user:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to create user account"
+            )
+
+        # Set a default PIN for the user
+        try:
+            # Use last 4 digits of user ID as default PIN
+            default_pin = str(user_id)[-4:]
+            await set_user_pin(user_id, default_pin)
+        except Exception as e:
+            print(f"[v0] Warning: Failed to set default PIN for user {user_id}: {str(e)}")
+
+        # Create access token
+        token = create_access_token({
+            "sub": str(new_user["id"]),
+            "user_id": str(new_user["id"]),
+            "email": new_user["email"],
+            "role": new_user.get("role", "user"),
+        })
+
+        return AuthResponse(
+            access_token=token,
+            user_id=str(new_user["id"]),
+            email=new_user["email"],
+            first_name=new_user.get("first_name", ""),
+            last_name=new_user.get("last_name", ""),
+        )
+
+    except HTTPException:
+        # Re-raise HTTP exceptions (already properly formatted)
+        raise
+    except Exception as e:
+        print(f"[v0] Signup error: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail="Failed to create user account"
+            detail=f"Failed to create user: {str(e)}"
         )
-
-    # Set a default PIN for the user
-    try:
-        # Use last 4 digits of user ID as default PIN
-        default_pin = str(user_id)[-4:]
-        await set_user_pin(user_id, default_pin)
-    except Exception as e:
-        print(f"[v0] Warning: Failed to set default PIN for user {user_id}: {str(e)}")
-
-    # Create access token
-    token = create_access_token({
-        "sub": str(new_user["id"]),
-        "user_id": str(new_user["id"]),
-        "email": new_user["email"],
-        "role": new_user.get("role", "user"),
-    })
-
-    return AuthResponse(
-        access_token=token,
-        user_id=str(new_user["id"]),
-        email=new_user["email"],
-        first_name=new_user.get("first_name", ""),
-        last_name=new_user.get("last_name", ""),
-    )
 
 
 @router.get("/verify", response_model=VerifyResponse)
