@@ -20,13 +20,16 @@ export default function LoginPage() {
 
     try {
       const response = await ApiClient.login(email, password);
-      if (response.token) {
+      const token = response.token || response.access_token;
+      if (token) {
         // Redirect based on role - admin goes to admin dashboard
         if (response.user?.role === 'admin') {
           router.push('/admin');
         } else {
           router.push('/accounts');
         }
+      } else {
+        setError('No authentication token received');
       }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');

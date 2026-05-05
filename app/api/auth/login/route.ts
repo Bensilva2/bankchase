@@ -1,17 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
-import { comparePassword, generateToken } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
 
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!url || !key) {
-    throw new Error('Supabase environment variables not configured')
-  }
-
-  return createClient(url, key)
-}
+/**
+ * Login proxy route - forwards login requests to Python FastAPI backend
+ * The backend handles password verification and token generation
+ */
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json()
@@ -24,59 +16,42 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const supabase = getSupabase()
-
-    // Query user from Supabase
-    const { data: user, error: queryError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single()
-
-    if (queryError || !user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
-    }
-
-    // Verify password
-    const passwordMatch = await comparePassword(password, user.password_hash)
-
-    if (!passwordMatch) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
-    }
-
-    // Generate JWT token with role
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      username: user.username,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      role: user.role || 'viewer',
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    
+    const response = await fetch(`${backendUrl}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
     })
+
+    if (!response.ok) {
+      const error = await response.json()
+      return NextResponse.json(
+        { error: error.detail || 'Invalid email or password' },
+        { status: response.status }
+      )
+    }
+
+    const data = await response.json()
 
     return NextResponse.json(
       {
-        token: token.token,
+        token: data.access_token,
+        access_token: data.access_token,
         user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role || 'viewer',
+          id: data.user_id,
+          email: data.email,
+          firstName: data.first_name || '',
+          lastName: data.last_name || '',
+          role: data.role || 'user',
         },
       },
       { status: 200 }
     )
   } catch (error: any) {
-    console.error('Login error:', error)
-
+    console.error('[v0] Login proxy error:', error)
     return NextResponse.json(
       { error: 'Login failed - please try again' },
       { status: 500 }
