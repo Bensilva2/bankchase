@@ -257,3 +257,121 @@ async def logout(current_user: TokenData = Depends(get_current_user)):
     from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
     
     return {"message": "Successfully logged out. Please discard your access token."}
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """
+    Forgot password endpoint - sends reset link to user email
+    Returns success regardless of whether email exists (security best practice)
+    """
+    try:
+        email_lower = request.email.lower()
+        
+        # Check if user exists
+        user = await fetchrow(
+            "SELECT id, email FROM users WHERE email = $1",
+            email_lower
+        )
+        
+        if user:
+            # Generate password reset token (valid for 1 hour)
+            import secrets
+            import time
+            reset_token = secrets.token_urlsafe(32)
+            token_exp = int(time.time()) + (3600)  # 1 hour from now
+            
+            # Store reset token in database
+            await execute(
+                """INSERT INTO password_reset_tokens (user_id, token, token_exp, created_at)
+                   VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+                   ON CONFLICT (user_id) DO UPDATE SET token = $2, token_exp = $3""",
+                user["id"],
+                reset_token,
+                token_exp
+            )
+            
+            # TODO: Send email with reset link
+            print(f"[v0] Password reset token for {email_lower}: {reset_token}")
+        
+        # Always return success (don't reveal if email exists)
+        return {
+            "success": True,
+            "message": "If an account exists with this email, a password reset link has been sent."
+        }
+    except Exception as e:
+        print(f"[v0] Forgot password error: {str(e)}")
+        # Still return success for security
+        return {
+            "success": True,
+            "message": "If an account exists with this email, a password reset link has been sent."
+        }
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=20, description="Reset token from email")
+    new_password: str = Field(..., min_length=12, description="New password")
+
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """
+    Reset password endpoint - validates token and updates password
+    """
+    try:
+        import time
+        from auth import validate_password_strength
+        
+        # Validate password strength
+        validation = validate_password_strength(request.new_password)
+        if not validation["valid"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Password too weak: {'; '.join(validation['errors'][:2])}"
+            )
+        
+        # Find reset token
+        token_record = await fetchrow(
+            """SELECT user_id, token_exp FROM password_reset_tokens 
+               WHERE token = $1""",
+            request.token
+        )
+        
+        if not token_record:
+            raise HTTPException(status_code=400, detail="Invalid reset token")
+        
+        # Check if token is expired
+        if token_record["token_exp"] < int(time.time()):
+            await execute(
+                "DELETE FROM password_reset_tokens WHERE token = $1",
+                request.token
+            )
+            raise HTTPException(status_code=400, detail="Reset token has expired")
+        
+        # Update password
+        hashed_password = get_password_hash(request.new_password)
+        await execute(
+            "UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+            hashed_password,
+            token_record["user_id"]
+        )
+        
+        # Delete used reset token
+        await execute(
+            "DELETE FROM password_reset_tokens WHERE token = $1",
+            request.token
+        )
+        
+        return {
+            "success": True,
+            "message": "Password reset successfully. Please log in with your new password."
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[v0] Reset password error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to reset password")
