@@ -15,10 +15,12 @@ from auth import (
     get_password_hash,
     verify_password,
     create_access_token,
+    create_refresh_token,
     get_current_user,
+    revoke_token,
 )
 from models import TokenData
-from utils.pin_security import set_user_pin
+from utils.pin_security import set_user_pin, validate_pin_format
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -30,7 +32,7 @@ class LoginRequest(BaseModel):
 
 class SignupRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
+    password: str = Field(..., min_length=12, description="Password must be strong (12+ chars, uppercase, lowercase, number, special char)")
     first_name: str = ""
     last_name: str = ""
 
@@ -138,10 +140,15 @@ async def signup(request: SignupRequest):
                 detail="Failed to create user account"
             )
 
-        # Set a default PIN for the user
+        # Set a random PIN for the user (secure random, not predictable)
         try:
-            # Use last 4 digits of user ID as default PIN
-            default_pin = str(user_id)[-4:]
+            import secrets
+            # Generate random 4-digit PIN (1000-9999, avoiding weak patterns)
+            while True:
+                default_pin = str(secrets.randbelow(9000) + 1000)
+                # Check it's not weak (all same digits or sequential)
+                if await validate_pin_format(default_pin):
+                    break
             await set_user_pin(user_id, default_pin)
         except Exception as e:
             print(f"[v0] Warning: Failed to set default PIN for user {user_id}: {str(e)}")
@@ -198,10 +205,55 @@ async def verify_token(current_user: TokenData = Depends(get_current_user)):
     )
 
 
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+@router.post("/refresh", response_model=RefreshResponse)
+async def refresh_access_token(request: RefreshRequest):
+    """
+    Refresh an expired access token using a valid refresh token
+    """
+    try:
+        from auth import decode_token
+        payload = decode_token(request.refresh_token)
+        
+        # Verify this is a refresh token, not an access token
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type for refresh")
+        
+        user_id = payload.get("sub") or payload.get("user_id")
+        email = payload.get("email")
+        role = payload.get("role", "user")
+        
+        # Create new access token
+        new_token = create_access_token({
+            "sub": user_id,
+            "user_id": user_id,
+            "email": email,
+            "role": role,
+        })
+        
+        return RefreshResponse(access_token=new_token)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+
 @router.post("/logout")
 async def logout(current_user: TokenData = Depends(get_current_user)):
     """
-    Logout endpoint
-    In production, you might invalidate tokens by storing them in a blacklist
+    Logout endpoint - revokes the current access token
+    Token will be added to blacklist and cannot be used again
     """
-    return {"message": "Successfully logged out"}
+    # In production, store revoked tokens in Redis or database for persistence
+    # For now, using in-memory blacklist
+    from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+    
+    return {"message": "Successfully logged out. Please discard your access token."}

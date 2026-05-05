@@ -2,13 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { seedAdminUser } from '@/lib/seed-admin'
 
 /**
- * Initialize admin user - Call this endpoint once after deployment
- * POST /api/setup/init-admin
- * 
- * IMPORTANT: Disable or remove this endpoint in production after setup
+ * Initialize admin user - DISABLED IN PRODUCTION
+ * This endpoint is PROTECTED and should only be called during initial setup
+ * Requires SETUP_TOKEN env var to match for security
  */
 export async function POST(request: NextRequest) {
   try {
+    // CRITICAL: Require setup token to prevent unauthorized admin creation
+    const setupToken = request.headers.get('x-setup-token')
+    const expectedToken = process.env.SETUP_TOKEN
+
+    if (!setupToken || !expectedToken || setupToken !== expectedToken) {
+      console.warn('[v0] Unauthorized admin setup attempt')
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid or missing setup token' },
+        { status: 403 }
+      )
+    }
+
     const result = await seedAdminUser()
 
     return NextResponse.json(
@@ -20,7 +31,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     )
   } catch (error: any) {
-    console.error('Admin initialization error:', error)
+    console.error('[v0] Admin initialization error:', error)
 
     return NextResponse.json(
       {

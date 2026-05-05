@@ -93,9 +93,9 @@ async def create_account(
     current_user: TokenData = Depends(get_current_user)
 ):
     """Create a new account for the current user"""
-    # Generate account number
-    import random
-    account_number = "".join([str(random.randint(0, 9)) for _ in range(12)])
+    # Generate cryptographically secure account number
+    import secrets
+    account_number = "".join([str(secrets.randbelow(10)) for _ in range(12)])
     
     row = await fetchrow(
         """
