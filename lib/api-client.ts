@@ -59,10 +59,11 @@ export class ApiClient {
       body: JSON.stringify({ email, password }),
     });
     
-    // Store token
-    if (data.token) {
-      this.setToken(data.token);
-      localStorage.setItem('access_token', data.token);
+    // Store token (support both 'token' and 'access_token' field names)
+    const token = data.token || data.access_token;
+    if (token) {
+      this.setToken(token);
+      localStorage.setItem('access_token', token);
     }
     
     return data;

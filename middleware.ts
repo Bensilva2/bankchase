@@ -1,76 +1,50 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken, getTokenFromHeader } from '@/lib/auth'
+/**
+ * Authentication middleware for protecting routes
+ * Checks for valid JWT token and redirects to login if not authenticated
+ */
 
-// Protected routes that require authentication
-const protectedRoutes = ['/dashboard', '/accounts', '/transfer', '/transactions', '/profile']
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// Admin-only routes
-const adminRoutes = ['/admin']
+// Routes that don't require authentication
+const PUBLIC_ROUTES = ['/login', '/signup', '/'];
 
-// Route requirements
-const routeRequirements: Record<string, { requireAuth: boolean; requiredRoles?: string[] }> = {
-  '/admin': { requireAuth: true, requiredRoles: ['admin'] },
-  '/dashboard': { requireAuth: true },
-  '/accounts': { requireAuth: true },
-  '/transfer': { requireAuth: true },
-  '/transactions': { requireAuth: true },
-  '/profile': { requireAuth: true },
-}
+// Routes that require authentication
+const PROTECTED_ROUTES = ['/accounts', '/dashboard', '/pay-transfer', '/admin', '/profile', '/voice-agent'];
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname } = request.nextUrl;
+  
+  // Get token from localStorage (client-side only) or cookies
+  const token = request.cookies.get('access_token')?.value;
 
-  // Check if route requires authentication or special roles
-  const routeConfig = Object.entries(routeRequirements).find(([route]) => pathname.startsWith(route))?.[1]
+  // Check if current route is protected
+  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname === route);
 
-  if (routeConfig?.requireAuth) {
-    // Get token from cookie or header
-    const token = request.cookies.get('auth_token')?.value || getTokenFromHeader(request.headers.get('Authorization'))
-
-    if (!token) {
-      // Redirect to login if no token
-      const url = request.nextUrl.clone()
-      url.pathname = '/'
-      url.searchParams.set('from', pathname)
-      return NextResponse.redirect(url)
-    }
-
-    // Verify token
-    const payload = verifyToken(token)
-
-    if (!payload) {
-      // Redirect to login if token is invalid
-      const url = request.nextUrl.clone()
-      url.pathname = '/'
-      url.searchParams.set('from', pathname)
-      return NextResponse.redirect(url)
-    }
-
-    // Check role-based access
-    if (routeConfig.requiredRoles && routeConfig.requiredRoles.length > 0) {
-      const userRole = (payload as any)?.role
-
-      if (!userRole || !routeConfig.requiredRoles.includes(userRole)) {
-        // User doesn't have required role - redirect to dashboard
-        const url = request.nextUrl.clone()
-        url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
-      }
-    }
+  // If accessing protected route without token, redirect to login
+  if (isProtectedRoute && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  return NextResponse.next()
+  // If accessing login/signup with token, redirect to accounts
+  if ((pathname === '/login' || pathname === '/signup') && token) {
+    return NextResponse.redirect(new URL('/accounts', request.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - public (public files)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
-}
+};
