@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bankchase-config
+  namespace: bankchase
+data:
+  # Frontend configuration
+  NEXT_PUBLIC_API_URL: "https://api.bankchase.example.com"
+  NEXT_PUBLIC_APP_URL: "https://bankchase.example.com"
+  
+  # Backend configuration
+  PYTHONUNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "production"
+  
+  # Security
+  CORS_ORIGINS: "https://bankchase.example.com"
+  
+  # API configuration
+  API_RATE_LIMIT: "1000"
+  API_TIMEOUT: "30"
