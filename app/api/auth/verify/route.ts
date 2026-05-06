@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/client'
+import { getUserProfile } from '@/lib/supabase-queries'
 
 export async function GET(request: NextRequest) {
   const token = request.headers.get('authorization')?.replace('Bearer ', '')
@@ -8,33 +10,32 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Single backend call - timeout after 3 seconds
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 3000)
+    // Verify the token with Supabase
+    const supabase = createClient()
+    const { data: { user }, error } = await supabase.auth.getUser(token)
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/verify`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal,
-      }
-    )
-
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
+    if (error || !user) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    const user = await response.json()
-    return NextResponse.json({ user }, { status: 200 })
+    // Get user profile
+    const profile = await getUserProfile(user.id)
+
+    return NextResponse.json(
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          first_name: profile?.first_name,
+          last_name: profile?.last_name,
+          roles: profile?.roles,
+          demo_balance: profile?.demo_balance,
+        },
+      },
+      { status: 200 }
+    )
   } catch (error: any) {
-    // No retries - just fail
-    console.error('Token verification error:', error.message)
-    return NextResponse.json({ error: 'Verification failed' }, { status: 500 })
+    console.error('[v0] Token verification error:', error.message)
+    return NextResponse.json({ error: 'Verification failed' }, { status: 401 })
   }
 }
