@@ -5,23 +5,60 @@ import { useAccounts } from '@/hooks/useAccounts';
 import ApiClient from '@/lib/api-client';
 import { Send, Plus, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { ApiErrorHandler } from '@/lib/error-handler';
+import { FormErrorDisplay, FormFieldError } from '@/components/form-error-display';
 
 export default function PayTransferPage() {
   const { accounts } = useAccounts();
   const [isLoading, setIsLoading] = useState(false);
+  const [globalError, setGlobalError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     from_account_number: '',
     to_account_number: '',
     to_bank_code: 'INTERNAL',
     amount: '',
     narration: '',
+    pin: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setGlobalError(null);
+    setFieldErrors({});
     
-    if (!formData.from_account_number || !formData.to_account_number || !formData.amount) {
-      toast.error('Please fill in all required fields');
+    // Validation
+    const errors: Record<string, string> = {};
+    
+    if (!formData.from_account_number) {
+      errors.from_account_number = 'Source account is required';
+    }
+    
+    if (!formData.to_account_number) {
+      errors.to_account_number = 'Recipient account is required';
+    } else if (formData.to_account_number === formData.from_account_number) {
+      errors.to_account_number = 'Cannot transfer to the same account';
+    }
+    
+    if (!formData.amount) {
+      errors.amount = 'Amount is required';
+    } else {
+      const amount = parseFloat(formData.amount);
+      if (isNaN(amount) || amount <= 0) {
+        errors.amount = 'Amount must be a positive number';
+      } else if (amount > 999999.99) {
+        errors.amount = 'Amount exceeds maximum allowed';
+      }
+    }
+    
+    if (!formData.pin) {
+      errors.pin = 'PIN is required';
+    } else if (!/^\d{4}$/.test(formData.pin)) {
+      errors.pin = 'PIN must be exactly 4 digits';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
@@ -32,7 +69,9 @@ export default function PayTransferPage() {
         to_account_number: formData.to_account_number,
         to_bank_code: formData.to_bank_code,
         amount: parseFloat(formData.amount),
+        pin: formData.pin,
         narration: formData.narration,
+        country_code: 'US',
       });
 
       toast.success('Transfer initiated successfully');
@@ -42,9 +81,12 @@ export default function PayTransferPage() {
         to_bank_code: 'INTERNAL',
         amount: '',
         narration: '',
+        pin: '',
       });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send money');
+      const message = ApiErrorHandler.getErrorMessage(error);
+      setGlobalError(message);
+      console.error('[v0] Transfer error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -89,6 +131,12 @@ export default function PayTransferPage() {
         {/* Transfer Form */}
         <div className="bg-card border border-border rounded-2xl p-8">
           <h2 className="text-2xl font-bold text-foreground mb-6">Send Money</h2>
+
+          {globalError && (
+            <div className="mb-6">
+              <FormErrorDisplay globalError={globalError} />
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* From Account */}
@@ -162,9 +210,12 @@ export default function PayTransferPage() {
                   step="0.01"
                   min="0"
                   required
-                  className="w-full pl-8 pr-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className={`w-full pl-8 pr-4 py-3 bg-background border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 ${
+                    fieldErrors.amount ? 'border-red-500 focus:ring-red-500' : 'border-border focus:ring-primary'
+                  }`}
                 />
               </div>
+              <FormFieldError error={fieldErrors.amount} />
             </div>
 
             {/* Narration */}

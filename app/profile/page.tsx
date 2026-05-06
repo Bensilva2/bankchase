@@ -124,15 +124,135 @@ export default function ProfilePage() {
           <div className="p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
 
-            <div className="space-y-6">
-              {/* Email */}
-              <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
-                <Mail className="w-5 h-5 text-[#0a4fa6] mt-1 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-600 font-medium">Email Address</p>
-                  <p className="text-lg text-gray-900 mt-1">{user.email}</p>
+            {editMode ? (
+              <div className="space-y-6">
+                {/* Name Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4fa6] focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4fa6] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Email and Phone */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4fa6] focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="(123) 456-7890"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4fa6] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4fa6] focus:border-transparent"
+                  />
+                </div>
+
+                {/* City, State, Zip */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4fa6] focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      maxLength={2}
+                      placeholder="CA"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4fa6] focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
+                    <input
+                      type="text"
+                      name="zipCode"
+                      value={formData.zipCode}
+                      onChange={handleInputChange}
+                      placeholder="12345"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4fa6] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Save/Cancel Buttons */}
+                <div className="flex gap-4 pt-6 border-t border-gray-200">
+                  <Button
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="bg-[#0a4fa6] hover:bg-[#003087] flex items-center gap-2"
+                  >
+                    {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Email */}
+                <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
+                  <Mail className="w-5 h-5 text-[#0a4fa6] mt-1 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 font-medium">Email Address</p>
+                    <p className="text-lg text-gray-900 mt-1">{user.email}</p>
+                  </div>
+                </div>
 
               {/* Phone */}
               <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
@@ -180,6 +300,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+            )}
           </div>
         </Card>
 
