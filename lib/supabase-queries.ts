@@ -266,3 +266,62 @@ export async function getDemoTransfers(userId: string) {
   if (error) throw error
   return data || []
 }
+
+// Goal helpers
+export async function getUserGoals(userId: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('goals')
+    .select('*')
+    .eq('user_id', userId)
+    .order('deadline', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function createGoal(
+  userId: string,
+  title: string,
+  targetAmount: number,
+  deadline: string,
+  category: string = 'Savings'
+) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('goals')
+    .insert({
+      user_id: userId,
+      title,
+      target_amount: targetAmount,
+      current_amount: 0,
+      deadline,
+      category,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateGoal(goalId: string, updates: any) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('goals')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', goalId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function deleteGoal(goalId: string) {
+  const supabase = createClient()
+  const { error } = await supabase.from('goals').delete().eq('id', goalId)
+
+  if (error) throw error
+  return true
+}
