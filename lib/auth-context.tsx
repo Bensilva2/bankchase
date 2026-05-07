@@ -123,10 +123,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       const data = await response.json()
       localStorage.setItem('access_token', data.access_token)
+      if (data.refresh_token) {
+        localStorage.setItem('refresh_token', data.refresh_token)
+      }
       setUser(data.user)
-
-      // Redirect to dashboard
-      router.push('/dashboard')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Registration failed'
       setError(message)
