@@ -16,8 +16,12 @@ import {
   ArrowDownLeft,
   Plus,
   Eye,
+  Menu,
+  User,
+  ChevronRight,
 } from 'lucide-react'
 import { format } from 'date-fns'
+import { PendingDemoFunds } from '@/components/pending-demo-funds'
 
 interface Account {
   id: string
@@ -101,6 +105,9 @@ export default function DashboardPage() {
           <h1 className="text-4xl font-bold text-foreground mb-1">Good morning</h1>
           <p className="text-muted-foreground text-sm">{dateStr}</p>
         </div>
+
+        {/* Pending Demo Funds Alert */}
+        <PendingDemoFunds />
 
         {/* Quick Actions - Horizontal Scroll */}
         <div className="mb-8 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
