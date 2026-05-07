@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import ApiClient from '@/lib/api-client';
 import Link from 'next/link';
 import { Eye, EyeOff, Lock } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -13,31 +13,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login, isAuthenticated } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
     try {
-      const response = await ApiClient.login(email, password);
-      if (response.access_token) {
-        router.push('/dashboard');
-      }
+      await login(email, password);
+      router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.');
-    } finally {
-      setLoading(false);
+      setError(err.message || 'Invalid email or password');
     }
   };
 
-  // If already logged in, redirect to dashboard
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
+    if (isAuthenticated) {
       router.push('/dashboard');
     }
-  }, [router]);
+  }, [isAuthenticated, router]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
