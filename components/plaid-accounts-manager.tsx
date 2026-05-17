@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PlaidLinkButton } from './plaid-link-button';
-import { AlertCircle, Bank, CreditCard, DollarSign, Loader2, Trash2 } from 'lucide-react';
+import { AlertCircle, Loader2, Trash2, DollarSign } from 'lucide-react';
 
 interface PlaidAccount {
   id: string;
@@ -60,14 +60,7 @@ export function PlaidAccountsManager() {
   }, []);
 
   const getAccountIcon = (type: string) => {
-    switch (type) {
-      case 'credit':
-        return <CreditCard className="h-6 w-6 text-orange-600" />;
-      case 'depository':
-        return <Bank className="h-6 w-6 text-blue-600" />;
-      default:
-        return <DollarSign className="h-6 w-6 text-green-600" />;
-    }
+    return <DollarSign className="h-6 w-6 text-blue-600" />;
   };
 
   const handleAccountLinked = () => {
@@ -167,7 +160,7 @@ export function PlaidAccountsManager() {
         </div>
       ) : (
         <Card className="p-12 text-center">
-          <Bank className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+          <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground mb-4">No bank accounts linked yet</p>
           <PlaidLinkButton onSuccess={handleAccountLinked} />
         </Card>
