@@ -2,6 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { sendDemoTransfer, sendBulkDemoTransfer, getDemoTransferHistory, formatTransferForDisplay } from '@/lib/demo-transfer-service';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, CheckCircle, Clock, Users, DollarSign, ArrowUpRight, Loader2 } from 'lucide-react';
 
 interface AdminDemoTransferProps {
   adminUserId: string;
@@ -13,19 +20,22 @@ export function AdminDemoTransfer({ adminUserId }: AdminDemoTransferProps) {
   const [daysToRefund, setDaysToRefund] = useState('7');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [transfers, setTransfers] = useState<any[]>([]);
   const [transfersLoading, setTransfersLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'history'>('single');
+  const [adminBalance, setAdminBalance] = useState(1000000);
 
   // Fetch transfer history
   const fetchHistory = async () => {
     setTransfersLoading(true);
     try {
-      const data = await getDemoTransferHistory(adminUserId, { limit: 20 });
+      const data = await getDemoTransferHistory(adminUserId, { limit: 50 });
       setTransfers(data.transfers.map(formatTransferForDisplay));
     } catch (error) {
       console.error('[v0] Error fetching history:', error);
       setMessage('Failed to fetch transfer history');
+      setMessageType('error');
     } finally {
       setTransfersLoading(false);
     }
@@ -37,20 +47,43 @@ export function AdminDemoTransfer({ adminUserId }: AdminDemoTransferProps) {
     }
   }, [activeTab]);
 
+  // Calculate stats
+  const stats = {
+    totalSent: transfers.filter(t => t.status !== 'refunded').reduce((sum, t) => sum + t.amount, 0),
+    pendingRefunds: transfers.filter(t => t.status === 'pending').length,
+    completedTransfers: transfers.filter(t => t.status === 'completed').length
+  };
+
   const handleSingleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!toAccountNumber || !amount) {
+      setMessage('Please fill all required fields');
+      setMessageType('error');
+      return;
+    }
+
+    const transferAmount = parseFloat(amount);
+    if (transferAmount <= 0 || transferAmount > adminBalance) {
+      setMessage('Invalid amount or insufficient balance');
+      setMessageType('error');
+      return;
+    }
+
     setLoading(true);
     setMessage('');
 
     try {
       const result = await sendDemoTransfer({
         toAccountNumber,
-        amount: parseFloat(amount),
+        amount: transferAmount,
         daysToRefund: parseInt(daysToRefund),
         adminUserId,
       });
 
       setMessage(`Success! Transfer ${result.transferReference} sent.`);
+      setMessageType('success');
+      setAdminBalance(adminBalance - transferAmount);
       setToAccountNumber('');
       setAmount('');
       setDaysToRefund('7');
@@ -61,6 +94,7 @@ export function AdminDemoTransfer({ adminUserId }: AdminDemoTransferProps) {
       }
     } catch (error: any) {
       setMessage(`Error: ${error.message}`);
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -69,6 +103,18 @@ export function AdminDemoTransfer({ adminUserId }: AdminDemoTransferProps) {
   const handleBulkTransfer = async () => {
     if (!amount) {
       setMessage('Please enter an amount');
+      setMessageType('error');
+      return;
+    }
+
+    const transferAmount = parseFloat(amount);
+    // Estimate users (for demo, assume ~10 users)
+    const estimatedUsers = 10;
+    const totalAmount = transferAmount * estimatedUsers;
+
+    if (totalAmount > adminBalance) {
+      setMessage('Insufficient balance for bulk transfer');
+      setMessageType('error');
       return;
     }
 
@@ -77,12 +123,14 @@ export function AdminDemoTransfer({ adminUserId }: AdminDemoTransferProps) {
 
     try {
       const result = await sendBulkDemoTransfer({
-        amount: parseFloat(amount),
+        amount: transferAmount,
         daysToRefund: parseInt(daysToRefund),
         adminUserId,
       });
 
-      setMessage(`Success! Sent ${result.amount} to ${result.totalUsers} users.`);
+      setMessage(`Success! Sent ${transferAmount} to ${result.totalUsers || estimatedUsers} users.`);
+      setMessageType('success');
+      setAdminBalance(adminBalance - totalAmount);
       setAmount('');
       setDaysToRefund('7');
 
@@ -92,221 +140,256 @@ export function AdminDemoTransfer({ adminUserId }: AdminDemoTransferProps) {
       }
     } catch (error: any) {
       setMessage(`Error: ${error.message}`);
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
-      <h2 className="mb-6 text-2xl font-bold">Demo Money Transfer</h2>
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case 'refunded':
+        return <Badge className="bg-gray-100 text-gray-800">Refunded</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
 
-      {/* Tabs */}
-      <div className="mb-6 flex border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab('single')}
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'single'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Single Transfer
-        </button>
-        <button
-          onClick={() => setActiveTab('bulk')}
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'bulk'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Bulk Transfer
-        </button>
-        <button
-          onClick={() => setActiveTab('history')}
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'history'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Transfer History
-        </button>
+  const getTypeIcon = (type: string) => {
+    return type === 'internal' ? (
+      <CheckCircle className="h-4 w-4 text-green-600" />
+    ) : (
+      <Clock className="h-4 w-4 text-yellow-600" />
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Demo Money Transfer</h1>
+          <p className="text-muted-foreground">Manage demo money transfers and monitor system</p>
+        </div>
+        <Badge variant="outline" className="px-4 py-2 text-base">
+          Balance: ${adminBalance.toLocaleString()}
+        </Badge>
       </div>
 
-      {/* Single Transfer */}
-      {activeTab === 'single' && (
-        <form onSubmit={handleSingleTransfer} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Recipient Account Number
-            </label>
-            <input
-              type="text"
-              value={toAccountNumber}
-              onChange={(e) => setToAccountNumber(e.target.value)}
-              placeholder="e.g., 1234567890"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Amount (NGN)
-            </label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              min="0"
-              step="0.01"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Days Until Auto-Refund (for external accounts)
-            </label>
-            <select
-              value={daysToRefund}
-              onChange={(e) => setDaysToRefund(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-            >
-              <option value="7">7 days</option>
-              <option value="14">14 days</option>
-            </select>
-          </div>
-
-          {message && (
-            <div
-              className={`rounded-md p-3 text-sm ${
-                message.includes('Error')
-                  ? 'bg-red-50 text-red-700'
-                  : 'bg-green-50 text-green-700'
-              }`}
-            >
-              {message}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Sent</p>
+              <p className="text-2xl font-bold">${stats.totalSent.toLocaleString()}</p>
             </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {loading ? 'Sending...' : 'Send Demo Money'}
-          </button>
-        </form>
-      )}
-
-      {/* Bulk Transfer */}
-      {activeTab === 'bulk' && (
-        <div className="space-y-4">
-          <div className="rounded-md bg-blue-50 p-4 text-sm text-blue-700">
-            Send demo money to ALL registered users at once.
+            <DollarSign className="h-8 w-8 text-blue-600" />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Amount Per User (NGN)
-            </label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-              min="0"
-              step="0.01"
-            />
-          </div>
-
-          {message && (
-            <div
-              className={`rounded-md p-3 text-sm ${
-                message.includes('Error')
-                  ? 'bg-red-50 text-red-700'
-                  : 'bg-green-50 text-green-700'
-              }`}
-            >
-              {message}
+        </Card>
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Pending Refunds</p>
+              <p className="text-2xl font-bold">{stats.pendingRefunds}</p>
             </div>
-          )}
+            <Clock className="h-8 w-8 text-yellow-600" />
+          </div>
+        </Card>
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-2xl font-bold">{stats.completedTransfers}</p>
+            </div>
+            <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+        </Card>
+      </div>
 
-          <button
-            onClick={handleBulkTransfer}
-            disabled={loading}
-            className="w-full rounded-md bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 disabled:bg-gray-400"
-          >
-            {loading ? 'Sending...' : 'Send to All Users'}
-          </button>
+      {/* Message Alert */}
+      {message && (
+        <div className={`flex items-center gap-2 rounded-lg p-4 ${
+          messageType === 'success' 
+            ? 'bg-green-50 border border-green-200 text-green-800' 
+            : 'bg-red-50 border border-red-200 text-red-800'
+        }`}>
+          {messageType === 'success' ? (
+            <CheckCircle className="h-5 w-5" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <span>{message}</span>
         </div>
       )}
 
-      {/* Transfer History */}
-      {activeTab === 'history' && (
-        <div className="space-y-4">
-          {transfersLoading && <div className="text-center text-gray-600">Loading...</div>}
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="single">Single Transfer</TabsTrigger>
+          <TabsTrigger value="bulk">Bulk Transfer</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
+        </TabsList>
+
+        {/* Single Transfer */}
+        <TabsContent value="single" className="mt-6">
+          <Card className="p-6">
+            <form onSubmit={handleSingleTransfer} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="account">Recipient Account Number</Label>
+                  <Input
+                    id="account"
+                    type="text"
+                    value={toAccountNumber}
+                    onChange={(e) => setToAccountNumber(e.target.value)}
+                    placeholder="e.g., 1234567890"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Amount (NGN)</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="Enter amount"
+                    min="0"
+                    step="0.01"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="days">Days Until Auto-Refund</Label>
+                <select
+                  id="days"
+                  value={daysToRefund}
+                  onChange={(e) => setDaysToRefund(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={loading}
+                >
+                  <option value="7">7 days</option>
+                  <option value="14">14 days</option>
+                </select>
+              </div>
+
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {loading ? 'Sending...' : 'Send Demo Money'}
+              </Button>
+            </form>
+          </Card>
+        </TabsContent>
+
+        {/* Bulk Transfer */}
+        <TabsContent value="bulk" className="mt-6">
+          <Card className="p-6 space-y-6">
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 flex items-center gap-3">
+              <Users className="h-5 w-5 text-blue-600" />
+              <p className="text-sm text-blue-800">Send demo money to ALL registered users at once</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="bulk-amount">Amount Per User (NGN)</Label>
+                <Input
+                  id="bulk-amount"
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="Enter amount per user"
+                  min="0"
+                  step="0.01"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bulk-days">Days Until Auto-Refund</Label>
+                <select
+                  id="bulk-days"
+                  value={daysToRefund}
+                  onChange={(e) => setDaysToRefund(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={loading}
+                >
+                  <option value="7">7 days</option>
+                  <option value="14">14 days</option>
+                </select>
+              </div>
+
+              <Button onClick={handleBulkTransfer} disabled={loading} className="w-full bg-orange-600 hover:bg-orange-700">
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {loading ? 'Sending...' : 'Send to All Users'}
+              </Button>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Transfer History */}
+        <TabsContent value="history" className="mt-6">
+          {transfersLoading && (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          )}
 
           {!transfersLoading && transfers.length === 0 && (
-            <div className="text-center text-gray-600">No transfers yet</div>
+            <Card className="p-12 text-center">
+              <p className="text-muted-foreground">No transfers yet</p>
+            </Card>
           )}
 
           {!transfersLoading && transfers.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="px-4 py-2 text-left font-medium">Reference</th>
-                    <th className="px-4 py-2 text-left font-medium">Account</th>
-                    <th className="px-4 py-2 text-right font-medium">Amount</th>
-                    <th className="px-4 py-2 text-left font-medium">Status</th>
-                    <th className="px-4 py-2 text-left font-medium">Type</th>
-                    <th className="px-4 py-2 text-left font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transfers.map((transfer) => (
-                    <tr key={transfer.id} className="border-b border-gray-100">
-                      <td className="px-4 py-3 font-mono text-xs">
-                        {transfer.transfer_reference}
-                      </td>
-                      <td className="px-4 py-3">{transfer.to_account_number}</td>
-                      <td className="px-4 py-3 text-right font-medium">
-                        ₦{transfer.amount.toLocaleString('en-NG', {
-                          minimumFractionDigits: 2,
-                        })}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                            transfer.status === 'completed'
-                              ? 'bg-green-100 text-green-700'
-                              : transfer.status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-red-100 text-red-700'
-                          }`}
-                        >
-                          {transfer.statusLabel}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">{transfer.typeLabel}</td>
-                      <td className="px-4 py-3 text-xs text-gray-500">
-                        {new Date(transfer.created_at).toLocaleDateString()}
-                      </td>
+            <div className="rounded-lg border overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50 border-b">
+                    <tr>
+                      <th className="px-6 py-3 text-left font-semibold">Reference</th>
+                      <th className="px-6 py-3 text-left font-semibold">Account</th>
+                      <th className="px-6 py-3 text-right font-semibold">Amount</th>
+                      <th className="px-6 py-3 text-left font-semibold">Status</th>
+                      <th className="px-6 py-3 text-left font-semibold">Type</th>
+                      <th className="px-6 py-3 text-left font-semibold">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {transfers.map((transfer) => (
+                      <tr key={transfer.id} className="border-b hover:bg-muted/50 transition-colors">
+                        <td className="px-6 py-4 font-mono text-xs text-muted-foreground">
+                          {transfer.transfer_reference}
+                        </td>
+                        <td className="px-6 py-4">{transfer.to_account_number}</td>
+                        <td className="px-6 py-4 text-right font-semibold">
+                          ₦{transfer.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="px-6 py-4">
+                          {getStatusBadge(transfer.status)}
+                        </td>
+                        <td className="px-6 py-4 flex items-center gap-2">
+                          {getTypeIcon(transfer.transfer_type)}
+                          <span className="capitalize">{transfer.transfer_type}</span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-muted-foreground">
+                          {new Date(transfer.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
