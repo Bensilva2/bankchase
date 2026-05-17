@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { comparePassword, generateToken } from '@/lib/auth'
+import { inMemoryDb } from '@/lib/in-memory-db'
 import { NextRequest, NextResponse } from 'next/server'
 
 function getSupabase() {
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
     // Find user by username or email
     let user: any = null
     let userError: any = null
+    let usingMemoryDb = false
 
     try {
       const supabase = getSupabase()
@@ -44,15 +46,17 @@ export async function POST(request: NextRequest) {
       userError = err
     }
 
-    // If table doesn't exist or user not found
-    if (userError || !user) {
-      // Check if it's a table not found error
-      if (userError?.message?.includes('relation')) {
-        return NextResponse.json(
-          { error: 'Database not initialized. Please sign up first.' },
-          { status: 503 }
-        )
+    // If table doesn't exist, try in-memory database
+    if (userError && (userError?.message?.includes('relation') || userError?.code?.includes('PGRST'))) {
+      user = await inMemoryDb.users.findByUsername(username)
+      if (!user) {
+        user = await inMemoryDb.users.findByEmail(username)
       }
+      usingMemoryDb = true
+    }
+
+    // If still no user found
+    if (!user) {
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
@@ -76,7 +80,6 @@ export async function POST(request: NextRequest) {
       username: user.username,
       firstName: user.first_name,
       lastName: user.last_name,
-      role: user.role || 'viewer',
     })
 
     return NextResponse.json(

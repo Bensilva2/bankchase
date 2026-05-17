@@ -15,7 +15,8 @@ function getSupabase() {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = getTokenFromHeader(request.headers.get('Authorization'))
+    const authHeader = request.headers.get('Authorization') || undefined
+    const token = getTokenFromHeader(authHeader)
 
     if (!token) {
       return NextResponse.json(

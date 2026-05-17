@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { hashPassword, generateToken, validatePassword } from '@/lib/auth'
+import { inMemoryDb } from '@/lib/in-memory-db'
 import { NextRequest, NextResponse } from 'next/server'
 
 function getSupabase() {
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
 
     let newUser: any = null
     let userError: any = null
+    let usingMemoryDb = false
 
     // Try to create user in Supabase
     try {
@@ -101,12 +103,24 @@ export async function POST(request: NextRequest) {
       userError = err
     }
 
-    // If Supabase fails due to table not existing, create user object in memory
-    if (userError && userError.message?.includes('relation')) {
+    // If Supabase fails due to table not existing, use in-memory database
+    if (userError && (userError.message?.includes('relation') || userError.code?.includes('PGRST'))) {
+      // Check if user already exists in memory
+      const existingUser = await inMemoryDb.users.findByUsername(username)
+      const existingEmail = await inMemoryDb.users.findByEmail(email)
+
+      if (existingUser || existingEmail) {
+        return NextResponse.json(
+          { error: 'Username or email already exists' },
+          { status: 409 }
+        )
+      }
+
       newUser = {
         id: Math.random().toString(36).substr(2, 9),
         username,
         email,
+        password_hash: passwordHash,
         first_name: firstName,
         last_name: lastName,
         phone,
@@ -118,6 +132,10 @@ export async function POST(request: NextRequest) {
         zip_code: zipCode,
         created_at: new Date().toISOString(),
       }
+
+      // Save to in-memory database
+      await inMemoryDb.users.create(newUser)
+      usingMemoryDb = true
     } else if (userError) {
       console.error('User creation error:', userError)
       return NextResponse.json(
@@ -131,7 +149,8 @@ export async function POST(request: NextRequest) {
     let accountError: any = null
 
     try {
-      const { data: acc, error: err } = await supabase
+      const sb = getSupabase()
+      const { data: acc, error: err } = await sb
         .from('accounts')
         .insert([
           {
@@ -154,8 +173,8 @@ export async function POST(request: NextRequest) {
       accountError = err
     }
 
-    // If account creation fails due to table not existing, create in memory
-    if (accountError && accountError.message?.includes('relation')) {
+    // If account creation fails due to table not existing, use in-memory database
+    if (accountError && (accountError.message?.includes('relation') || accountError.code?.includes('PGRST'))) {
       account = {
         id: Math.random().toString(36).substr(2, 9),
         user_id: newUser.id,
@@ -166,6 +185,11 @@ export async function POST(request: NextRequest) {
         bank_name: 'Chase Bank',
         is_external: false,
         created_at: new Date().toISOString(),
+      }
+
+      // Save to in-memory database if using memory
+      if (usingMemoryDb) {
+        await inMemoryDb.accounts.create(account)
       }
     } else if (accountError) {
       console.error('Account creation error:', accountError)
@@ -182,7 +206,6 @@ export async function POST(request: NextRequest) {
       username: newUser.username,
       firstName: newUser.first_name,
       lastName: newUser.last_name,
-      role: 'viewer',
     })
 
     // Also trigger Monday.com integration

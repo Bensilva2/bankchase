@@ -16,6 +16,11 @@ export interface User {
   state?: string
   zipCode?: string
   role?: 'admin' | 'editor' | 'viewer'
+  permissions?: Array<{
+    role: string
+    action: string
+    resource: string
+  }>
 }
 
 interface AuthContextType {

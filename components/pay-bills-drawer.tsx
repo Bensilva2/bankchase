@@ -85,7 +85,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0]
-    const duePayments = scheduledPayments.filter((p) => p.status === "scheduled" && p.date <= today)
+    const duePayments = scheduledPayments.filter((p) => p.status === "scheduled" && p.scheduledDate <= today)
 
     if (duePayments.length > 0) {
       addNotification({
@@ -141,12 +141,13 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
 
       if (frequency !== "once") {
         addScheduledPayment({
+          payee: payee.name,
           payeeId: selectedPayee,
-          payeeName: payee.name,
           amount: Number(amount),
           scheduledDate: getNextDate(date, frequency),
           frequency,
-          fromAccountId: selectedAccount,
+          accountId: selectedAccount,
+          category: payee.category,
         })
       }
 
@@ -206,7 +207,8 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
       name: newPayeeName,
       accountNumber: "****" + newPayeeAccount.slice(-4),
       category: newPayeeCategory,
-      lastAmount: 0,
+      autopay: false,
+      amount: 0,
     })
 
     toast({
@@ -220,7 +222,8 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
 
   const handleQuickPay = (payee: (typeof defaultPayees)[0]) => {
     setSelectedPayee(payee.id)
-    setAmount(payee.lastAmount.toString())
+    const amt = 'lastAmount' in payee ? payee.lastAmount : (payee.amount || 0)
+    setAmount(amt.toString())
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
     setDate(tomorrow.toISOString().split("T")[0])
@@ -395,13 +398,13 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
                 <div key={payment.id} className="p-4 bg-card rounded-lg border">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium">{payment.payeeName}</p>
+                      <p className="font-medium">{payment.payee}</p>
                       <p className="text-sm text-muted-foreground">
                         ${payment.amount.toFixed(2)} • {payment.frequency}
                       </p>
                       <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        Next: {new Date(payment.date).toLocaleDateString()}
+                        Next: {new Date(payment.scheduledDate).toLocaleDateString()}
                       </div>
                     </div>
                     <Button

@@ -25,7 +25,8 @@ export function middleware(request: NextRequest) {
 
   if (routeConfig?.requireAuth) {
     // Get token from cookie or header
-    const token = request.cookies.get('auth_token')?.value || getTokenFromHeader(request.headers.get('Authorization'))
+    const authHeader = request.headers.get('Authorization') || undefined
+    const token = request.cookies.get('auth_token')?.value || getTokenFromHeader(authHeader)
 
     if (!token) {
       // Redirect to login if no token

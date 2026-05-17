@@ -100,7 +100,7 @@ export function AccountsSection({
         <CardContent className="p-0 divide-y divide-border">
           {accounts.map((account) => {
             const accountLast4 = account.accountNumber?.slice(-4) || '****'
-            const accountType = account.name || account.account_type || 'Account'
+            const accountType = account.name || account.type || 'Account'
             return (
               <button
                 key={account.id}
@@ -122,11 +122,11 @@ export function AccountsSection({
                     <span className="text-2xl font-bold">${formatBalance(account.balance)}</span>
                   </div>
                   <div className="text-right text-xs text-muted-foreground space-y-1">
-                    {account.routing_number && (
-                      <p>Routing: {account.routing_number}</p>
+                    {account.routingNumber && (
+                      <p>Routing: {account.routingNumber}</p>
                     )}
-                    {account.account_number && (
-                      <p>Account: ...{account.account_number.slice(-4)}</p>
+                    {account.accountNumber && (
+                      <p>Account: ...{account.accountNumber.slice(-4)}</p>
                     )}
                   </div>
                 </div>

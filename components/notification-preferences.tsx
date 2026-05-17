@@ -94,16 +94,16 @@ export function NotificationPreferences() {
         <div className="space-y-4 mt-4">
           <div className="flex items-center gap-3">
             <Checkbox
-              id="lowBalanceAlert"
-              checked={settings.lowBalanceAlert}
-              onCheckedChange={(c) => handleToggle('lowBalanceAlert', c as boolean)}
+              id="balanceAlerts"
+              checked={settings.balanceAlerts}
+              onCheckedChange={(c) => handleToggle('balanceAlerts', c as boolean)}
             />
-            <Label htmlFor="lowBalanceAlert" className="cursor-pointer flex-1">
+            <Label htmlFor="balanceAlerts" className="cursor-pointer flex-1">
               Enable low balance alerts
             </Label>
           </div>
 
-          {settings.lowBalanceAlert && (
+          {settings.balanceAlerts && (
             <div className="space-y-2 ml-6">
               <Label className="text-sm">Alert when balance drops below:</Label>
               <div className="flex items-center gap-4">

@@ -2546,7 +2546,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                             ? "border-[#0a4fa6] bg-[#0a4fa6]/5"
                             : "hover:bg-muted/50"
                         }`}
-                        onClick={() => setTwoFactorSetup({ ...twoFactorSetup, method: option.method })}
+                        onClick={() => setTwoFactorSetup({ ...twoFactorSetup, method: option.method as "email" | "sms" | "authenticator" })}
                       >
                         <div
                           className={`h-10 w-10 rounded-full flex items-center justify-center ${
