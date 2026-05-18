@@ -98,41 +98,27 @@ export function AccountsSection({
           <h3 className="text-white font-medium text-sm">Bank Accounts ({accounts.length})</h3>
         </div>
         <CardContent className="p-0 divide-y divide-border">
-          {accounts.map((account) => {
-            const accountLast4 = account.accountNumber?.slice(-4) || '****'
-            const accountType = account.name || account.account_type || 'Account'
-            return (
-              <button
-                key={account.id}
-                className="w-full text-left p-4 hover:bg-muted/50 transition-colors"
-                onClick={onViewAccount}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {accountType}
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-1">...{accountLast4}</p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          {accounts.map((account) => (
+            <button
+              key={account.id}
+              className="w-full text-left p-4 hover:bg-muted/50 transition-colors"
+              onClick={onViewAccount}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  {account.name}
+                </span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">...{account.accountNumber}</span>
+                <div className="text-right">
+                  <span className="text-xl font-bold">${formatBalance(account.balance)}</span>
+                  <p className="text-xs text-muted-foreground">Available balance</p>
                 </div>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Available Balance</p>
-                    <span className="text-2xl font-bold">${formatBalance(account.balance)}</span>
-                  </div>
-                  <div className="text-right text-xs text-muted-foreground space-y-1">
-                    {account.routing_number && (
-                      <p>Routing: {account.routing_number}</p>
-                    )}
-                    {account.account_number && (
-                      <p>Account: ...{account.account_number.slice(-4)}</p>
-                    )}
-                  </div>
-                </div>
-              </button>
-            )
-          })}
+              </div>
+            </button>
+          ))}
         </CardContent>
       </Card>
 
