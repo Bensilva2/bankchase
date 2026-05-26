@@ -1,4 +1,17 @@
+import { createClient } from '@supabase/supabase-js'
+import { comparePassword, generateToken } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!url || !key) {
+    throw new Error('Supabase environment variables not configured')
+  }
+
+  return createClient(url, key)
+}
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json()
@@ -11,52 +24,59 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Single backend call - 5 second timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const supabase = getSupabase()
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal,
-      }
-    )
+    // Get user by email
+    const { data: users, error: queryError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .limit(1)
 
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Login failed' }))
+    if (queryError || !users || users.length === 0) {
       return NextResponse.json(
-        { error: error.detail || 'Login failed' },
-        { status: response.status }
+        { error: 'Invalid email or password' },
+        { status: 401 }
       )
     }
 
-    const data = await response.json()
+    const user = users[0]
+
+    // Verify password
+    const passwordValid = await comparePassword(password, user.password_hash)
+
+    if (!passwordValid) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      )
+    }
+
+    // Generate JWT token
+    const tokenObj = generateToken({
+      userId: user.id,
+      email: user.email,
+      username: user.username,
+      firstName: user.first_name,
+      lastName: user.last_name,
+    })
 
     return NextResponse.json(
       {
-        access_token: data.access_token,
-        user: data.user,
-        is_new_user: data.is_new_user || false,
+        access_token: tokenObj.token,
+        expiresIn: tokenObj.expiresIn,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+        },
       },
       { status: 200 }
     )
   } catch (error: any) {
-    console.error('Login error:', error.message)
-
-    if (error.name === 'AbortError') {
-      return NextResponse.json(
-        { error: 'Login service timeout - please try again' },
-        { status: 504 }
-      )
-    }
-
+    console.error('[v0] Login error:', error.message)
     return NextResponse.json(
       { error: 'Login failed - please try again' },
       { status: 500 }
