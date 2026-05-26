@@ -45,7 +45,16 @@ export function PlaidDashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/plaid/accounts');
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          console.error('[v0] No auth token found');
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch('/api/plaid/accounts', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
         if (response.ok) {
           const data = await response.json();
           setAccounts(data.accounts || []);
