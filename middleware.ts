@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, getTokenFromHeader } from '@/lib/auth'
 
-// Protected routes that require authentication
-const protectedRoutes = ['/dashboard', '/accounts', '/transfer', '/transactions', '/profile']
-
-// Admin-only routes
-const adminRoutes = ['/admin']
-
 // Route requirements
 const routeRequirements: Record<string, { requireAuth: boolean; requiredRoles?: string[] }> = {
   '/admin': { requireAuth: true, requiredRoles: ['admin'] },
   '/dashboard': { requireAuth: true },
   '/accounts': { requireAuth: true },
   '/transfer': { requireAuth: true },
+  '/pay-transfer': { requireAuth: true },
   '/transactions': { requireAuth: true },
   '/profile': { requireAuth: true },
+  '/plan-track': { requireAuth: true },
+  '/offers': { requireAuth: true },
 }
 
 export function middleware(request: NextRequest) {
@@ -70,7 +67,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - api (API routes)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public|api).*)',
   ],
 }
