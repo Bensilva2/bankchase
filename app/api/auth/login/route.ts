@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
         username: user.username,
         firstName: user.first_name,
         lastName: user.last_name,
+        role: user.role || 'viewer',
         emailVerified: true,
       }), { 
         httpOnly: true, 
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
             username: user.username,
             firstName: user.first_name,
             lastName: user.last_name,
+            role: user.role || 'viewer',
             emailVerified: true,
           },
           session: { authenticated: true },
@@ -139,6 +141,7 @@ export async function POST(request: NextRequest) {
       username: user.username,
       firstName: user.first_name,
       lastName: user.last_name,
+      role: user.role || 'viewer',
       emailVerified: user.email_verified,
     }), { 
       httpOnly: true, 
@@ -156,6 +159,7 @@ export async function POST(request: NextRequest) {
           username: user.username,
           firstName: user.first_name,
           lastName: user.last_name,
+          role: user.role || 'viewer',
           emailVerified: user.email_verified,
         },
         session: { authenticated: true },

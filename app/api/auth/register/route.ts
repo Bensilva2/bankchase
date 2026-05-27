@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     // Generate username from email
     const username = email.split('@')[0] + Math.random().toString(36).substr(2, 9)
 
-    // Create user
+    // Create user with 'viewer' role (regular user, not admin)
     const { data: newUser, error: createError } = await supabase
       .from('users')
       .insert([
@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
           last_name: lastName,
           phone,
           email_verified: false,
+          role: 'viewer', // Regular users get 'viewer' role, NOT admin
         },
       ])
       .select()
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create default checking account
+    // Create default checking account with $0.00 balance
     try {
       await supabase
         .from('accounts')
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
       username: newUser.username,
       firstName: newUser.first_name,
       lastName: newUser.last_name,
+      role: 'viewer',
       emailVerified: false,
     }), { 
       httpOnly: true, 
@@ -145,6 +147,7 @@ export async function POST(request: NextRequest) {
           username: newUser.username,
           firstName: newUser.first_name,
           lastName: newUser.last_name,
+          role: 'viewer',
           emailVerified: false,
         },
         message: 'Registration successful. Please verify your email with the OTP sent.',
