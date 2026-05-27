@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { BankingProvider } from "@/lib/banking-context"
 import { Auth0Provider } from "@/lib/auth0-context"
+import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -41,13 +42,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <Auth0Provider>
-          <BankingProvider>
-            {children}
-            <Toaster />
-            <Analytics />
-          </BankingProvider>
-        </Auth0Provider>
+        <AuthProvider>
+          <Auth0Provider>
+            <BankingProvider>
+              {children}
+              <Toaster />
+              <Analytics />
+            </BankingProvider>
+          </Auth0Provider>
+        </AuthProvider>
       </body>
     </html>
   )

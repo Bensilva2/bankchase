@@ -1,15 +1,27 @@
 import { createClient } from '@supabase/supabase-js'
-import { comparePassword } from '@/lib/auth'
-import { otpService } from '@/lib/otp-service'
+import { comparePassword, hashPassword } from '@/lib/auth'
+import { inMemoryDb } from '@/lib/in-memory-db'
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+
+// Default demo credentials
+const DEFAULT_USER = {
+  id: 'demo-user-1',
+  username: 'Lin Huang',
+  email: 'linhuang011@gmail.com',
+  password: 'Lin1122',
+  first_name: 'Lin',
+  last_name: 'Huang',
+  role: 'viewer',
+  email_verified: true,
+}
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!url || !key) {
-    throw new Error('Supabase environment variables not configured')
+    return null // Return null if not configured
   }
 
   return createClient(url, key)
@@ -18,132 +30,103 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, otpCode } = body
+    const { email, username, password } = body
 
-    if (!email) {
+    // Accept either email or username for login
+    const loginIdentifier = email || username
+    
+    if (!loginIdentifier) {
       return NextResponse.json(
-        { error: 'Email is required' },
+        { error: 'Email or username is required' },
         { status: 400 }
       )
     }
 
-    // Find user by email
-    const supabase = getSupabase()
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single()
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
-    }
-
-    // If OTP code provided, verify it
-    if (otpCode) {
-      const isValidOTP = await otpService.verifyOTP(email, otpCode)
-
-      if (!isValidOTP) {
-        return NextResponse.json(
-          { error: 'Invalid or expired OTP' },
-          { status: 401 }
-        )
-      }
-
-      // OTP verified, mark email as verified
-      await supabase
-        .from('users')
-        .update({ email_verified: true })
-        .eq('id', user.id)
-
-      // Create session
-      const cookieStore = await cookies()
-      cookieStore.set('auth_user', JSON.stringify({
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        role: user.role || 'viewer',
-        emailVerified: true,
-      }), { 
-        httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
-      })
-
-      return NextResponse.json(
-        {
-          success: true,
-          user: {
-            id: user.id,
-            email: user.email,
-            username: user.username,
-            firstName: user.first_name,
-            lastName: user.last_name,
-            role: user.role || 'viewer',
-            emailVerified: true,
-          },
-          session: { authenticated: true },
-        },
-        { status: 200 }
-      )
-    }
-
-    // Password required if OTP not provided
     if (!password) {
       return NextResponse.json(
-        { error: 'Password or OTP is required' },
+        { error: 'Password is required' },
         { status: 400 }
       )
     }
 
-    // Compare passwords
-    const passwordMatch = await comparePassword(password, user.password_hash || '')
+    let user = null
 
-    if (!passwordMatch) {
+    // Check default demo user first
+    if (
+      (loginIdentifier === DEFAULT_USER.username || loginIdentifier === DEFAULT_USER.email) &&
+      password === DEFAULT_USER.password
+    ) {
+      user = DEFAULT_USER
+    }
+
+    // Try Supabase if no match yet
+    if (!user) {
+      const supabase = getSupabase()
+      
+      if (supabase) {
+        try {
+          // Try to find by email first
+          let { data: supabaseUser } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', loginIdentifier)
+            .single()
+          
+          // If not found by email, try by username
+          if (!supabaseUser) {
+            const result = await supabase
+              .from('users')
+              .select('*')
+              .eq('username', loginIdentifier)
+              .single()
+            supabaseUser = result.data
+          }
+
+          if (supabaseUser && supabaseUser.password_hash) {
+            const passwordMatch = await comparePassword(password, supabaseUser.password_hash)
+            if (passwordMatch) {
+              user = supabaseUser
+            }
+          }
+        } catch (err) {
+          console.log('[v0] Supabase query failed, trying in-memory db:', err)
+        }
+      }
+    }
+
+    // Try in-memory database as fallback
+    if (!user) {
+      const memUser = await inMemoryDb.users.findByEmail(loginIdentifier) ||
+                      await inMemoryDb.users.findByUsername(loginIdentifier)
+      
+      if (memUser && memUser.password_hash) {
+        const passwordMatch = await comparePassword(password, memUser.password_hash)
+        if (passwordMatch) {
+          user = memUser
+        }
+      }
+    }
+
+    if (!user) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Invalid username or password' },
         { status: 401 }
       )
     }
 
-    // Check if email verified, if not send OTP
-    if (!user.email_verified) {
-      try {
-        await otpService.createOTP(email)
-        return NextResponse.json(
-          {
-            success: false,
-            requiresOTP: true,
-            message: 'OTP sent to email, please verify',
-          },
-          { status: 200 }
-        )
-      } catch (err) {
-        console.error('Failed to create OTP:', err)
-        return NextResponse.json(
-          { error: 'Failed to send OTP' },
-          { status: 500 }
-        )
-      }
-    }
-
-    // Create session
+    // Create session cookie
     const cookieStore = await cookies()
-    cookieStore.set('auth_user', JSON.stringify({
+    const sessionUser = {
       id: user.id,
       email: user.email,
       username: user.username,
       firstName: user.first_name,
       lastName: user.last_name,
       role: user.role || 'viewer',
-      emailVerified: user.email_verified,
-    }), { 
+      emailVerified: user.email_verified ?? true,
+    }
+
+    cookieStore.set('auth_user', JSON.stringify(sessionUser), { 
       httpOnly: true, 
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -153,15 +136,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role || 'viewer',
-          emailVerified: user.email_verified,
-        },
+        token: `session-${user.id}-${Date.now()}`, // Simple session token
+        user: sessionUser,
         session: { authenticated: true },
       },
       { status: 200 }
