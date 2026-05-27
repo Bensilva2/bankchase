@@ -28,31 +28,30 @@ export async function POST(request: NextRequest) {
 
     // Find user by username or email
     let user: any = null
-    let userError: any = null
-    let usingMemoryDb = false
 
-    try {
-      const supabase = getSupabase()
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .or(`username.eq.${username},email.eq.${username}`)
-        .single()
-
-      user = data
-      userError = error
-    } catch (err: any) {
-      // Table doesn't exist
-      userError = err
+    // First, try in-memory database (preferred for development)
+    user = await inMemoryDb.users.findByUsername(username)
+    if (!user) {
+      user = await inMemoryDb.users.findByEmail(username)
     }
 
-    // If table doesn't exist, try in-memory database
-    if (userError && (userError?.message?.includes('relation') || userError?.code?.includes('PGRST'))) {
-      user = await inMemoryDb.users.findByUsername(username)
-      if (!user) {
-        user = await inMemoryDb.users.findByEmail(username)
+    // If not found in memory DB, try Supabase
+    if (!user) {
+      try {
+        const supabase = getSupabase()
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .or(`username.eq.${username},email.eq.${username}`)
+          .single()
+
+        if (!error && data) {
+          user = data
+        }
+      } catch (err: any) {
+        // Supabase unavailable, continue with memory DB check
+        console.warn('[v0] Supabase lookup failed:', err?.message)
       }
-      usingMemoryDb = true
     }
 
     // If still no user found

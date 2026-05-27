@@ -64,7 +64,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [useToken, setUseToken] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [modalView, setModalView] = useState<ModalView>("signup")
+  const [modalView, setModalView] = useState<ModalView>("login")
   const { toast } = useToast()
   const { login, register } = useAuth()
   const router = useRouter()

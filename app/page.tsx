@@ -33,6 +33,11 @@ import { AccountOpeningModal } from "@/components/account-opening-modal"
 export default function BankingDashboard() {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   
   const [activeView, setActiveView] = useState("accounts")
   const [sendMoneyOpen, setSendMoneyOpen] = useState(false)
@@ -130,7 +135,7 @@ export default function BankingDashboard() {
     return "Good evening"
   }
 
-  if (loading) {
+  if (loading || !mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0a4fa6]">
         <div className="flex flex-col items-center gap-4">
@@ -143,6 +148,8 @@ export default function BankingDashboard() {
   }
 
   if (!user) {
+    // User not authenticated, show login
+    console.log('[v0] User not authenticated, showing login')
     return <LoginPage onLogin={() => {}} />
   }
 
