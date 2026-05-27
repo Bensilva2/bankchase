@@ -652,6 +652,9 @@ export function MoreView({ onLogout }: MoreViewProps) {
       icon: PieChart,
       view: "spending" as ViewType,
     },
+    { label: "View Statements", description: "Download account statements", icon: FileText, view: "viewStatements" as ViewType },
+    { label: "External Accounts", description: "Link or manage external accounts", icon: Link, view: "linkExternal" as ViewType },
+    { label: "Change Username", description: "Update your login username", icon: Edit, view: "changeUsername" as ViewType },
     { label: "Settings", description: "Customize your app preferences", icon: Settings, view: "settings" as ViewType },
     {
       label: "Security & Privacy",
