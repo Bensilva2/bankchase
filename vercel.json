@@ -8,5 +8,11 @@
       "entrypoint": "backend/main.py",
       "routePrefix": "/api/v2"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/admin/demo-transfer/process-refunds",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }

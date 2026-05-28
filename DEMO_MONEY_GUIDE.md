@@ -172,21 +172,36 @@ Process expired demo transfers (call from scheduled job).
 ## Setup Instructions
 
 ### 1. Database Migration
-The schemas have been created by running the migration scripts:
-```bash
-# Already executed:
-# - scripts/006_create_accounts_table.sql
-# - scripts/007_create_demo_transfers_table.sql
-```
+The schemas are created by the migration file at `lib/migrations/002_create_demo_transfers.sql`.
+
+To apply migrations in Supabase:
+1. Go to SQL Editor in your Supabase dashboard
+2. Create a new query
+3. Copy the contents of `lib/migrations/002_create_demo_transfers.sql`
+4. Execute the query
+
+Tables created:
+- `demo_accounts` - Virtual account storage
+- `demo_transfers` - Transfer records
+- `demo_transfer_audit` - Audit trail
 
 ### 2. Admin Dashboard Access
 Navigate to `/admin/demo-money` to access the demo money transfer interface (requires admin role).
 
+The page includes:
+- Admin balance display
+- Transfer statistics (total, completed, pending, refunded)
+- Single transfer form
+- Bulk transfer interface
+- Transfer history chart
+
 ### 3. Scheduled Refund Job (Required)
 
-Set up a daily cron job to process auto-refunds. Using Vercel Cron Jobs:
+Set up a daily cron job to process auto-refunds. 
 
-**vercel.json:**
+**Option A: Vercel Cron Jobs (Recommended)**
+
+Update `vercel.json`:
 ```json
 {
   "crons": [{
@@ -196,28 +211,34 @@ Set up a daily cron job to process auto-refunds. Using Vercel Cron Jobs:
 }
 ```
 
-**Set environment variable:**
-```
-CRON_SECRET=your-secure-random-token
-```
+The schedule `0 2 * * *` runs daily at 2 AM UTC. Adjust as needed.
 
-Or use an external service like:
-- AWS CloudWatch
-- GitHub Actions
+**Option B: External Scheduler**
+
+Use external services like:
+- AWS CloudWatch Events
 - Google Cloud Scheduler
-- Vercel Functions
+- GitHub Actions
+- AWS Lambda
 
 ### 4. Environment Variables
 
-```env
-# Required for refund processing
-CRON_SECRET=your-secret-token-here
+Add to your Vercel project settings:
 
-# Supabase (already configured)
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
+```env
+# Required for refund processing - use a strong random token
+CRON_SECRET=your-secure-random-token-here
+
+# Supabase (already configured in your project)
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
+
+To set variables in Vercel:
+1. Go to Project Settings → Environment Variables
+2. Add `CRON_SECRET` with a strong random value
+3. Deploy the project
 
 ## Usage Examples
 
@@ -298,6 +319,42 @@ Deduct from receiver account (-)
 5. **Idempotent**: Transfer IDs are unique to prevent duplicates
 6. **Cron Protection**: Refund endpoint requires `CRON_SECRET` header
 
+## Quick Start
+
+### 1. Deploy the Code
+```bash
+git add .
+git commit -m "Add demo money transfer system"
+git push
+```
+
+### 2. Set Environment Variables
+1. Go to Vercel project settings
+2. Add `CRON_SECRET` environment variable
+3. Redeploy with new variables
+
+### 3. Run Database Migration
+1. Open Supabase SQL Editor
+2. Run the migration from `lib/migrations/002_create_demo_transfers.sql`
+3. Verify tables are created
+
+### 4. Test the Feature
+1. Log in as admin user
+2. Go to `/admin/demo-money`
+3. Send a test transfer to a user account
+4. Verify balance updates in user dashboard
+5. Check for pending funds alert if sending to external account
+
+### 5. Verify Cron Job
+1. Make a transfer with `days_to_refund: 7` to an external account
+2. Manually call `/api/admin/demo-transfer/process-refunds` with `CRON_SECRET` header:
+   ```bash
+   curl -X POST https://your-domain.com/api/admin/demo-transfer/process-refunds \
+     -H "Authorization: Bearer your-cron-secret"
+   ```
+3. Verify the pending transfer was marked as refunded
+4. Check Vercel logs for cron execution
+
 ## Troubleshooting
 
 ### Transfers Not Showing in History
@@ -317,40 +374,87 @@ Deduct from receiver account (-)
 
 ## Components
 
-- **DemoTransferForm** - Single transfer UI
-- **BulkDemoTransfer** - Bulk transfer UI
-- **DemoTransferHistory** - Transfer history with filtering
-- **Admin Page** - Links to demo money feature
+- **DemoMoneyTransfer** - Single & bulk transfer UI with tabbed interface
+- **PendingDemoFunds** - User-facing component showing pending demo funds countdown
+- **Admin Demo Money Page** - Admin dashboard with stats and transfer history
 
 ## Files Structure
 
 ```
 lib/
-  demo-transfer-service.ts        # Core service logic
+  demo-transfer-service.ts           # Core service logic
+  migrations/
+    002_create_demo_transfers.sql    # Database schema
   
 app/api/admin/demo-transfer/
-  route.ts                         # Single transfer endpoint
-  bulk/route.ts                    # Bulk transfer endpoint
-  history/route.ts                 # History endpoint
-  process-refunds/route.ts         # Auto-refund processor
+  single/route.ts                    # Single transfer endpoint
+  bulk/route.ts                      # Bulk transfer endpoint
+  process-refunds/route.ts           # Auto-refund processor (cron job)
   
 app/admin/demo-money/
-  page.tsx                         # Admin demo money page
+  page.tsx                           # Admin demo money dashboard
+  
+app/dashboard/
+  page.tsx                           # User dashboard (includes PendingDemoFunds)
   
 components/
-  demo-transfer-form.tsx           # Single transfer form
-  bulk-demo-transfer.tsx           # Bulk transfer form
-  demo-transfer-history.tsx        # History view
+  demo-money-transfer.tsx            # Transfer form component
+  pending-demo-funds.tsx             # User alert component for pending funds
   
-scripts/
-  006_create_accounts_table.sql    # Accounts schema
-  007_create_demo_transfers_table.sql # Transfers schema
+hooks/
+  useDemoTransfers.ts                # React hook for demo transfer logic
+```
+
+## Integration Notes
+
+### Connecting to Real Banking Features
+The demo money system works seamlessly with:
+- **Account Balance Display** - Demo balance shows in user accounts
+- **Transaction Tracking** - Demo transfers appear in user transaction history
+- **Payment Processing** - Users can spend demo money in your app
+- **Audit Logging** - All transfers logged for compliance
+
+### Using the Hook in Components
+```typescript
+import { useDemoTransfers } from '@/hooks/useDemoTransfers'
+
+function MyComponent() {
+  const { 
+    pendingTransfers,
+    adminAccount,
+    sendDemoTransfer,
+    getTotalPending,
+    getDaysUntilRefund
+  } = useDemoTransfers()
+
+  return (
+    <div>
+      <p>Pending: ${getTotalPending()}</p>
+      <p>Days until refund: {getDaysUntilRefund()}</p>
+    </div>
+  )
+}
+```
+
+### Adding to Your Custom UI
+Import the components:
+```typescript
+import { DemoMoneyTransfer } from '@/components/demo-money-transfer'
+import { PendingDemoFunds } from '@/components/pending-demo-funds'
+
+// In your admin page
+<DemoMoneyTransfer />
+
+// In user dashboard
+<PendingDemoFunds />
 ```
 
 ## Next Steps
 
-1. **User Dashboard**: Add user-facing UI to display account balance and transfers
-2. **Webhooks**: Integrate with external banking APIs for real transfers
+1. **Real Money Integration**: Add real transfer endpoints alongside demo transfers
+2. **Advanced Analytics**: Track demo fund usage patterns per user
 3. **Multi-Currency**: Extend to support different currencies
-4. **Analytics**: Add reporting on demo fund usage
-5. **Limits**: Set spending limits or transfer caps per user
+4. **Spending Limits**: Set caps on demo fund spending
+5. **Automated Campaigns**: Schedule bulk transfers for specific user cohorts
+6. **Email Notifications**: Notify users when receiving demo funds or before refunds
+7. **Decline/Reject**: Allow admins to reject pending transfers before refund

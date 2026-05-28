@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import ApiClient from '@/lib/api-client';
 import Link from 'next/link';
+import { Eye, EyeOff, Lock, ChevronRight } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -16,132 +17,111 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const router = useRouter();
+  const { register, isAuthenticated } = useAuth();
 
   const validatePassword = (pwd: string) => {
     const errors: string[] = [];
-    
-    if (pwd.length < 8) {
-      errors.push('Password must be at least 8 characters long');
-    }
-    if (!/[a-z]/.test(pwd)) {
-      errors.push('Must contain at least one lowercase letter');
-    }
-    if (!/[A-Z]/.test(pwd)) {
-      errors.push('Must contain at least one uppercase letter');
-    }
-    if (!/[0-9]/.test(pwd)) {
-      errors.push('Must contain at least one number');
-    }
-    
+    if (pwd.length < 8) errors.push('at least 8 characters');
+    if (!/[a-z]/.test(pwd)) errors.push('a lowercase letter');
+    if (!/[A-Z]/.test(pwd)) errors.push('an uppercase letter');
+    if (!/[0-9]/.test(pwd)) errors.push('a number');
     return errors;
   };
 
   const handlePasswordChange = (pwd: string) => {
     setPassword(pwd);
-    if (pwd) {
-      setPasswordErrors(validatePassword(pwd));
-    } else {
-      setPasswordErrors([]);
-    }
+    setPasswordErrors(pwd ? validatePassword(pwd) : []);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match');
-      setLoading(false);
       return;
     }
 
-    // Validate password strength
     const errors = validatePassword(password);
     if (errors.length > 0) {
       setError('Password does not meet requirements');
-      setLoading(false);
       return;
     }
 
     try {
-      const response = await ApiClient.signup(email, password, firstName, lastName);
-      
-      // Store token and redirect
-      if (response.access_token) {
-        router.push('/accounts');
-      }
+      await register(email, password, firstName, lastName);
+      router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Signup failed. Please try again.');
-    } finally {
-      setLoading(false);
+      setError(err.message || 'Signup failed');
     }
   };
 
-  // If already logged in, redirect to dashboard
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      router.push('/accounts');
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
     }
-  }
+  }, [isAuthenticated, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-blue-600">Chase</h1>
-            <p className="text-gray-500 mt-2">Create your account</p>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Mobile Status Bar */}
+      <div className="bg-white px-4 py-2 flex justify-between items-center text-xs text-foreground border-b border-border">
+        <span>No SIM</span>
+        <span className="font-semibold">5:25 AM</span>
+        <span>3% 🔋</span>
+      </div>
+
+      {/* Mobile Header */}
+      <div className="bg-white px-4 py-4 flex justify-between items-center border-b border-border">
+        <button onClick={() => router.back()} className="p-2 hover:bg-muted rounded-full transition">
+          <Lock className="w-5 h-5 text-muted-foreground" />
+        </button>
+        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+          <span className="text-white font-bold text-xs">✓</span>
+        </div>
+        <button className="p-2 hover:bg-muted rounded-full transition">
+          <Lock className="w-5 h-5 text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 bg-white px-4 py-8 flex flex-col justify-between">
+        <div>
+          <div className="mb-12">
+            <h1 className="text-4xl font-bold text-foreground mb-2">Create account</h1>
+            <p className="text-muted-foreground">Join millions of Chase users</p>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div 
-              role="alert"
-              className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm"
-            >
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
               {error}
             </div>
           )}
 
-          {/* Signup Form */}
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {/* Name Fields Row */}
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+            {/* Name Fields */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label 
-                  htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  First Name
-                </label>
+                <label className="block text-sm font-medium text-foreground mb-3">First name</label>
                 <input
-                  id="firstName"
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-b border-border bg-transparent focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground transition"
                   placeholder="John"
+                  required
                   disabled={loading}
                 />
               </div>
               <div>
-                <label 
-                  htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Last Name
-                </label>
+                <label className="block text-sm font-medium text-foreground mb-3">Last name</label>
                 <input
-                  id="lastName"
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-b border-border bg-transparent focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground transition"
                   placeholder="Doe"
+                  required
                   disabled={loading}
                 />
               </div>
@@ -149,133 +129,123 @@ export default function SignupPage() {
 
             {/* Email */}
             <div>
-              <label 
-                htmlFor="signupEmail"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-3">Email</label>
               <input
-                id="signupEmail"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border-b border-border bg-transparent focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground transition"
                 placeholder="you@example.com"
                 required
                 disabled={loading}
-                aria-required="true"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label 
-                htmlFor="signupPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Password
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-3">Password</label>
               <div className="relative">
                 <input
-                  id="signupPassword"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-b border-border bg-transparent focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground pr-10 transition"
                   placeholder="••••••••"
                   required
                   disabled={loading}
-                  aria-required="true"
-                  aria-describedby="password-requirements"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
-                  disabled={loading}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  aria-pressed={showPassword}
+                  className="absolute right-0 top-3 text-muted-foreground hover:text-foreground transition"
+                  aria-label={showPassword ? 'Hide' : 'Show'}
                 >
-                  {showPassword ? '👁️' : '🔒'}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
 
-              {/* Password Requirements */}
               {password && (
-                <div 
-                  id="password-requirements"
-                  className="mt-2 p-3 bg-gray-50 rounded border border-gray-200"
-                  role="region"
-                  aria-live="polite"
-                >
-                  <p className="text-xs font-semibold text-gray-600 mb-2">Password Requirements:</p>
-                  <ul className="text-xs text-gray-600 space-y-1">
-                    <li className={password.length >= 8 ? 'text-green-600' : 'text-gray-600'}>
-                      {password.length >= 8 ? '✓' : '○'} At least 8 characters
-                    </li>
-                    <li className={/[a-z]/.test(password) ? 'text-green-600' : 'text-gray-600'}>
-                      {/[a-z]/.test(password) ? '✓' : '○'} One lowercase letter
-                    </li>
-                    <li className={/[A-Z]/.test(password) ? 'text-green-600' : 'text-gray-600'}>
-                      {/[A-Z]/.test(password) ? '✓' : '○'} One uppercase letter
-                    </li>
-                    <li className={/[0-9]/.test(password) ? 'text-green-600' : 'text-gray-600'}>
-                      {/[0-9]/.test(password) ? '✓' : '○'} One number
-                    </li>
-                  </ul>
+                <div className="mt-4 space-y-2">
+                  {['at least 8 characters', 'a lowercase letter', 'an uppercase letter', 'a number'].map((req) => (
+                    <div key={req} className={`text-xs flex items-center gap-2 ${passwordErrors.includes(req) ? 'text-red-600' : 'text-green-600'}`}>
+                      <span>{passwordErrors.includes(req) ? '○' : '✓'}</span>
+                      <span>Contains {req}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label 
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Confirm Password
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-3">Confirm password</label>
               <input
-                id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border-b border-border bg-transparent focus:outline-none focus:border-primary text-foreground placeholder:text-muted-foreground transition"
                 placeholder="••••••••"
                 required
                 disabled={loading}
-                aria-required="true"
               />
               {confirmPassword && password !== confirmPassword && (
-                <p 
-                  className="text-red-600 text-xs mt-1"
-                  role="alert"
-                >
-                  Passwords do not match
-                </p>
+                <p className="text-red-600 text-xs mt-2">Passwords do not match</p>
               )}
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading || passwordErrors.length > 0 || !email || !password || password !== confirmPassword}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition"
+              className="w-full mt-8 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-white font-semibold py-3 rounded-lg transition"
               aria-busy={loading}
             >
-              {loading ? 'Creating account...' : 'Sign Up'}
+              {loading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 
-          {/* Login Link */}
-          <p className="text-center text-gray-600 mt-6">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 hover:underline font-semibold">
-              Sign in
-            </Link>
-          </p>
+          {/* Sign In Link */}
+          <div className="text-center mt-6">
+            <p className="text-muted-foreground text-sm">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary hover:text-primary/80 font-semibold transition">
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
+
+        {/* Footer */}
+        <div className="space-y-3 border-t border-border pt-6">
+          <p className="text-xs text-muted-foreground text-center">By signing up, you agree to our Terms of Service and Privacy Policy</p>
+          <div className="p-4 bg-muted rounded-lg text-center">
+            <p className="text-xs text-muted-foreground font-semibold mb-2">DEMO ACCOUNT</p>
+            <code className="text-xs text-foreground block space-y-1">
+              <div>Email: demo@chase.com</div>
+              <div>Password: Demo123!</div>
+            </code>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom */}
+      <div className="bg-white border-t border-border px-4 py-3 flex justify-around text-xs text-muted-foreground">
+        <Link href="/login" className="flex flex-col items-center gap-1 p-2 hover:text-foreground transition">
+          <span>🔒</span>
+          <span>Sign in</span>
+        </Link>
+        <button className="flex flex-col items-center gap-1 p-2 text-primary">
+          <span>✍️</span>
+          <span className="text-primary">Sign up</span>
+        </button>
+        <button className="flex flex-col items-center gap-1 p-2 hover:text-foreground transition">
+          <span>❓</span>
+          <span>Help</span>
+        </button>
+        <button className="flex flex-col items-center gap-1 p-2 hover:text-foreground transition">
+          <span>⚙️</span>
+          <span>Settings</span>
+        </button>
       </div>
     </div>
   );

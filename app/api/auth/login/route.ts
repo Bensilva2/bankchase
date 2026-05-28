@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json()
@@ -11,52 +12,55 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Single backend call - 5 second timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/login`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal,
-      }
-    )
-
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Login failed' }))
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('[v0] Missing Supabase credentials')
       return NextResponse.json(
-        { error: error.detail || 'Login failed' },
-        { status: response.status }
+        { error: 'Server configuration error' },
+        { status: 500 }
       )
     }
 
-    const data = await response.json()
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // Authenticate user
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (authError || !data.session) {
+      return NextResponse.json(
+        { error: authError?.message || 'Login failed' },
+        { status: 401 }
+      )
+    }
+
+    // Get user profile
+    const { data: profile } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', data.user.id)
+      .single()
 
     return NextResponse.json(
       {
-        access_token: data.access_token,
-        user: data.user,
-        is_new_user: data.is_new_user || false,
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          first_name: profile?.first_name,
+          last_name: profile?.last_name,
+          roles: profile?.roles || [],
+        },
       },
       { status: 200 }
     )
   } catch (error: any) {
-    console.error('Login error:', error.message)
-
-    if (error.name === 'AbortError') {
-      return NextResponse.json(
-        { error: 'Login service timeout - please try again' },
-        { status: 504 }
-      )
-    }
-
+    console.error('[v0] Login error:', error)
     return NextResponse.json(
       { error: 'Login failed - please try again' },
       { status: 500 }
