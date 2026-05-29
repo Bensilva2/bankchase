@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     // Generate username from email
     const username = email.split('@')[0] + Math.random().toString(36).substr(2, 9)
 
-    // Create user with 'viewer' role (regular user, not admin)
+    // Create user with 'customer' role (regular user, not admin)
     const { data: newUser, error: createError } = await supabase
       .from('users')
       .insert([
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           last_name: lastName,
           phone,
           email_verified: false,
-          role: 'viewer', // Regular users get 'viewer' role, NOT admin
+          role: 'customer', // Regular users get 'customer' role, strictly isolated
         },
       ])
       .select()
@@ -125,13 +125,13 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies()
     cookieStore.set('auth_user', JSON.stringify({
       id: newUser.id,
-      email: newUser.email,
-      username: newUser.username,
-      firstName: newUser.first_name,
-      lastName: newUser.last_name,
-      role: 'viewer',
-      emailVerified: false,
-    }), { 
+          email: newUser.email,
+          username: newUser.username,
+          firstName: newUser.first_name,
+          lastName: newUser.last_name,
+          role: 'customer',
+          emailVerified: false,
+        }), {
       httpOnly: true, 
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
           username: newUser.username,
           firstName: newUser.first_name,
           lastName: newUser.last_name,
-          role: 'viewer',
+          role: 'customer',
           emailVerified: false,
         },
         message: 'Registration successful. Please verify your email with the OTP sent.',
