@@ -1,41 +1,72 @@
+import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/client'
-import { getUserProfile } from '@/lib/supabase-queries'
 
-export async function GET(request: NextRequest) {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '')
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  if (!token) {
-    return NextResponse.json({ error: 'No token provided' }, { status: 401 })
+  if (!url || !key) {
+    throw new Error('Supabase environment variables not configured')
   }
 
-  try {
-    // Verify the token with Supabase
-    const supabase = createClient()
-    const { data: { user }, error } = await supabase.auth.getUser(token)
+  return createClient(url, key)
+}
 
-    if (error || !user) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+export async function POST(request: NextRequest) {
+  try {
+    const cookieStore = await cookies()
+    const authCookie = cookieStore.get('auth_user')
+
+    if (!authCookie?.value) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      )
     }
 
-    // Get user profile
-    const profile = await getUserProfile(user.id)
+    const user = JSON.parse(authCookie.value)
+
+    // Get fresh user data from database
+    const supabase = getSupabase()
+    const { data: freshUser, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (error || !freshUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
 
     return NextResponse.json(
       {
+        success: true,
         user: {
-          id: user.id,
-          email: user.email,
-          first_name: profile?.first_name,
-          last_name: profile?.last_name,
-          roles: profile?.roles,
-          demo_balance: profile?.demo_balance,
+          id: freshUser.id,
+          username: freshUser.username,
+          email: freshUser.email,
+          firstName: freshUser.first_name,
+          lastName: freshUser.last_name,
+          phone: freshUser.phone,
+          ssn: freshUser.ssn,
+          dateOfBirth: freshUser.date_of_birth,
+          address: freshUser.address,
+          city: freshUser.city,
+          state: freshUser.state,
+          zipCode: freshUser.zip_code,
         },
       },
       { status: 200 }
     )
-  } catch (error: any) {
-    console.error('[v0] Token verification error:', error.message)
-    return NextResponse.json({ error: 'Verification failed' }, { status: 401 })
+  } catch (error) {
+    console.error('Verify error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }

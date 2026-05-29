@@ -1,135 +1,193 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 
-interface User {
+export interface User {
   id: string
+  username: string
   email: string
-  first_name?: string
-  last_name?: string
-  roles?: string[]
-  demo_balance?: number
+  firstName?: string
+  lastName?: string
+  phone?: string
+  ssn?: string
+  dateOfBirth?: string
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  role?: 'admin' | 'editor' | 'viewer'
+  permissions?: Array<{
+    role: string
+    action: string
+    resource: string
+  }>
 }
 
 interface AuthContextType {
   user: User | null
+  token: string | null
   loading: boolean
   error: string | null
-  login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>
+  login: (username: string, password: string) => Promise<void>
+  register: (userData: RegisterData) => Promise<void>
   logout: () => void
-  isAuthenticated: boolean
+  verifyToken: () => Promise<void>
+}
+
+interface RegisterData {
+  username: string
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone: string
+  ssn: string
+  dateOfBirth: string
+  address: string
+  city: string
+  state: string
+  zipCode: string
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
 
-  // Verify token on mount
+  // Initialize from localStorage and verify token
   useEffect(() => {
-    const verifyToken = async () => {
+    const initAuth = async () => {
       try {
-        const token = localStorage.getItem('access_token')
+        const storedToken = localStorage.getItem('auth_token')
+        const storedUser = localStorage.getItem('auth_user')
 
-        if (!token) {
-          setLoading(false)
-          return
-        }
+        if (storedToken && storedUser) {
+          setToken(storedToken)
+          setUser(JSON.parse(storedUser))
 
-        // Verify token
-        const response = await fetch('/api/auth/verify', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setUser(data.user)
-        } else {
-          // Token invalid - remove it
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
+          // Verify token is still valid (but don't fail if verification fails)
+          try {
+            await verifyTokenHelper(storedToken)
+          } catch (verifyErr) {
+            // Token verification failed, but we'll stay logged in with cached data
+            console.warn('Token verification failed, using cached data:', verifyErr)
+          }
         }
       } catch (err) {
-        console.error('[v0] Token verification failed:', err)
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
+        console.error('Auth initialization error:', err)
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('auth_user')
+        setUser(null)
+        setToken(null)
       } finally {
         setLoading(false)
       }
     }
 
-    verifyToken()
+    initAuth()
   }, [])
 
-  const login = async (email: string, password: string) => {
-    setError(null)
-    setLoading(true)
-
+  const verifyTokenHelper = async (tokenToVerify: string) => {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        headers: {
+          'Authorization': `Bearer ${tokenToVerify}`,
+          'Content-Type': 'application/json',
+        },
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Login failed')
+        throw new Error('Token verification failed')
       }
 
       const data = await response.json()
-      localStorage.setItem('access_token', data.access_token)
-      if (data.refresh_token) {
-        localStorage.setItem('refresh_token', data.refresh_token)
-      }
       setUser(data.user)
-
-      // Redirect to dashboard
-      router.push('/dashboard')
+      setToken(tokenToVerify)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed'
-      setError(message)
+      console.error('Token verification error:', err)
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
+      setUser(null)
+      setToken(null)
+      throw err
+    }
+  }
+
+  const login = async (username: string, password: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Input validation
+      if (!username || !password) {
+        throw new Error('Username and password are required')
+      }
+
+      if (username.trim().length === 0 || password.trim().length === 0) {
+        throw new Error('Username and password cannot be empty')
+      }
+
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Invalid username or password')
+      }
+
+      const data = await response.json()
+
+      if (!data.token || !data.user) {
+        throw new Error('Invalid authentication response from server')
+      }
+
+      localStorage.setItem('auth_token', data.token)
+      localStorage.setItem('auth_user', JSON.stringify(data.user))
+
+      setToken(data.token)
+      setUser(data.user)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.'
+      setError(errorMessage)
       throw err
     } finally {
       setLoading(false)
     }
   }
 
-  const register = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    setError(null)
-    setLoading(true)
-
+  const register = async (userData: RegisterData) => {
     try {
+      setLoading(true)
+      setError(null)
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          firstName,
-          lastName,
-        }),
+        body: JSON.stringify(userData),
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Registration failed')
+        const data = await response.json()
+        throw new Error(data.error || 'Registration failed')
       }
 
       const data = await response.json()
-      localStorage.setItem('access_token', data.access_token)
-      setUser(data.user)
 
-      // Redirect to dashboard
-      router.push('/dashboard')
+      localStorage.setItem('auth_token', data.token)
+      localStorage.setItem('auth_user', JSON.stringify(data.user))
+
+      setToken(data.token)
+      setUser(data.user)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Registration failed'
-      setError(message)
+      const errorMessage = err instanceof Error ? err.message : 'Registration failed'
+      setError(errorMessage)
       throw err
     } finally {
       setLoading(false)
@@ -137,22 +195,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   const logout = () => {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_user')
     setUser(null)
-    router.push('/login')
+    setToken(null)
+    setError(null)
+  }
+
+  const verifyToken = async () => {
+    if (!token) {
+      throw new Error('No token available')
+    }
+
+    try {
+      await verifyTokenHelper(token)
+    } catch (err) {
+      setUser(null)
+      setToken(null)
+      throw err
+    }
   }
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        token,
         loading,
         error,
         login,
         register,
         logout,
-        isAuthenticated: !!user,
+        verifyToken,
       }}
     >
       {children}
@@ -160,9 +234,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   )
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within AuthProvider')
   }
   return context

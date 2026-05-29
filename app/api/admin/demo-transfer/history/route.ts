@@ -1,65 +1,83 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-/**
- * GET /api/admin/demo-transfer/history
- * Get transfer history with optional filters
- */
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const { searchParams } = new URL(request.url);
+    const adminUserId = searchParams.get('adminUserId');
+    const status = searchParams.get('status');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Get current user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    if (!adminUserId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+        { error: 'Admin user ID is required' },
+        { status: 400 }
+      );
     }
 
-    // Get query parameters
-    const searchParams = request.nextUrl.searchParams
-    const limit = parseInt(searchParams.get('limit') ?? '50')
-    const status = searchParams.get('status')
-    const transferType = searchParams.get('type')
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Build query
     let query = supabase
       .from('demo_transfers')
-      .select('*, from_account:accounts(account_number, balance)')
-      .eq('admin_user_id', user.id)
+      .select('*', { count: 'exact' })
+      .eq('admin_user_id', adminUserId)
       .order('created_at', { ascending: false })
-      .limit(limit)
+      .range(offset, offset + limit - 1);
 
     if (status) {
-      query = query.eq('status', status)
+      query = query.eq('status', status);
     }
 
-    if (transferType) {
-      query = query.eq('transfer_type', transferType)
+    const { data: transfers, count, error } = await query;
+
+    if (error) {
+      console.error('[v0] Error fetching demo transfers:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch transfers' },
+        { status: 500 }
+      );
     }
 
-    const { data: transfers, error: queryError } = await query
+    // Get account details for each transfer
+    const transfersWithDetails = await Promise.all(
+      (transfers || []).map(async (transfer) => {
+        const { data: fromAccount } = await supabase
+          .from('demo_accounts')
+          .select('balance')
+          .eq('id', transfer.from_account_id)
+          .single();
 
-    if (queryError) {
-      throw queryError
-    }
+        const { data: toAccount } = await supabase
+          .from('demo_accounts')
+          .select('balance, user_id')
+          .eq('account_number', transfer.to_account_number)
+          .single();
+
+        return {
+          ...transfer,
+          fromAccountBalance: fromAccount?.balance || 0,
+          toAccountBalance: toAccount?.balance || 0,
+          isInternal: toAccount?.user_id !== null,
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
-      data: transfers,
-      count: transfers?.length ?? 0,
-    })
+      transfers: transfersWithDetails,
+      total: count,
+      limit,
+      offset,
+    });
   } catch (error) {
-    console.error('History fetch error:', error)
+    console.error('[v0] Error fetching transfer history:', error);
     return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 }
-    )
+      { error: 'Failed to fetch transfer history' },
+      { status: 500 }
+    );
   }
 }

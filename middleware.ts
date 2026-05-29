@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken, getTokenFromHeader } from '@/lib/auth'
+
+// Protected routes that require authentication
+const protectedRoutes = ['/dashboard', '/accounts', '/transfer', '/transactions', '/profile']
+
+// Admin-only routes
+const adminRoutes = ['/admin']
 
 // Route requirements
 const routeRequirements: Record<string, { requireAuth: boolean; requiredRoles?: string[] }> = {
@@ -7,11 +12,8 @@ const routeRequirements: Record<string, { requireAuth: boolean; requiredRoles?: 
   '/dashboard': { requireAuth: true },
   '/accounts': { requireAuth: true },
   '/transfer': { requireAuth: true },
-  '/pay-transfer': { requireAuth: true },
   '/transactions': { requireAuth: true },
   '/profile': { requireAuth: true },
-  '/plan-track': { requireAuth: true },
-  '/offers': { requireAuth: true },
 }
 
 export function middleware(request: NextRequest) {
@@ -21,22 +23,23 @@ export function middleware(request: NextRequest) {
   const routeConfig = Object.entries(routeRequirements).find(([route]) => pathname.startsWith(route))?.[1]
 
   if (routeConfig?.requireAuth) {
-    // Get token from cookie or header
-    const token = request.cookies.get('auth_token')?.value || getTokenFromHeader(request.headers.get('Authorization'))
+    // Get user session from cookies
+    const authCookie = request.cookies.get('auth_user')?.value
 
-    if (!token) {
-      // Redirect to login if no token
+    if (!authCookie) {
+      // Redirect to login if no session
       const url = request.nextUrl.clone()
       url.pathname = '/'
       url.searchParams.set('from', pathname)
       return NextResponse.redirect(url)
     }
 
-    // Verify token
-    const payload = verifyToken(token)
-
-    if (!payload) {
-      // Redirect to login if token is invalid
+    // Parse the session
+    let user: any
+    try {
+      user = JSON.parse(authCookie)
+    } catch (err) {
+      // Invalid session, redirect to login
       const url = request.nextUrl.clone()
       url.pathname = '/'
       url.searchParams.set('from', pathname)
@@ -45,7 +48,7 @@ export function middleware(request: NextRequest) {
 
     // Check role-based access
     if (routeConfig.requiredRoles && routeConfig.requiredRoles.length > 0) {
-      const userRole = (payload as any)?.role
+      const userRole = user?.role
 
       if (!userRole || !routeConfig.requiredRoles.includes(userRole)) {
         // User doesn't have required role - redirect to dashboard
@@ -67,8 +70,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
-     * - api (API routes)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public|api).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 }
+

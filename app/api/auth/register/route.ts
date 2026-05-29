@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import { hashPassword, generateToken, validatePassword } from '@/lib/auth'
+import { hashPassword, validatePassword } from '@/lib/auth'
+import { otpService } from '@/lib/otp-service'
 import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -16,12 +18,12 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { username, email, password, firstName, lastName, phone, ssn, dateOfBirth, address, city, state, zipCode } = body
+    const { email, password, firstName, lastName, phone } = body
 
     // Validate required fields
-    if (!username || !email || !password) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Username, email, and password are required' },
+        { error: 'Email and password are required' },
         { status: 400 }
       )
     }
@@ -44,82 +46,48 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const supabase = getSupabase()
+
+    // Check if email already exists
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single()
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'Email already exists' },
+        { status: 409 }
+      )
+    }
+
     // Hash password
     const passwordHash = await hashPassword(password)
 
-    let newUser: any = null
-    let userError: any = null
+    // Generate username from email
+    const username = email.split('@')[0] + Math.random().toString(36).substr(2, 9)
 
-    // Try to create user in Supabase
-    try {
-      const supabase = getSupabase()
+    // Create user with 'viewer' role (regular user, not admin)
+    const { data: newUser, error: createError } = await supabase
+      .from('users')
+      .insert([
+        {
+          email,
+          username,
+          password_hash: passwordHash,
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          email_verified: false,
+          role: 'viewer', // Regular users get 'viewer' role, NOT admin
+        },
+      ])
+      .select()
+      .single()
 
-      // Check if user already exists
-      const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('id')
-        .or(`username.eq.${username},email.eq.${email}`)
-        .single()
-
-      if (checkError && !checkError.message?.includes('No rows')) {
-        throw checkError
-      }
-
-      if (existingUser) {
-        return NextResponse.json(
-          { error: 'Username or email already exists' },
-          { status: 409 }
-        )
-      }
-
-      // Create user
-      const { data: user, error } = await supabase
-        .from('users')
-        .insert([
-          {
-            username,
-            email,
-            password_hash: passwordHash,
-            first_name: firstName,
-            last_name: lastName,
-            phone,
-            ssn,
-            date_of_birth: dateOfBirth,
-            address,
-            city,
-            state,
-            zip_code: zipCode,
-          },
-        ])
-        .select()
-        .single()
-
-      newUser = user
-      userError = error
-    } catch (err: any) {
-      console.error('Supabase error:', err)
-      userError = err
-    }
-
-    // If Supabase fails due to table not existing, create user object in memory
-    if (userError && userError.message?.includes('relation')) {
-      newUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        username,
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        phone,
-        ssn,
-        date_of_birth: dateOfBirth,
-        address,
-        city,
-        state,
-        zip_code: zipCode,
-        created_at: new Date().toISOString(),
-      }
-    } else if (userError) {
-      console.error('User creation error:', userError)
+    if (createError || !newUser) {
+      console.error('User creation error:', createError)
       return NextResponse.json(
         { error: 'Failed to create user' },
         { status: 500 }
@@ -127,11 +95,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create default checking account with $0.00 balance
-    let account: any = null
-    let accountError: any = null
-
     try {
-      const { data: acc, error: err } = await supabase
+      await supabase
         .from('accounts')
         .insert([
           {
@@ -144,74 +109,48 @@ export async function POST(request: NextRequest) {
             is_external: false,
           },
         ])
-        .select()
-        .single()
-
-      account = acc
-      accountError = err
-    } catch (err: any) {
-      console.error('Supabase account error:', err)
-      accountError = err
+    } catch (err) {
+      console.error('Account creation error:', err)
     }
 
-    // If account creation fails due to table not existing, create in memory
-    if (accountError && accountError.message?.includes('relation')) {
-      account = {
-        id: Math.random().toString(36).substr(2, 9),
-        user_id: newUser.id,
-        account_type: 'Checking',
-        account_number: generateAccountNumber(),
-        routing_number: '021000021',
-        balance: 0.00,
-        bank_name: 'Chase Bank',
-        is_external: false,
-        created_at: new Date().toISOString(),
-      }
-    } else if (accountError) {
-      console.error('Account creation error:', accountError)
-      return NextResponse.json(
-        { error: 'Failed to create account' },
-        { status: 500 }
-      )
+    // Send OTP for email verification
+    try {
+      await otpService.createOTP(email)
+    } catch (err) {
+      console.error('Failed to send OTP:', err)
+      // Don't fail registration if OTP fails
     }
 
-    // Generate JWT token
-    const token = generateToken({
-      userId: newUser.id,
+    // Create temporary session cookie
+    const cookieStore = await cookies()
+    cookieStore.set('auth_user', JSON.stringify({
+      id: newUser.id,
       email: newUser.email,
       username: newUser.username,
       firstName: newUser.first_name,
       lastName: newUser.last_name,
       role: 'viewer',
+      emailVerified: false,
+    }), { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60, // 1 hour for OTP verification
     })
-
-    // Also trigger Monday.com integration
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/monday/onboarding`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: newUser.id,
-          email: newUser.email,
-          fullName: `${firstName || ''} ${lastName || ''}`.trim(),
-        }),
-      })
-    } catch (error) {
-      console.error('Monday integration error:', error)
-      // Don't fail registration if Monday fails
-    }
 
     return NextResponse.json(
       {
         success: true,
-        token: token.token,
         user: {
           id: newUser.id,
-          username: newUser.username,
           email: newUser.email,
+          username: newUser.username,
           firstName: newUser.first_name,
           lastName: newUser.last_name,
+          role: 'viewer',
+          emailVerified: false,
         },
+        message: 'Registration successful. Please verify your email with the OTP sent.',
       },
       { status: 201 }
     )
