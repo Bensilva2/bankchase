@@ -1,114 +1,195 @@
-# Chase Banking App - Quick Start Guide
+# BankChase Banking Platform - Quick Start Guide
 
-## ✅ Status: Ready to Use
+## 5-Minute Setup
 
-Your Chase banking app is fully functional and ready to use right now!
+### Step 1: Database Migration
+Run this in your Supabase SQL editor:
 
-## 🚀 Getting Started (60 seconds)
-
-### Required Environment Variables
-Add these to your Vercel project in Settings → Vars:
-
+```sql
+-- Copy entire contents of scripts/002-create-ledger.sql and paste here
+-- This creates all necessary tables and indexes for transactions
 ```
-JWT_SECRET=any_random_string_here
+
+### Step 2: Environment Variables
+Add to your `.env.local`:
+
+```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SMS_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=+1234567890
 ```
 
-> **Don't have Supabase set up?** You can still use the app! JWT authentication works without a database. User data persists via token storage.
+### Step 3: Test the Flow
 
-## 📝 Sign Up Flow
+**Create Transfer:**
+```bash
+curl -X POST http://localhost:3000/api/transfers/process \
+  -H "Content-Type: application/json" \
+  -H "idempotency-key: test-$(date +%s)" \
+  -d '{
+    "fromAccountId": "test-account-id",
+    "toAccountNumber": "DE89370400440532013000",
+    "toBankCode": "DEUTDE8AXXX",
+    "amount": 100,
+    "currency": "EUR"
+  }'
+```
 
-1. **Land on App** → Sign-up options appear (default screen)
-2. **Click "I'm new to Chase"** → Start 3-step sign-up
-3. **Step 1:** Enter name, email, phone
-4. **Step 2:** Enter SSN, birthdate, address
-5. **Step 3:** Create username & password, agree to terms
-6. **✓ Account Created** → Auto-redirected to dashboard
-7. **Dashboard:** Your name displays in top header
+**Check Status:**
+```bash
+curl http://localhost:3000/api/transfers/status?transactionId=<ID>
+```
 
-## 🔑 Sign In (Returning Users)
+**Simulate Webhook:**
+```bash
+curl -X POST http://localhost:3000/api/webhooks/payment-provider \
+  -H "Content-Type: application/json" \
+  -H "x-provider-name: swift" \
+  -d '{
+    "event_id": "evt-'$(date +%s)'",
+    "transaction_id": "<ID>",
+    "status": "delivered"
+  }'
+```
 
-1. Click **"Sign in to your account"** link
-2. Enter username/email + password
-3. Click **Sign in**
-4. Redirected to dashboard
+---
 
-## 🎯 What Works
+## Component Usage
 
-✅ Complete user registration  
-✅ User login with JWT tokens  
-✅ Protected dashboard routes  
-✅ User profile displays everywhere  
-✅ Account management  
-✅ Transfers & transactions  
-✅ Monday.com automation (if configured)  
+### Add Transaction Monitor to Dashboard
 
-## 🔐 How It Works
+```tsx
+import TransactionMonitor from '@/components/transaction-monitor'
 
-### Without Database (Default)
-- Users are authenticated via JWT tokens
-- Data stored in browser localStorage
-- Works great for testing and demo purposes
-- Perfect for single-device use
+export default function Dashboard() {
+  const [transactionId, setTransactionId] = useState<string | null>(null)
 
-### With Supabase (Optional)
-- All user data stored in cloud
-- Persistent across devices
-- Production-ready
-- [See setup guide](./SETUP_AND_FIXES.md)
+  return (
+    <div className="space-y-6">
+      {transactionId && (
+        <TransactionMonitor
+          transactionId={transactionId}
+          onStatusChange={(status) => console.log('Transfer:', status)}
+          autoClose={true}
+        />
+      )}
+    </div>
+  )
+}
+```
 
-## 🎨 Key Features
+### Add Metrics Widget
 
-| Feature | Status |
-|---------|--------|
-| User Registration | ✅ Working |
-| User Login | ✅ Working |
-| Protected Routes | ✅ Working |
-| JWT Tokens | ✅ Working |
-| User Profile Display | ✅ Working |
-| Logout | ✅ Working |
-| Banking Dashboard | ✅ Working |
-| Account Management | ✅ Working |
-| Transfers | ✅ Working |
-| Transactions | ✅ Working |
-| Monday Integration | ⚠️ Optional |
+```tsx
+import TransactionMetrics from '@/components/transaction-metrics'
 
-## ❓ FAQ
+export default function Dashboard() {
+  return (
+    <div>
+      <TransactionMetrics />
+    </div>
+  )
+}
+```
 
-**Q: Do I need Supabase?**  
-A: No! The app works fine without it. But Supabase enables cloud storage and is recommended for production.
+### Display Transfer Status
 
-**Q: Will my data persist?**  
-A: Without Supabase: Only in the current browser  
-With Supabase: Across all devices and browsers
+```tsx
+import TransferStatusCard from '@/components/transfer-status-card'
 
-**Q: Can I test without signing up?**  
-A: Yes! Demo data is available on the dashboard.
+const transfer = {
+  id: 'txn-123',
+  amount: 100,
+  currency: 'EUR',
+  status: 'completed',
+  receiverAccount: 'DE89370400440532013000',
+  receiverBank: 'Deutsche Bank',
+  initiatedAt: new Date().toISOString(),
+  completedAt: new Date().toISOString()
+}
 
-**Q: How do I reset my password?**  
-A: Click "Forgot username or password?" on the sign-in screen.
+export default function TransferView() {
+  return (
+    <TransferStatusCard
+      transfer={transfer}
+      onCancel={async (id) => console.log('Cancel:', id)}
+      onRetry={async (id) => console.log('Retry:', id)}
+    />
+  )
+}
+```
 
-**Q: Where are the test accounts?**  
-A: Sign up a new account or use localStorage fallback with any credentials.
+---
 
-## 🔧 Troubleshooting
+## Common Tasks
 
-| Problem | Solution |
-|---------|----------|
-| Can't sign up | Check network tab for errors, verify environment vars |
-| Keep getting logged out | Clear localStorage, refresh page |
-| Profile picture doesn't upload | Optional feature, not required |
-| Monday integration not working | Set MONDAY_API_KEY and MONDAY_BOARD_ID |
+### Change SMS Provider to Infobip
 
-## 📚 Full Documentation
+1. Update environment:
+```env
+SMS_PROVIDER=infobip
+INFOBIP_API_KEY=your_key
+INFOBIP_BASE_URL=https://api.infobip.com
+INFOBIP_PHONE_NUMBER=BankChase
+```
 
-- [Setup & Fixes Guide](./SETUP_AND_FIXES.md) - Complete technical guide
-- [Monday Integration](./MONDAY_INTEGRATION_SETUP.md) - Automation setup
-- [API Reference](./app/api/auth/) - Auth endpoints
+2. No code changes needed - service abstraction handles it!
 
-## 🎉 You're All Set!
+### Test Idempotency
 
-Your Chase banking app is ready to use. Just make sure you have the required environment variables set, then you're good to go!
+Same idempotency key = same transaction:
 
-**Questions?** Check the [Setup Guide](./SETUP_AND_FIXES.md) for detailed troubleshooting.
+```bash
+KEY="idempotency-key-test-$(date +%s)"
+
+# First call
+curl -X POST http://localhost:3000/api/transfers/process \
+  -H "idempotency-key: $KEY" \
+  -d '{...}' > /tmp/first.json
+
+# Second call with same key - should get identical transactionId
+curl -X POST http://localhost:3000/api/transfers/process \
+  -H "idempotency-key: $KEY" \
+  -d '{...}' > /tmp/second.json
+```
+
+---
+
+## Troubleshooting
+
+### Transfer stuck at "processing"
+- Check payment provider status page
+- Verify webhook is being received
+- Check webhook signature in error logs
+
+### SMS not sending
+- Verify environment variables are set
+- Check Twilio/Infobip API limits
+- Confirm phone number format: `+1` prefix required
+
+### Database migration fails
+- Ensure Supabase service role key is correct
+- Check you have superuser permissions
+- Verify PostgreSQL version is 13+
+
+---
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `lib/transfer-processor.ts` | Transfer logic |
+| `lib/sms-alerts.ts` | SMS notifications |
+| `lib/webhook-verifier.ts` | Webhook security |
+| `components/transaction-monitor.tsx` | Real-time UI |
+| `scripts/002-create-ledger.sql` | Database schema |
+| `BANKING_UPDATE_IMPLEMENTATION.md` | Full docs |
+| `IMPLEMENTATION_SUMMARY.md` | Technical overview |
+
+---
+
+**Full Documentation**: See `BANKING_UPDATE_IMPLEMENTATION.md` for detailed information.
