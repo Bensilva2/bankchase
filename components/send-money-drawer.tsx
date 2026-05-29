@@ -109,7 +109,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
     setNewContactPhone("")
   }
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (!recipient || !amount) {
       toast({
         title: "Missing Information",
@@ -142,29 +142,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
     setIsLoading(true)
     setStep("confirm")
 
-    // Use instant payments API
-    try {
-      const response = await fetch("/api/payments/instant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          senderId: selectedAccount,
-          recipientEmail: selectedContact?.email || undefined,
-          recipientPhone: selectedContact?.phone || undefined,
-          recipientId: selectedContact?.id || recipient,
-          amount: sendAmount,
-          currency: "USD",
-          paymentRail: "zelle",
-          memo,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Payment failed")
-      }
-
-      const result = await response.json()
-
+    setTimeout(() => {
       updateBalance(selectedAccount, -sendAmount)
 
       const transaction = addTransaction({
@@ -174,29 +152,10 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
         category: "Transfers",
         status: "completed",
         recipientName: selectedContact?.name || recipient,
-        reference: result.transaction?.confirmationCode || `ZELLE-${Date.now()}`,
+        reference: `ZELLE-${Date.now()}`,
         accountId: selectedAccount,
         accountFrom: account.name,
       })
-
-      // Send SMS alert
-      try {
-        await fetch("/api/sms/alert", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            phoneNumber: "(555) 888-9999",
-            alertType: "debit",
-            data: {
-              amount: sendAmount,
-              description: `Zelle to ${selectedContact?.name || recipient}`,
-              balance: account.balance - sendAmount,
-            },
-          }),
-        })
-      } catch {
-        // SMS alert is optional
-      }
 
       addNotification({
         title: "Money Sent",
@@ -228,14 +187,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
         resetDrawer()
         onOpenChange(false)
       }, 2000)
-    } catch (error) {
-      setIsLoading(false)
-      toast({
-        title: "Transfer Failed",
-        description: "Unable to process payment. Please try again.",
-        variant: "destructive",
-      })
-    }
+    }, 1500)
   }
 
   const resetDrawer = () => {

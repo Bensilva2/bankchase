@@ -220,37 +220,14 @@ export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProp
     }
   }
 
-  const handleProceedToOTP = async () => {
+  const handleProceedToOTP = () => {
     setCurrentStep("otp")
     setOtpResendTimer(60)
-    
-    // Send OTP via SMS API
-    try {
-      const response = await fetch("/api/sms/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: userProfile.phone }),
-      })
-      
-      if (response.ok) {
-        toast({
-          title: "Verification Code Sent",
-          description: `A 6-digit OTP has been sent to ${userProfile.phone}`,
-        })
-      } else {
-        // Fallback message if API fails
-        toast({
-          title: "Verification Code Sent",
-          description: `A 6-digit OTP has been sent to ${userProfile.phone}`,
-        })
-      }
-    } catch {
-      // Fallback for development
-      toast({
-        title: "Verification Code Sent",
-        description: `A 6-digit OTP has been sent to ${userProfile.phone}`,
-      })
-    }
+    // Simulate sending OTP
+    toast({
+      title: "Verification Code Sent",
+      description: `A 6-digit OTP has been sent to ${userProfile.phone}`,
+    })
   }
 
   const handleVerifyOTP = () => {
@@ -309,21 +286,9 @@ export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProp
     }, 1500)
   }
 
-  const handleResendOTP = async () => {
+  const handleResendOTP = () => {
     setOtpResendTimer(60)
     setOtpCode("")
-    
-    // Resend OTP via SMS API
-    try {
-      await fetch("/api/sms/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: userProfile.phone }),
-      })
-    } catch {
-      // Continue even if API fails
-    }
-    
     toast({
       title: "New Code Sent",
       description: `A new verification code has been sent to ${userProfile.phone}`,
@@ -375,30 +340,8 @@ export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProp
     })
   }
 
-  const completeTransaction = async () => {
+  const completeTransaction = () => {
     setCurrentStep("complete")
-
-    // Send SMS confirmation alert
-    try {
-      const fromAccount = accounts.find((a) => a.id === selectedAccount)
-      await fetch("/api/sms/alert", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phoneNumber: userProfile.phone,
-          alertType: "wire_confirmation",
-          data: {
-            amount: getTransferAmount(),
-            recipientName,
-            recipientBank: recipientBank || (wireType === "domestic" ? "Domestic Bank" : "International Bank"),
-            confirmationNumber,
-            estimatedArrival: wireType === "domestic" ? "1-2 business days" : "2-5 business days",
-          },
-        }),
-      })
-    } catch {
-      // Continue even if SMS fails
-    }
 
     // Add completion notification
     addNotification({

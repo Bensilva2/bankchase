@@ -25,9 +25,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
-import { storeMondayItemId } from "@/lib/monday-service"
-import { useAuth } from "@/lib/auth-context"
-import { useRouter } from "next/navigation"
 
 interface LoginPageProps {
   onLogin: () => void
@@ -35,12 +32,12 @@ interface LoginPageProps {
 
 type ModalView =
   | "none"
-  | "login"
   | "forgot"
   | "forgot-username"
   | "forgot-password"
   | "signup"
   | "signup-form"
+  | "open-account"
   | "account-type"
   | "privacy"
   | "more-options"
@@ -64,10 +61,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [useToken, setUseToken] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [modalView, setModalView] = useState<ModalView>("login")
+  const [modalView, setModalView] = useState<ModalView>("none")
   const { toast } = useToast()
-  const { login, register } = useAuth()
-  const router = useRouter()
 
   const [tokenCode, setTokenCode] = useState("")
   const [generatedToken, setGeneratedToken] = useState("")
@@ -175,8 +170,16 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
     setIsLoading(true)
 
-    try {
-      await login(username, password)
+    // Simulate authentication delay
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    const isDefaultUser = username === DEFAULT_USERNAME && password === DEFAULT_PASSWORD
+    const storedUser = storedUsers.find((user) => user.username === username && user.password === password)
+
+    if (isDefaultUser || storedUser) {
+      localStorage.setItem("chase_logged_in", "true")
+      localStorage.setItem("chase_remember_me", rememberMe ? "true" : "false")
+      localStorage.setItem("chase_last_login", new Date().toISOString())
 
       if (rememberMe) {
         localStorage.setItem("chase_username", username)
@@ -184,16 +187,16 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         localStorage.removeItem("chase_username")
       }
 
+      const displayName = storedUser ? storedUser.firstName : "Lin"
+
       toast({
-        title: "Welcome back!",
+        title: `Welcome back, ${displayName}`,
         description: "You have successfully signed in to Chase.",
       })
 
-      // Redirect to dashboard
-      router.push("/dashboard")
-    } catch (err) {
+      onLogin()
+    } else {
       setError("The username or password you entered is incorrect. Please try again.")
-    } finally {
       setIsLoading(false)
     }
   }
@@ -307,7 +310,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   const handleSignupSubmit = async () => {
     if (signupStep === 1) {
-      if (!signupData.firstName?.trim() || !signupData.lastName?.trim() || !signupData.email?.trim() || !signupData.phone?.trim()) {
+      if (!signupData.firstName || !signupData.lastName || !signupData.email || !signupData.phone) {
         toast({
           title: "Missing Information",
           description: "Please fill in all required fields.",
@@ -315,22 +318,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         })
         return
       }
-      // Better email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(signupData.email)) {
+      if (!signupData.email.includes("@")) {
         toast({
           title: "Invalid Email",
           description: "Please enter a valid email address.",
-          variant: "destructive",
-        })
-        return
-      }
-      // Phone number validation (basic 10-digit)
-      const phoneDigits = signupData.phone.replace(/\D/g, '')
-      if (phoneDigits.length < 10) {
-        toast({
-          title: "Invalid Phone",
-          description: "Please enter a valid phone number (at least 10 digits).",
           variant: "destructive",
         })
         return
@@ -396,37 +387,39 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       }
 
       setIsLoading(true)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      setIsLoading(false)
 
-      try {
-        await register({
-          username: signupData.username,
-          email: signupData.email,
-          password: signupData.password,
-          firstName: signupData.firstName,
-          lastName: signupData.lastName,
-          phone: signupData.phone,
-          ssn: signupData.ssn,
-          dateOfBirth: signupData.dob,
-          address: signupData.address,
-          city: signupData.city,
-          state: signupData.state,
-          zipCode: signupData.zip,
-        })
+      const newUser: StoredUser = {
+        username: signupData.username,
+        password: signupData.password,
+        firstName: signupData.firstName,
+        lastName: signupData.lastName,
+        email: signupData.email,
+        phone: signupData.phone,
+        createdAt: new Date().toISOString(),
+      }
 
-        toast({
-          title: "Account Created Successfully",
-          description: "Welcome to Chase! Redirecting to your dashboard...",
-        })
+      const updatedUsers = [...storedUsers, newUser]
+      setStoredUsers(updatedUsers)
+      localStorage.setItem("chase_users", JSON.JSON.stringify(updatedUsers))
 
-        // Reset form and close modal
-        setModalView("none")
-        setSignupStep(1)
-        setSignupData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          ssn: "",
+      toast({
+        title: "Account Created Successfully",
+        description: "Welcome to Chase! You can now sign in with your credentials.",
+      })
+
+      // Pre-fill the username for convenience
+      setUsername(signupData.username)
+
+      setModalView("none")
+      setSignupStep(1)
+      setSignupData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        ssn: "",
         dob: "",
         address: "",
         city: "",
@@ -438,19 +431,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         agreeTerms: false,
         agreeElectronic: false,
       })
-
-        // Redirect to dashboard
-        router.push("/dashboard")
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Registration failed"
-        toast({
-          title: "Registration Error",
-          description: errorMsg,
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
-      }
     }
   }
 
@@ -485,7 +465,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                       if (signupStep > 1) setSignupStep(signupStep - 1)
                       else setModalView("signup")
                     } else if (modalView === "account-type") {
-                      setModalView("signup")
+                      setModalView("open-account")
                     } else if (modalView === "token-setup") {
                       setModalView("none")
                     }
@@ -885,10 +865,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 </button>
 
                 <button
-                  onClick={() => {
-                    setModalView("signup")
-                    setSignupStep(1)
-                  }}
+                  onClick={() => setModalView("open-account")}
                   className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all flex items-center gap-4"
                 >
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -917,123 +894,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     <Check className="w-4 h-4 text-green-600" /> Real-time alerts
                   </li>
                 </ul>
-              </div>
-
-              <div className="mt-6 text-center">
-                <p className="text-gray-600 text-sm mb-2">Already have online access?</p>
-                <button
-                  onClick={() => setModalView("login")}
-                  className="text-[#117aca] hover:underline font-medium text-sm"
-                >
-                  Sign in to your account
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Login Form - shown when user wants to sign in */}
-          {modalView === "login" && (
-            <div className="p-6">
-              <button
-                onClick={() => setModalView("signup")}
-                className="flex items-center gap-2 text-[#117aca] hover:underline mb-4"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to signup options
-              </button>
-              
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Sign in</h2>
-              <p className="text-gray-600 mb-6">Access your Chase accounts</p>
-
-              {error && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              )}
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Username or User ID *</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value)
-                      setError("")
-                    }}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter" && !isLoading) handleSignIn()
-                    }}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent pr-10"
-                    placeholder="example@chase.com"
-                  />
-                  <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value)
-                      setError("")
-                    }}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter" && !isLoading) handleSignIn()
-                    }}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent pr-10"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    className="border-[#117aca] data-[state=checked]:bg-[#117aca] data-[state=checked]:border-[#117aca]"
-                  />
-                  <label htmlFor="remember" className="text-sm text-gray-600 cursor-pointer">
-                    Remember me
-                  </label>
-                </div>
-                <button
-                  onClick={() => setModalView("forgot")}
-                  className="text-sm text-[#117aca] hover:underline"
-                >
-                  Forgot username or password?
-                </button>
-              </div>
-
-              <Button
-                onClick={handleSignIn}
-                disabled={isLoading}
-                className="w-full bg-[#117aca] hover:bg-[#0a5a9e] py-6 text-base"
-              >
-                {isLoading ? "Signing in..." : "Sign in"}
-              </Button>
-
-              <div className="mt-4 text-center">
-                <p className="text-gray-600 text-sm">Don&apos;t have online access?</p>
-                <button
-                  onClick={() => setModalView("signup")}
-                  className="text-[#117aca] hover:underline font-medium text-sm mt-1"
-                >
-                  Sign up now
-                </button>
               </div>
             </div>
           )}
@@ -1252,6 +1112,82 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               >
                 {isLoading ? "Processing..." : signupStep === 3 ? "Create Account" : "Continue"}
               </Button>
+            </div>
+          )}
+
+          {/* Open Account Modal */}
+          {modalView === "open-account" && (
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Open a Chase Account</h2>
+              <p className="text-gray-600 mb-6">Choose the account that's right for you.</p>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => setModalView("account-type")}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Building2 className="w-6 h-6 text-[#117aca]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">Checking Account</p>
+                      <p className="text-sm text-gray-500">Chase Total Checking - $0 deposit to open</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setModalView("account-type")}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <Shield className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">Savings Account</p>
+                      <p className="text-sm text-gray-500">Chase Savings - Earn interest on your balance</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setModalView("account-type")}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <CreditCard className="w-6 h-6 text-[#117aca]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">Credit Card</p>
+                      <p className="text-sm text-gray-500">Chase Freedom, Sapphire, and more</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => window.open("https://www.chase.com/personal/investments", "_blank")}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                      <ExternalLink className="w-6 h-6 text-orange-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">Investment Account</p>
+                      <p className="text-sm text-gray-500">Self-Directed Investing & more</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                <p className="text-xs text-gray-600">
+                  <strong>Need help choosing?</strong> Call us at 1-800-935-9935 or visit a Chase branch near you.
+                </p>
+              </div>
             </div>
           )}
 
@@ -1605,19 +1541,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         </div>
 
         <div className="flex items-center justify-center gap-3 mt-6 text-sm">
-          <button onClick={() => setModalView("signup")} className="text-white hover:underline">
+          <button onClick={() => setModalView("signup")} className="text-[#117aca] hover:underline">
             Sign up
           </button>
-          <span className="text-white">|</span>
-          <button onClick={() => setModalView("signup")} className="text-white hover:underline">
+          <span className="text-[#117aca]">|</span>
+          <button onClick={() => setModalView("open-account")} className="text-[#117aca] hover:underline">
             Open an account
           </button>
-          <span className="text-white">|</span>
-          <button onClick={() => setModalView("privacy")} className="text-white hover:underline">
+          <span className="text-[#117aca]">|</span>
+          <button onClick={() => setModalView("privacy")} className="text-[#117aca] hover:underline">
             Privacy
           </button>
-          <span className="text-white">|</span>
-          <button onClick={() => setModalView("more-options")} className="text-white font-bold hover:underline">
+          <span className="text-[#117aca]">|</span>
+          <button onClick={() => setModalView("more-options")} className="text-[#117aca] font-bold hover:underline">
             •••
           </button>
         </div>

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { QuickActions } from "@/components/quick-actions"
 import { AccountsSection } from "@/components/accounts-section"
@@ -26,19 +25,12 @@ import { TransactionsDrawer } from "@/components/transactions-drawer"
 import { LoginPage } from "@/components/login-page"
 import { DisputeTransactionDrawer } from "@/components/dispute-transaction-drawer"
 import { useBanking } from "@/lib/banking-context"
-import { useAuth } from "@/lib/auth-context"
 import Image from "next/image"
-import { AccountOpeningModal } from "@/components/account-opening-modal"
 
 export default function BankingDashboard() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
-  const [mounted, setMounted] = useState(false)
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+
   const [activeView, setActiveView] = useState("accounts")
   const [sendMoneyOpen, setSendMoneyOpen] = useState(false)
   const [depositChecksOpen, setDepositChecksOpen] = useState(false)
@@ -54,19 +46,27 @@ export default function BankingDashboard() {
   const [transactionsOpen, setTransactionsOpen] = useState(false)
   const [disputeOpen, setDisputeOpen] = useState(false)
   const [disputeTransactionId, setDisputeTransactionId] = useState<string | null>(null)
-  const [accountOpeningOpen, setAccountOpeningOpen] = useState(false)
   const { toast } = useToast()
 
   const { userProfile, addNotification, addActivity, addLoginHistory } = useBanking()
 
   const getUserFirstName = useCallback(() => {
-    if (user?.firstName) return user.firstName
-    if (user?.username) return user.username
-    return "User"
-  }, [user?.firstName, user?.username])
+    if (!userProfile?.name) return "User"
+    const parts = userProfile.name.split(" ")
+    return parts[0] || "User"
+  }, [userProfile?.name])
 
   useEffect(() => {
-    if (!user) return
+    const checkAuth = () => {
+      const loggedIn = localStorage.getItem("chase_logged_in") === "true"
+      setIsLoggedIn(loggedIn)
+      setIsCheckingAuth(false)
+    }
+    checkAuth()
+  }, [])
+
+  useEffect(() => {
+    if (!isLoggedIn) return
 
     const deviceInfo = navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Desktop Browser"
 
@@ -98,7 +98,12 @@ export default function BankingDashboard() {
     return () => {
       clearTimeout(welcomeTimer)
     }
-  }, [user, addActivity, addLoginHistory, toast, getUserFirstName])
+  }, [isLoggedIn, addActivity, addLoginHistory, toast, getUserFirstName])
+
+  const handleLogin = () => {
+    setIsLoggedIn(true)
+    localStorage.setItem("chase_logged_in", "true")
+  }
 
   const handleLogout = () => {
     if (addActivity) {
@@ -108,14 +113,13 @@ export default function BankingDashboard() {
         location: "Current Session",
       })
     }
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("auth_user")
+    setIsLoggedIn(false)
+    localStorage.removeItem("chase_logged_in")
     setActiveView("accounts")
     toast({
       title: "Signed out successfully",
       description: "You have been securely signed out.",
     })
-    router.push("/")
   }
 
   const handleOpenReceipt = (transactionId: string) => {
@@ -135,11 +139,11 @@ export default function BankingDashboard() {
     return "Good evening"
   }
 
-  if (loading || !mounted) {
+  if (isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0a4fa6]">
         <div className="flex flex-col items-center gap-4">
-          <Image src="/images/chase-logo.png" alt="Chase" width={80} height={80} className="rounded-xl shadow-lg" priority loading="eager" />
+          <Image src="/images/chase-logo.png" alt="Chase" width={80} height={80} className="rounded-xl shadow-lg" />
           <span className="text-white text-2xl font-bold tracking-wide">CHASE</span>
           <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -147,10 +151,8 @@ export default function BankingDashboard() {
     )
   }
 
-  if (!user) {
-    // User not authenticated, show login
-    console.log('[v0] User not authenticated, showing login')
-    return <LoginPage onLogin={() => {}} />
+  if (!isLoggedIn) {
+    return <LoginPage onLogin={handleLogin} />
   }
 
   const renderView = () => {
@@ -248,9 +250,6 @@ export default function BankingDashboard() {
 
       {/* Dispute Transaction Drawer */}
       <DisputeTransactionDrawer open={disputeOpen} onOpenChange={setDisputeOpen} transactionId={disputeTransactionId} />
-
-      {/* Account Opening Modal */}
-      <AccountOpeningModal isOpen={accountOpeningOpen} onClose={() => setAccountOpeningOpen(false)} />
     </div>
   )
 }

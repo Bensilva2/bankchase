@@ -11,11 +11,11 @@ interface BottomNavigationProps {
 
 export function BottomNavigation({ activeView, onViewChange }: BottomNavigationProps) {
   const navItems = [
-    { id: "accounts", label: "Accounts", icon: Wallet, tooltip: "View all your accounts" },
-    { id: "pay-transfer", label: "Pay & Transfer", icon: ArrowLeftRight, tooltip: "Send money & pay bills" },
-    { id: "plan-track", label: "Plan & Track", icon: PieChart, tooltip: "Budget & spending insights" },
-    { id: "offers", label: "Offers", icon: Tag, tooltip: "Exclusive offers for you" },
-    { id: "more", label: "More", icon: Menu, tooltip: "Settings & more options" },
+    { id: "accounts", label: "Accounts", icon: Wallet },
+    { id: "pay-transfer", label: "Pay & transfer", icon: ArrowLeftRight },
+    { id: "plan-track", label: "Plan & track", icon: PieChart },
+    { id: "offers", label: "Offers", icon: Tag },
+    { id: "more", label: "More", icon: Menu },
   ]
 
   return (

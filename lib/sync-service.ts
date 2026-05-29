@@ -52,11 +52,6 @@ export function setLastSyncTime(time: string): void {
 // Sync data to Supabase (cloud)
 export async function syncToCloud(email: string, data: any): Promise<boolean> {
   try {
-    // Skip if running on server side
-    if (typeof window === "undefined") {
-      return false
-    }
-
     const supabase = createClient()
 
     // Check if record exists
@@ -85,11 +80,7 @@ export async function syncToCloud(email: string, data: any): Promise<boolean> {
 
     setLastSyncTime(new Date().toISOString())
     return true
-  } catch (error: any) {
-    // Silently ignore table not found errors - database may not be initialized yet
-    if (error?.message?.includes("Could not find the table")) {
-      return false
-    }
+  } catch (error) {
     console.error("Failed to sync to cloud:", error)
     return false
   }
@@ -98,11 +89,6 @@ export async function syncToCloud(email: string, data: any): Promise<boolean> {
 // Fetch data from Supabase (cloud)
 export async function fetchFromCloud(email: string): Promise<any | null> {
   try {
-    // Skip if running on server side
-    if (typeof window === "undefined") {
-      return null
-    }
-
     const supabase = createClient()
 
     const { data, error } = await supabase
@@ -112,19 +98,15 @@ export async function fetchFromCloud(email: string): Promise<any | null> {
       .single()
 
     if (error) {
-      // Silently return null if table doesn't exist
-      if (error?.message?.includes("Could not find the table")) {
+      if (error.code === "PGRST116") {
+        // No record found
         return null
       }
       throw error
     }
 
     return data?.data || null
-  } catch (error: any) {
-    // Silently ignore table not found errors - database may not be initialized yet
-    if (error?.message?.includes("Could not find the table")) {
-      return null
-    }
+  } catch (error) {
     console.error("Failed to fetch from cloud:", error)
     return null
   }
@@ -216,100 +198,5 @@ export async function performSync(
   } catch (error) {
     console.error("Sync failed:", error)
     return { success: false, mergedData: null }
-  }
-}
-
-// Check localStorage quota
-export function getStorageQuota(): { used: number; available: number; percentage: number } | null {
-  if (typeof window === "undefined") return null
-
-  try {
-    if (!navigator.storage?.estimate) {
-      return null
-    }
-
-    let used = 0
-    for (let key in localStorage) {
-      if (localStorage.hasOwnProperty(key)) {
-        used += localStorage[key].length + key.length
-      }
-    }
-
-    // Approximate quota is typically 5-10MB for most browsers
-    const quota = 5 * 1024 * 1024 // 5MB estimate
-    const available = quota - used
-    const percentage = (used / quota) * 100
-
-    return { used, available, percentage }
-  } catch (error) {
-    console.error("Failed to calculate storage quota:", error)
-    return null
-  }
-}
-
-// Archive old transactions to reduce storage usage
-export function archiveOldTransactions(data: any, daysToKeep: number = 90): any {
-  if (!data || !data.transactions) return data
-
-  const cutoffDate = new Date()
-  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
-  const cutoffTime = cutoffDate.getTime()
-
-  const recentTransactions = data.transactions.filter((tx: any) => {
-    const txTime = new Date(tx.date).getTime()
-    return txTime > cutoffTime
-  })
-
-  // Archive count for reference
-  const archivedCount = data.transactions.length - recentTransactions.length
-
-  return {
-    ...data,
-    transactions: recentTransactions,
-    archivedAt: new Date().toISOString(),
-    transactionsArchived: archivedCount,
-  }
-}
-
-// Clear old notifications
-export function cleanupOldNotifications(data: any, daysToKeep: number = 30): any {
-  if (!data || !data.notifications) return data
-
-  const cutoffDate = new Date()
-  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
-  const cutoffTime = cutoffDate.getTime()
-
-  const recentNotifications = data.notifications.filter((notif: any) => {
-    const notifTime = new Date(notif.date).getTime()
-    // Keep unread notifications regardless of age
-    return notifTime > cutoffTime || !notif.read
-  })
-
-  return {
-    ...data,
-    notifications: recentNotifications,
-  }
-}
-
-// Export data for backup
-export function exportDataAsJSON(data: any): string {
-  return JSON.stringify(
-    {
-      ...data,
-      exportedAt: new Date().toISOString(),
-    },
-    null,
-    2,
-  )
-}
-
-// Import data from JSON backup
-export function importDataFromJSON(jsonString: string): any {
-  try {
-    const data = JSON.parse(jsonString)
-    return data
-  } catch (error) {
-    console.error("Failed to import data:", error)
-    throw new Error("Invalid JSON format")
   }
 }

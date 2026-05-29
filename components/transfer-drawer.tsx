@@ -236,8 +236,9 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
 
   const handleSelectBank = (bank: Bank) => {
     setSelectedBank({
+      id: bank.id,
       name: bank.name,
-      routingNumber: bank.routing,
+      routing: bank.routing,
       state: bank.state,
       type: bank.type,
     })
@@ -354,7 +355,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
                     <div className="flex flex-col items-start">
                       <span className="font-medium">{selectedBank.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {selectedBank.state} • Routing: {selectedBank.routingNumber}
+                        {selectedBank.state} • Routing: {selectedBank.routing}
                       </span>
                     </div>
                   ) : (

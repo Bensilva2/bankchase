@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useBanking } from "@/lib/banking-context"
-import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 
 export function DashboardHeader() {
@@ -21,7 +20,6 @@ export function DashboardHeader() {
   const [searchQuery, setSearchQuery] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
-  const { user } = useAuth()
 
   const {
     userProfile,
@@ -127,10 +125,9 @@ export function DashboardHeader() {
             onClick={() => setProfileOpen(true)}
           >
             <Avatar className="h-10 w-10">
-              <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={user?.firstName || user?.username || ""} />
+              <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={userProfile.name || ""} />
               <AvatarFallback className="bg-white text-[#0a4fa6] font-semibold">
-                {((user?.firstName || "") + " " + (user?.lastName || ""))
-                  .trim()
+                {(userProfile.name || "")
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
@@ -266,10 +263,9 @@ export function DashboardHeader() {
             <div className="flex flex-col items-center">
               <div className="relative">
                 <Avatar className="h-24 w-24 border-4 border-[#0a4fa6]">
-                  <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={user?.firstName || user?.username || ""} />
+                  <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={userProfile.name || ""} />
                   <AvatarFallback className="bg-[#0a4fa6] text-white text-2xl font-bold">
-                    {((user?.firstName || "") + " " + (user?.lastName || ""))
-                      .trim()
+                    {(userProfile.name || "")
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
@@ -290,10 +286,8 @@ export function DashboardHeader() {
                   onChange={handleProfilePictureUpload}
                 />
               </div>
-              <h3 className="font-bold text-xl mt-4">
-                {user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : userProfile.name}
-              </h3>
-              <p className="text-sm text-muted-foreground">{user?.email || userProfile.email}</p>
+              <h3 className="font-bold text-xl mt-4">{userProfile.name}</h3>
+              <p className="text-sm text-muted-foreground">{userProfile.email}</p>
               <Badge className="mt-2 bg-[#0a4fa6]">{userProfile.tier}</Badge>
             </div>
 
