@@ -1,8 +1,10 @@
 import { MongoClient, MongoClientOptions } from 'mongodb';
 import { attachDatabasePool } from '@vercel/functions';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('MONGODB_URI environment variable is not set');
+// MongoDB is optional - only required at runtime if MongoDB features are used
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri && process.env.NODE_ENV === 'production') {
+  throw new Error('MONGODB_URI environment variable is required in production');
 }
 
 const options: MongoClientOptions = {
@@ -15,11 +17,13 @@ const options: MongoClientOptions = {
   socketTimeoutMS: 45000,
 };
 
-// Create MongoDB client
-const client = new MongoClient(process.env.MONGODB_URI, options);
+// Create MongoDB client (only if URI is provided)
+const client = mongoUri ? new MongoClient(mongoUri, options) : null;
 
 // Attach to Vercel's database pool for proper cleanup on function suspension
-attachDatabasePool(client);
+if (client) {
+  attachDatabasePool(client);
+}
 
 // Lazy initialization flag
 let mongoConnected = false;
@@ -29,6 +33,10 @@ let mongoConnected = false;
  * Ensures single connection instance across all functions
  */
 export async function getMongoClient(): Promise<MongoClient> {
+  if (!client) {
+    throw new Error('MongoDB not configured. Set MONGODB_URI environment variable.');
+  }
+  
   if (!mongoConnected) {
     try {
       await client.connect();
