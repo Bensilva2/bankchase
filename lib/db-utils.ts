@@ -1,4 +1,4 @@
-import { sql } from './db';
+import { getSql } from './db';
 
 /**
  * Database utility functions for common operations
@@ -32,6 +32,7 @@ export interface User {
  */
 export async function getComments(limit = 50): Promise<Comment[]> {
   try {
+    const sql = getSql();
     const comments = await sql`
       SELECT id, comment, created_at 
       FROM comments 
@@ -51,6 +52,7 @@ export async function addComment(comment: string): Promise<Comment> {
       throw new Error('Comment cannot be empty');
     }
 
+    const sql = getSql();
     const result = await sql`
       INSERT INTO comments (comment) 
       VALUES (${comment}) 
@@ -68,6 +70,7 @@ export async function addComment(comment: string): Promise<Comment> {
  */
 export async function getTransactions(userId: string): Promise<Transaction[]> {
   try {
+    const sql = getSql();
     const transactions = await sql`
       SELECT id, user_id, amount, description, type, status, created_at 
       FROM transactions 
@@ -93,6 +96,7 @@ export async function addTransaction(
       throw new Error('Invalid transaction data');
     }
 
+    const sql = getSql();
     const result = await sql`
       INSERT INTO transactions (user_id, amount, description, type) 
       VALUES (${userId}, ${amount}, ${description}, ${type}) 
@@ -110,6 +114,7 @@ export async function addTransaction(
  */
 export async function getUser(email: string): Promise<User | null> {
   try {
+    const sql = getSql();
     const result = await sql`
       SELECT id, email, name, created_at 
       FROM users 
@@ -131,6 +136,7 @@ export async function createUser(
       throw new Error('Email and name are required');
     }
 
+    const sql = getSql();
     const result = await sql`
       INSERT INTO users (email, name) 
       VALUES (${email}, ${name}) 
@@ -148,6 +154,8 @@ export async function createUser(
  */
 export async function ensureTablesExist(): Promise<void> {
   try {
+    const sql = getSql();
+
     // Comments table
     await sql`
       CREATE TABLE IF NOT EXISTS comments (

@@ -3,9 +3,6 @@ import { attachDatabasePool } from '@vercel/functions';
 
 // MongoDB is optional - only required at runtime if MongoDB features are used
 const mongoUri = process.env.MONGODB_URI;
-if (!mongoUri && process.env.NODE_ENV === 'production') {
-  throw new Error('MONGODB_URI environment variable is required in production');
-}
 
 const options: MongoClientOptions = {
   appName: 'bankchase.app',

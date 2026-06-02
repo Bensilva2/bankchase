@@ -11,6 +11,7 @@
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.21.0",
     "@hookform/resolvers": "^3.10.0",
+    "@neondatabase/serverless": "^1.1.0",
     "@prelude.so/sdk": "^0.10.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",

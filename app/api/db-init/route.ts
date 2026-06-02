@@ -1,8 +1,14 @@
-import { sql } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+
+async function getSql() {
+  const { getSql: getSqlFromDb } = await import('@/lib/db');
+  return getSqlFromDb();
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const sql = await getSql();
+    
     // Create comments table
     await sql`
       CREATE TABLE IF NOT EXISTS comments (
