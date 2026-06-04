@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import { comparePassword, hashPassword } from '@/lib/auth'
 import { inMemoryDb } from '@/lib/in-memory-db'
+import { logLoginAttempt } from '@/lib/rbac'
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import crypto from 'crypto'
 
 // Default demo credentials
 const DEFAULT_USER = {
@@ -12,7 +14,7 @@ const DEFAULT_USER = {
   password: 'Lin1122',
   first_name: 'Lin',
   last_name: 'Huang',
-  role: 'viewer',
+  role: 'customer',
   email_verified: true,
 }
 
@@ -108,37 +110,55 @@ export async function POST(request: NextRequest) {
     }
 
     if (!user) {
+      // Log failed login attempt
+      try {
+        const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+        const userAgent = request.headers.get('user-agent') || 'unknown'
+        // Don't log to DB for failed login of non-existent users
+      } catch (err) {
+        console.error('[v0] Error logging failed login:', err)
+      }
+      
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
       )
     }
 
-    // Create session cookie
-    const cookieStore = await cookies()
-    const sessionUser = {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      role: user.role || 'viewer',
-      emailVerified: user.email_verified ?? true,
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+
+    // Generate 2FA code (6 digits)
+    const twoFACode = Math.floor(100000 + Math.random() * 900000).toString()
+    const supabase = getSupabase()
+
+    // Save 2FA code to database with 5-minute expiration
+    if (supabase && user.id) {
+      try {
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
+        await supabase.from('two_factor_codes').insert({
+          user_id: user.id,
+          code: twoFACode,
+          expires_at: expiresAt,
+          used: false,
+        })
+
+        // Log login attempt (pending 2FA)
+        await logLoginAttempt(user.id, ip, userAgent, 'Web Browser', true)
+      } catch (err) {
+        console.error('[v0] Error saving 2FA code:', err)
+      }
     }
 
-    cookieStore.set('auth_user', JSON.stringify(sessionUser), { 
-      httpOnly: true, 
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-    })
-
+    // Return 2FA pending response (don't create full session yet)
     return NextResponse.json(
       {
-        success: true,
-        token: `session-${user.id}-${Date.now()}`, // Simple session token
-        user: sessionUser,
-        session: { authenticated: true },
+        success: false,
+        requiresTwoFA: true,
+        userId: user.id,
+        email: user.email,
+        // In production, send code via SMS/email, not in response
+        message: 'A verification code has been sent to your registered phone/email.',
       },
       { status: 200 }
     )
