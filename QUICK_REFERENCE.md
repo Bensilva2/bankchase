@@ -1,129 +1,208 @@
-# Quick Reference - Fixed Application
+# Neon + Better Auth - Quick Reference
 
-## Current Status: ✅ All Issues Resolved
+## Authentication Routes
+- `GET /sign-in` - Login page
+- `GET /sign-up` - Registration page
+- `POST /api/auth/sign-in` - Sign in (called by form)
+- `POST /api/auth/sign-up` - Sign up (called by form)
 
-### Login Flow (Simplified)
+## Core Files
+
+### lib/auth.ts
+- Configures Better Auth with Neon database
+- Sets up email + password authentication
+- Manages session cookies and CORS
+
+### lib/auth-client.ts
+- Client-side auth client for browser
+- `authClient.signIn.email({ email, password })`
+- `authClient.signUp.email({ email, password, name })`
+- `authClient.signOut()`
+
+### lib/db/index.ts
+- Creates shared `pg` Pool
+- Exports Drizzle `db` instance
+- Used by Better Auth + your queries
+
+### lib/db/schema.ts
+- Better Auth tables: user, session, account, verification
+- Add your custom tables here
+- Column names are camelCase (required by Better Auth)
+
+## Common Patterns
+
+### Check Session in Server Component
+```typescript
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+
+export default async function Page() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) redirect('/sign-in')
+  
+  return <div>{session.user.email}</div>
+}
 ```
-1. User loads app → Login page displays immediately (no retry loops)
-2. User enters credentials → Validation occurs
-3. User clicks "Sign In" → API call to /api/auth/login
-4. Success → User stored in localStorage
-5. Dashboard displays with user profile
+
+### Server Action with User Data
+```typescript
+'use server'
+
+import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { headers } from 'next/headers'
+
+async function getUserId() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) throw new Error('Unauthorized')
+  return session.user.id
+}
+
+export async function getMyData() {
+  const userId = await getUserId()
+  return db.query.myTable.findMany({
+    where: (t) => eq(t.userId, userId)
+  })
+}
 ```
 
-### No More:
-- ❌ Retry logic on app load
-- ❌ Token verification delays
-- ❌ Unnecessary API calls on initialization
-- ❌ Signup view by default (now shows login form)
+### Client Component Using Auth
+```typescript
+'use client'
 
-### Fast Path:
-- ✅ Login page loads immediately
-- ✅ Dashboard renders when authenticated
-- ✅ No loading delays from token verification
-- ✅ Graceful fallback for unauthenticated users
+import { authClient } from '@/lib/auth-client'
+import { useRouter } from 'next/navigation'
 
-## Test the App
-
-### Start Development Server
-```bash
-cd /vercel/share/v0-project
-npm run dev
+export function LogoutButton() {
+  const router = useRouter()
+  
+  const handleLogout = async () => {
+    await authClient.signOut()
+    router.push('/sign-in')
+    router.refresh()
+  }
+  
+  return <button onClick={handleLogout}>Logout</button>
+}
 ```
 
-### Access the App
-- **Main App**: http://localhost:3000
-- **Home Page**: http://localhost:3000/home
-- **Dashboard**: http://localhost:3000/dashboard
+### Query User Data
+```typescript
+import { db } from '@/lib/db'
+import { user } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
 
-### Default Test Credentials
+// Get user by email
+const foundUser = await db.query.user.findFirst({
+  where: eq(user.email, 'user@example.com')
+})
+
+// Get user by ID
+const userData = await db.query.user.findFirst({
+  where: eq(user.id, userId)
+})
 ```
-Username: Lin Huang
-Password: Lin1122
+
+## Database Operations
+
+### Select
+```typescript
+import { db } from '@/lib/db'
+import { posts } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
+
+const userPosts = await db.query.posts.findMany({
+  where: eq(posts.userId, userId)
+})
 ```
 
-### Or Sign Up
-- Click "Create an account" on login page
-- Fill in required information
-- Dashboard loads after successful registration
+### Insert
+```typescript
+const newPost = await db.insert(posts).values({
+  title: 'Hello',
+  content: 'World',
+  userId: userId
+}).returning()
+```
 
-## What's Fixed
+### Update
+```typescript
+await db.update(posts)
+  .set({ title: 'Updated' })
+  .where(and(
+    eq(posts.id, postId),
+    eq(posts.userId, userId)
+  ))
+```
 
-### 1. Auth Context (`/lib/auth-context.tsx`)
-- ✅ Removed `verifyTokenHelper()` function
-- ✅ Simplified `useEffect` initialization
-- ✅ No retry logic on app load
-- ✅ Uses cached localStorage data immediately
+### Delete
+```typescript
+await db.delete(posts)
+  .where(and(
+    eq(posts.id, postId),
+    eq(posts.userId, userId)
+  ))
+```
 
-### 2. Login Page (`/components/login-page.tsx`)
-- ✅ Default view changed to "login" (not "signup")
-- ✅ Login form displays immediately
-- ✅ Clean transition to dashboard after login
+## Important Rules
 
-### 3. Main Page (`/app/page.tsx`)
-- ✅ Improved import ordering
-- ✅ Faster component initialization
-- ✅ Better auth state handling
+1. **ALWAYS scope by userId** - Every query touching user data must have `eq(table.userId, userId)`
+2. **Use getUserId()** - Get the current user ID from the session
+3. **Never expose secrets** - DATABASE_URL and BETTER_AUTH_SECRET never in client code
+4. **HTTP-only cookies** - Session cookies are sent with every request automatically
+5. **Revalidate after mutations** - Use `revalidatePath()` to refresh cached pages
 
-### 4. New Home Page (`/app/home/page.tsx`)
-- ✅ Alternative entry point
-- ✅ Simple navigation options
-- ✅ Feature overview
+## Debugging
 
-## Key Changes Summary
+### Check if user is logged in
+```typescript
+const session = await auth.api.getSession({ headers: await headers() })
+console.log(session?.user)
+```
 
-| Issue | Before | After |
-|-------|--------|-------|
-| Load Time | 3-5s (retry loops) | <1s |
-| Default View | Signup | Login |
-| Token Verification | On every init | Never (cached) |
-| API Calls on Load | 2-3 calls | 0 calls |
-| User Experience | Confusing delays | Instant display |
+### Test server action
+```typescript
+// In browser console after signing in:
+fetch('/api/auth/session').then(r => r.json()).then(console.log)
+```
+
+### View database
+- Open Neon dashboard
+- Check tables: user, session, account, verification
+
+## Deployment
+
+1. Set environment variables in Vercel:
+   - DATABASE_URL
+   - DATABASE_URL_UNPOOLED  
+   - BETTER_AUTH_SECRET
+
+2. Database is auto-managed by Better Auth
+   - Tables created on first signup
+   - No migrations needed
+
+3. Sessions work with Vercel deployments
+   - baseURL auto-detects production URL
+   - trustedOrigins includes all environments
 
 ## Troubleshooting
 
-### If you see "Loading..." forever
-1. Open browser DevTools (F12)
-2. Go to Console tab
-3. Check for error messages
-4. Clear localStorage: `localStorage.clear()`
-5. Refresh page
+**User signed up but can't sign in:**
+- Session created? Check: `const session = await auth.api.getSession(...)`
+- Cookie sent? Check: Network tab → find session cookie
+- Secret set? Check: env var BETTER_AUTH_SECRET exists
 
-### If login fails
-1. Verify credentials are correct
-2. Check API is responding: `curl http://localhost:3000/api/auth/login`
-3. Check Supabase connection in environment variables
-4. Look at server logs for errors
+**"Unauthorized" in server actions:**
+- Is `getUserId()` being called?
+- Is request from authenticated page?
+- Did you check session first?
 
-### If dashboard doesn't load
-1. Check auth token exists: `localStorage.getItem('auth_token')`
-2. Try logging out then back in
-3. Check browser console for component errors
-4. Verify all required UI components exist
+**Database connection timeout:**
+- Check DATABASE_URL format
+- Verify Neon project is active
+- Restart dev server
 
-## Architecture Overview
-
-```
-App
-├── /lib/auth-context.tsx       (Simplified auth, no retries)
-├── /components/login-page.tsx  (Instant login form)
-├── /app/page.tsx               (Main dashboard)
-├── /app/home/page.tsx          (Alternative home)
-└── /app/dashboard/page.tsx     (Dashboard alias)
-```
-
-## Files Modified in This Fix
-
-1. `/lib/auth-context.tsx` - Removed retry logic
-2. `/components/login-page.tsx` - Changed default view to login
-3. `/app/page.tsx` - Reorganized imports
-4. `/app/home/page.tsx` - NEW - Alternative entry point
-
-## All Issues Resolved ✅
-
-The application now:
-- Displays login page immediately without delays
-- Shows dashboard when user is authenticated
-- Has no retry loops or token verification retries
-- Provides fast, smooth user experience
-- Gracefully handles unauthenticated state
+**userId column errors:**
+- When adding custom tables, always add: `userId: text('userId').notNull()`
+- This is required for multi-user safety
