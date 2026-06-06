@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.21.0",
+    "@clerk/nextjs": "^7.4.3",
     "@hookform/resolvers": "^3.10.0",
     "@prelude.so/sdk": "^0.10.0",
     "@radix-ui/react-accordion": "1.2.2",
