@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Toaster } from "@/components/ui/toaster"
 import { BankingProvider } from "@/lib/banking-context"
 import { Auth0Provider } from "@/lib/auth0-context"
@@ -49,6 +50,7 @@ export default function RootLayout({
               {children}
               <Toaster />
               <Analytics />
+              <SpeedInsights />
             </BankingProvider>
           </Auth0Provider>
         </AuthProvider>
