@@ -886,7 +886,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
                 <button
                   onClick={() => {
-                    setModalView("signup")
+                    setModalView("account-type")
                     setSignupStep(1)
                   }}
                   className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all flex items-center gap-4"

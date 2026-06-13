@@ -26,6 +26,8 @@ export function Navigation() {
     { label: 'Voice Agent', href: '/voice-agent' },
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Profile', href: '/profile' },
+    { label: 'Privacy & Security', href: '/privacy-security' },
+    { label: 'WiFi Security', href: '/wifi-security' },
   ];
 
   return (

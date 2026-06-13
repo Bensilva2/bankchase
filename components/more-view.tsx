@@ -670,6 +670,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
     },
     { label: "Recent Activity", description: "View your activity log", icon: History, view: "activity" as ViewType },
     { label: "Linked Devices", description: "Manage logged-in devices", icon: Smartphone, view: "devices" as ViewType },
+    { label: "Login History", description: "View your login activity", icon: Clock, view: "loginHistory" as ViewType },
   ]
 
   // Main Menu View
@@ -2790,6 +2791,190 @@ export function MoreView({ onLogout }: MoreViewProps) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
+    )
+  }
+
+  // Linked Devices View
+  if (currentView === "devices") {
+    return (
+      <div className="pb-24 space-y-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h2 className="text-2xl font-semibold">Linked Devices</h2>
+        </div>
+
+        <Card className="p-4 space-y-4">
+          <h3 className="font-semibold text-[#0a4fa6] text-sm">Your Devices</h3>
+          {safeLinkedDevices.length > 0 ? (
+            <div className="space-y-3">
+              {safeLinkedDevices.map((device) => (
+                <div key={device.id} className="flex items-start justify-between p-3 bg-muted/30 rounded-lg">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="h-10 w-10 rounded-full bg-[#0a4fa6]/10 flex items-center justify-center mt-0.5">
+                      {device.type === "mobile" ? (
+                        <Smartphone className="h-5 w-5 text-[#0a4fa6]" />
+                      ) : (
+                        <Monitor className="h-5 w-5 text-[#0a4fa6]" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{device.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {device.deviceId ? `ID: ${device.deviceId.slice(0, 8)}...` : "Unknown Device"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">Last active: {device.lastActive}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-red-500"
+                    onClick={() => {
+                      removeDevice(device.id)
+                      toast({ title: "Device Removed", description: "Device has been unlinked from your account." })
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Smartphone className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No devices linked yet</p>
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-4 space-y-3">
+          <h3 className="font-semibold text-[#0a4fa6] text-sm">Device Security</h3>
+          <div className="space-y-3">
+            <div className="flex items-start justify-between p-2 hover:bg-muted/50 rounded">
+              <div className="flex items-start gap-2">
+                <ShieldCheck className="h-5 w-5 text-green-600 mt-0.5" />
+                <div>
+                  <p className="font-medium text-sm">Device Verification</p>
+                  <p className="text-xs text-muted-foreground">Require verification when signing in</p>
+                </div>
+              </div>
+              <Switch defaultChecked />
+            </div>
+            <div className="flex items-start justify-between p-2 hover:bg-muted/50 rounded">
+              <div className="flex items-start gap-2">
+                <Bell className="h-5 w-5 text-blue-600 mt-0.5" />
+                <div>
+                  <p className="font-medium text-sm">Device Alerts</p>
+                  <p className="text-xs text-muted-foreground">Get notified of new device logins</p>
+                </div>
+              </div>
+              <Switch defaultChecked />
+            </div>
+          </div>
+        </Card>
+
+        <Button
+          variant="outline"
+          className="w-full text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-950/20"
+          onClick={() => {
+            const devicesToKeep = safeLinkedDevices.slice(1)
+            devicesToKeep.forEach(device => removeDevice(device.id))
+            toast({ title: "Success", description: "All other devices have been signed out." })
+          }}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out All Other Devices
+        </Button>
+      </div>
+    )
+  }
+
+  // Login History View
+  if (currentView === "loginHistory") {
+    return (
+      <div className="pb-24 space-y-6">
+        <div className="flex items-center gap-3 mb-4">
+          <Button variant="ghost" size="icon" onClick={() => setCurrentView("main")}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h2 className="text-2xl font-semibold">Login History</h2>
+        </div>
+
+        <Card className="p-4 space-y-4">
+          {loginHistory && loginHistory.length > 0 ? (
+            <div className="space-y-3">
+              {loginHistory.map((login) => (
+                <div key={login.id} className="flex items-start gap-3 pb-3 border-b last:border-0">
+                  <div
+                    className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      login.status === "success"
+                        ? "bg-green-100 dark:bg-green-900/30"
+                        : "bg-red-100 dark:bg-red-900/30"
+                    }`}
+                  >
+                    {login.status === "success" ? (
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-600" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{login.device}</p>
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs ${
+                          login.status === "success"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30"
+                            : "bg-red-100 text-red-700 dark:bg-red-900/30"
+                        }`}
+                      >
+                        {login.status === "success" ? "Success" : "Blocked"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <MapPin className="h-3 w-3 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">{login.location}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-3 w-3 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground font-mono">{login.ip}</p>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(login.date).toLocaleDateString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(login.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <History className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No login history available</p>
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-4 space-y-3 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+          <h3 className="font-semibold text-blue-900 dark:text-blue-100 text-sm flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            Security Tip
+          </h3>
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            Don't recognize a login? Change your password immediately and consider enabling two-factor authentication for added security.
+          </p>
+          <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setCurrentView("security")}>
+            Go to Security Settings
+          </Button>
+        </Card>
       </div>
     )
   }

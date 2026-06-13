@@ -1,244 +1,226 @@
-BankChase Setup & Deployment Guide
-===================================
+# Prisma + Neon + Better Auth Setup Guide
 
-## Initial Setup
+## Overview
+This project is now fully configured with:
+- **Neon PostgreSQL** - Database integration
+- **Drizzle ORM** - Type-safe database queries
+- **Better Auth** - Email + password authentication
+- **Next.js 16** - Full-stack framework
 
-### 1. Database Migration
+## What's Been Installed
 
-Run the migrations to set up the auth and RBAC system:
+### Dependencies
+- `better-auth` - Authentication framework
+- `pg` - PostgreSQL client
+- `drizzle-orm` - ORM for database operations
+- `@types/pg` - TypeScript types for PostgreSQL
 
-```bash
-# Apply Auth0 integration migration
-pnpm run db:migrate -- migrations/001_auth0_integration.sql
-
-# Apply role-based access control migration
-pnpm run db:migrate -- migrations/002_add_user_roles.sql
-
-# Apply RBAC permissions (if using separate permissions table)
-pnpm run db:migrate -- scripts/003-add-rbac-roles.sql
-```
-
-### 2. Environment Variables
-
-Ensure these are set in your `.env.local` or project settings:
-
-**Auth Configuration:**
-```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-AUTH0_DOMAIN=your_auth0_domain
-AUTH0_CLIENT_ID=your_client_id
-AUTH0_CLIENT_SECRET=your_client_secret
-AUTH0_MANAGEMENT_API_TOKEN=your_management_token
-OTP_EXPIRY_MINUTES=10
-```
-
-### 3. First Admin User
-
-After deploying, create your first admin user:
-
-```bash
-# Option 1: Direct API call (first setup)
-curl -X POST https://your-app.com/api/admin/setup \
-  -H "Content-Type: application/json" \
-  -d '{"email": "admin@yourcompany.com"}'
-
-# Option 2: Using the endpoint with setup token
-# (Implement setup token in production for security)
-```
-
-## User Access Levels
-
-### Regular User (Viewer Role)
-1. **Sign up** with email/password
-2. **Receive OTP** for email verification
-3. **Verify email** with OTP code
-4. **Get default checking account** with $0.00 balance
-5. **Access dashboards:**
-   - Dashboard (view overview)
-   - Accounts (view account details)
-   - Transactions (view transaction history)
-   - Profile (view/edit personal info)
-   - Transfers (make transfers between accounts)
-
-**Restrictions:**
-- Cannot access admin dashboard
-- Cannot manage users or permissions
-- Cannot view other users' data
-- Cannot modify system settings
-- Starting balance: $0.00
-
-### Admin User
-1. **Created by promoting existing user** via `/api/admin/setup`
-2. **Full system access:**
-   - All regular user features
-   - Admin Dashboard
-   - User management
-   - System settings
-   - Access logs
-   - Analytics
-
-## Access Control Flow
+## Project Structure
 
 ```
-User Registration
-    ↓
-Assign "viewer" role automatically
-    ↓
-Create checking account ($0.00 balance)
-    ↓
-Send OTP for email verification
-    ↓
-User verifies email
-    ↓
-User session created with role
-    ↓
-Middleware checks role for route access
-    ↓
-Grant access to allowed routes only
+lib/
+  ├── auth.ts              ← Better Auth server config (load-bearing file)
+  ├── auth-client.ts       ← Better Auth React client
+  └── db/
+      ├── index.ts         ← Drizzle client + shared pg Pool
+      └── schema.ts        ← Better Auth tables + app tables
+
+app/
+  ├── api/auth/[...all]/   ← Better Auth HTTP handler
+  ├── sign-in/page.tsx     ← Sign-in route
+  ├── sign-up/page.tsx     ← Sign-up route
+  └── page-protected.tsx   ← Example of protected page
+
+components/
+  └── auth-form.tsx        ← Shared auth form component
+
+app/actions/
+  └── example.ts           ← Server actions template with getUserId()
 ```
 
-## Route Protection
+## Database Setup
 
-### Public Routes
-- `/` (login/signup)
-- `/auth/login` (API)
-- `/auth/register` (API)
-- `/auth/otp/*` (API)
+### Better Auth Tables (Auto-created)
+The following tables are created in your Neon database:
+- `user` - User accounts
+- `session` - Session tokens
+- `account` - OAuth/provider accounts
+- `verification` - Email verification tokens
 
-### Authenticated Routes (Any User)
-- `/dashboard` ✓ Viewers can access
-- `/accounts` ✓ Viewers can access
-- `/transactions` ✓ Viewers can access
-- `/transfer` ✓ Viewers can access
-- `/profile` ✓ Viewers can access
+All tables have proper indexes for performance and referential integrity.
 
-### Admin-Only Routes
-- `/admin` ✗ Viewers cannot access → redirects to dashboard
-- `/api/admin/*` ✗ Requires admin role
+## Environment Variables (Already Set)
 
-## Session Management
+Required variables (you added these):
+- `DATABASE_URL` - Neon connection string
+- `DATABASE_URL_UNPOOLED` - For migrations
+- `BETTER_AUTH_SECRET` - Session secret (≥32 chars)
 
-User sessions are stored as HTTP-only cookies with structure:
+Optional variables:
+- `BETTER_AUTH_URL` - Custom domain (auto-detected if not set)
 
-```json
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "username": "user123",
-  "firstName": "John",
-  "lastName": "Doe",
-  "role": "viewer",
-  "emailVerified": true
+## Getting Started
+
+### 1. Test Authentication
+Visit `/sign-up` to create an account, then `/sign-in` to test login.
+
+### 2. Create App Tables
+Add custom tables to `lib/db/schema.ts`:
+
+```typescript
+import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
+
+export const posts = pgTable('posts', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  content: text('content'),
+  userId: text('userId').notNull(), // Always include for scoping
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+})
+```
+
+### 3. Server Actions with getUserId()
+Always use the `getUserId()` pattern to protect user data:
+
+```typescript
+'use server'
+
+import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { posts } from '@/lib/db/schema'
+import { and, eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { revalidatePath } from 'next/cache'
+
+async function getUserId() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) throw new Error('Unauthorized')
+  return session.user.id
+}
+
+export async function createPost(title: string, content: string) {
+  const userId = await getUserId()
+  const result = await db.insert(posts).values({
+    title,
+    content,
+    userId,
+  }).returning()
+  revalidatePath('/')
+  return result[0]
+}
+
+export async function getUserPosts() {
+  const userId = await getUserId()
+  return db
+    .select()
+    .from(posts)
+    .where(eq(posts.userId, userId))
 }
 ```
 
-**Session Duration:**
-- Regular users: 7 days
-- OTP verification: 1 hour
+### 4. Protected Routes
+Use server components to redirect unauthenticated users:
 
-## Testing the RBAC System
+```typescript
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 
-### 1. Test Regular User Access
-
-```bash
-# Sign up
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "TestPassword123!",
-    "firstName": "Test",
-    "lastName": "User"
-  }'
-
-# Verify email with OTP
-curl -X POST http://localhost:3000/api/auth/otp/verify \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "otpCode": "123456"
-  }'
-
-# Try accessing dashboard (should work)
-curl http://localhost:3000/dashboard \
-  -H "Cookie: auth_user={session_cookie}"
-
-# Try accessing admin (should fail)
-curl http://localhost:3000/admin \
-  -H "Cookie: auth_user={session_cookie}"
-# Expected: Redirects to /dashboard
+export default async function Page() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  
+  if (!session?.user) {
+    redirect('/sign-in')
+  }
+  
+  return (
+    <div>
+      <h1>Welcome, {session.user.name || session.user.email}</h1>
+    </div>
+  )
+}
 ```
 
-### 2. Test Admin Access
+## Key Files Explained
 
-```bash
-# Promote user to admin
-curl -X POST http://localhost:3000/api/admin/setup \
-  -H "Content-Type: application/json" \
-  -d '{"email": "admin@example.com"}'
+### lib/auth.ts
+The "load-bearing file" that configures Better Auth:
+- Sets up database connection via `pg` Pool
+- Configures email + password authentication
+- Handles baseURL detection for Vercel/v0/production
+- Trusts origins for secure session cookies
+- Dev-mode cookie override for v0 preview iframe
 
-# Login as admin
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "password"
-  }'
+### lib/db/index.ts
+Creates a single shared `pg` Pool used by:
+- Better Auth (user/session management)
+- Drizzle ORM (app queries)
 
-# Access admin dashboard (should work)
-curl http://localhost:3000/admin \
-  -H "Cookie: auth_user={admin_session}"
-```
+Never create multiple connection pools.
 
-## Security Checklist
+### lib/db/schema.ts
+Defines all database tables using Drizzle:
+- Better Auth tables (user, session, account, verification)
+- Your app tables
+- Column names are camelCase to match Better Auth defaults
 
-- [ ] All environment variables configured
-- [ ] Database migrations applied
-- [ ] HTTPS enabled in production
-- [ ] HTTP-only cookies enabled
-- [ ] CORS configured properly
-- [ ] First admin user created
-- [ ] OTP email configured
-- [ ] Session timeout configured
-- [ ] Rate limiting implemented
-- [ ] Audit logging enabled
+### components/auth-form.tsx
+Shared form for sign-in and sign-up:
+- Client component using `authClient`
+- Handles email/password submission
+- Redirects on success
+
+### app/api/auth/[...all]/route.ts
+Mounts Better Auth's HTTP handler:
+- Catch-all parameter **must** be `[...all]`
+- Handles `/api/auth/sign-in`, `/api/auth/sign-up`, etc.
+
+## Important Security Notes
+
+1. **No Row-Level Security (RLS)** - Neon doesn't have RLS like Supabase
+   - Every query MUST include `eq(table.userId, userId)` in the WHERE clause
+   - The `getUserId()` helper enforces this pattern
+
+2. **Session Scoping** - Never forget the userId check:
+   ```typescript
+   // ❌ BAD - Returns all posts
+   const posts = await db.select().from(posts)
+   
+   // ✅ GOOD - Returns only user's posts
+   const posts = await db.select().from(posts).where(eq(posts.userId, userId))
+   ```
+
+3. **BETTER_AUTH_SECRET** - Must be ≥32 characters
+   - Generate with: `openssl rand -base64 32`
+   - Without it, sessions will fail silently
 
 ## Troubleshooting
 
-### Users Can't Access Dashboard
-1. Check if user has session cookie (`auth_user`)
-2. Verify middleware is running
-3. Check user role in database (should be 'viewer' or 'admin')
-4. Check route requirements in middleware.ts
+### "Unauthorized" error in server actions
+- Check that `BETTER_AUTH_SECRET` is set
+- Verify you're making the call from an authenticated route
+- Ensure `getUserId()` is being called
 
-### Admin Dashboard Shows "Access Denied"
-1. Verify user role is 'admin' in database
-2. Check if `canAccessAdminDashboard` function is working
-3. Clear browser cookies and re-login
-4. Verify middleware is protecting /admin route
+### Session cookie not persisting in v0 preview
+- This is normal due to iframe sandbox
+- In production, cookies will persist properly
+- The `sameSite: "none"` dev override handles this
 
-### OTP Not Working
-1. Check if OTP_EXPIRY_MINUTES is set (default 10)
-2. Verify email service is configured
-3. Check OTP codes table in database
-4. Test OTP verification endpoint directly
+### Type errors with Drizzle
+- Ensure `lib/db/schema.ts` exports table definitions
+- Import tables like: `import { posts } from '@/lib/db/schema'`
 
-### Users Seeing Duplicate Accounts
-1. Check if default account creation logic is idempotent
-2. Verify no duplicate account creation on re-registration
-3. Check accounts table for duplicates
+### Database connection errors
+- Verify `DATABASE_URL` is correctly set
+- Check Neon dashboard for active connections
+- Try reconnecting by restarting the dev server
 
-## Deployment Checklist
+## Next Steps
 
-- [ ] Environment variables set in deployment platform
-- [ ] Database migrations verified
-- [ ] SSL certificate installed
-- [ ] CORS headers configured
-- [ ] Rate limiting enabled
-- [ ] Error logging configured
-- [ ] First admin user created
-- [ ] Test user signup flow
-- [ ] Test login with OTP
-- [ ] Test admin dashboard access
-- [ ] Monitor error logs post-deployment
+1. Review the example files in `app/` and `app/actions/`
+2. Create your app's custom tables in `lib/db/schema.ts`
+3. Write server actions using the `getUserId()` pattern
+4. Build protected routes by checking sessions
+5. Deploy to Vercel when ready
+
+For more details, see the inline comments in each file and the Neon/Better Auth documentation.
