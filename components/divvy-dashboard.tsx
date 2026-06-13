@@ -20,7 +20,7 @@ import {
 } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, Users, Bike, Activity, MapPin, BarChart3, Clock } from 'lucide-react'
+import { TrendingUp, Users, Bike, Activity, MapPin, BarChart3, Clock, ChevronLeft, ChevronRight, Info } from 'lucide-react'
 
 // Mock data for Divvy stations
 const stationActivityData = [
@@ -103,9 +103,120 @@ const stationTypeData = [
 
 const COLORS = ['#1abc9c', '#f39c12', '#e74c3c', '#9b59b6']
 
+// Story data with insights and annotations
+const storyPoints = [
+  {
+    id: 1,
+    title: 'Introduction to Divvy',
+    description: 'Understanding Chicago\'s Bike-Sharing System',
+    content: {
+      type: 'intro',
+      headline: 'Welcome to the Divvy Analytics Dashboard',
+      subtitle: 'Analyzing usage patterns across Chicago\'s 587 active bike-sharing stations',
+      stats: [
+        { label: 'Total Trips', value: '18.5K', color: 'text-primary' },
+        { label: 'Active Stations', value: '587', color: 'text-green-400' },
+        { label: 'Avg Duration', value: '18 min', color: 'text-yellow-400' },
+      ],
+      narrative:
+        'Divvy is Chicago\'s public bike-sharing system, providing residents and visitors with convenient access to bicycles throughout the city. This analysis explores usage patterns, peak hours, and station performance to understand how Chicagoans are using this sustainable transportation option.',
+    },
+  },
+  {
+    id: 2,
+    title: 'Peak Usage Patterns',
+    description: 'When do Chicagoans bike?',
+    content: {
+      type: 'chart',
+      headline: 'Distinct Peak Hours on Weekdays vs Weekends',
+      narrative:
+        'Our analysis reveals a clear pattern: weekday commutes show a strong peak at 5 PM (620 trips), while weekend usage is more distributed throughout the day. Morning commute traffic (8-9 AM) shows secondary peaks, suggesting many Chicagoans use Divvy for work commute.',
+      annotations: [
+        {
+          label: 'Peak Hour',
+          value: '5 PM',
+          description: '620 bike starts',
+          highlight: true,
+        },
+        {
+          label: 'Morning Commute',
+          value: '8-9 AM',
+          description: 'Secondary peak activity',
+          highlight: false,
+        },
+        {
+          label: 'Night Minimum',
+          value: '3 AM',
+          description: 'Lowest activity period',
+          highlight: false,
+        },
+      ],
+    },
+  },
+  {
+    id: 3,
+    title: 'Top Station Performance',
+    description: 'Which stations drive the most activity?',
+    content: {
+      type: 'ranking',
+      headline: 'Streeter Dr & Grand Ave dominates usage',
+      narrative:
+        'The top 5 stations account for a significant portion of all trips. Waterfront and downtown locations like Streeter Dr & Grand Ave (2,850 trips) and Michigan Ave & Oak St (2,640 trips) are the clear leaders. These stations benefit from proximity to tourist attractions and major employment centers.',
+      keyInsights: [
+        'Top station (Streeter Dr) has 2.2x the trips of 8th ranked station',
+        'All top 5 stations are in downtown or waterfront areas',
+        'Usage concentration suggests targeted infrastructure benefits high-traffic zones',
+      ],
+    },
+  },
+  {
+    id: 4,
+    title: 'Usage Distribution',
+    description: 'Geographic and temporal patterns',
+    content: {
+      type: 'distribution',
+      headline: 'Downtown drives 45% of station activity',
+      narrative:
+        'Station distribution analysis shows that downtown areas account for nearly half of all Divvy activity. Residential zones provide secondary access, while waterfront and lakefront areas serve specific recreation and tourism use cases. This geographic concentration suggests potential opportunities for expansion into underserved residential neighborhoods.',
+      distribution: stationTypeData,
+    },
+  },
+  {
+    id: 5,
+    title: 'Key Takeaways',
+    description: 'Strategic insights for Divvy growth',
+    content: {
+      type: 'summary',
+      headline: 'Three Strategic Opportunities',
+      takeaways: [
+        {
+          title: 'Commuter Focus',
+          description:
+            'Strong 5 PM peak suggests work commute is primary use case. Expanding weekday capacity at top stations could boost revenue.',
+          icon: Bike,
+        },
+        {
+          title: 'Downtown Concentration',
+          description:
+            'Downtown stations generate 45% of trips. Targeted maintenance and marketing in these zones maximizes ROI.',
+          icon: MapPin,
+        },
+        {
+          title: 'Growth Potential',
+          description:
+            'Residential zones significantly underperform. New stations in underserved areas could capture emerging demand.',
+          icon: TrendingUp,
+        },
+      ],
+      narrative: 'Based on comprehensive analysis of Divvy usage data, these three opportunities represent the most promising areas for strategic growth and optimization of the bike-sharing network.',
+    },
+  },
+]
+
 export function DivvyDashboard() {
   const [timeRange, setTimeRange] = useState('7d')
   const [activeView, setActiveView] = useState('overview')
+  const [currentStory, setCurrentStory] = useState(0)
 
   const stats = [
     {
@@ -143,7 +254,261 @@ export function DivvyDashboard() {
     { id: 'map', label: 'Stations Map', icon: MapPin },
     { id: 'ranking', label: 'Station Ranking', icon: BarChart3 },
     { id: 'hourly', label: 'Starts by Hour', icon: Clock },
+    { id: 'story', label: 'Story Points', icon: Info },
   ]
+
+  // Story Points View
+  const renderStory = () => {
+    const story = storyPoints[currentStory]
+    const content = story.content
+
+    return (
+      <div className="w-full h-full bg-background text-foreground flex flex-col">
+        {/* Main Story Content Area */}
+        <div className="flex-1 overflow-auto p-8 flex items-center justify-center">
+          <div className="w-full max-w-5xl">
+            {/* Story 1: Introduction */}
+            {content.type === 'intro' && (
+              <div className="text-center space-y-8">
+                <div>
+                  <h1 className="text-5xl font-bold mb-3 text-primary">{content.headline}</h1>
+                  <p className="text-2xl text-muted-foreground">{content.subtitle}</p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-6 my-12">
+                  {content.stats.map((stat, idx) => (
+                    <div key={idx} className="bg-card border border-border rounded-lg p-6">
+                      <p className="text-muted-foreground text-sm mb-2">{stat.label}</p>
+                      <p className={`text-4xl font-bold ${stat.color}`}>{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+                  {content.narrative}
+                </p>
+              </div>
+            )}
+
+            {/* Story 2: Peak Usage Patterns */}
+            {content.type === 'chart' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-4xl font-bold mb-2 text-primary">{content.headline}</h2>
+                  <p className="text-lg text-muted-foreground">{content.narrative}</p>
+                </div>
+
+                <div className="bg-card border border-border rounded-lg p-8">
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={startsbyHourData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0 0)" />
+                      <XAxis dataKey="hour" stroke="oklch(0.65 0 0)" />
+                      <YAxis stroke="oklch(0.65 0 0)" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'oklch(0.13 0 0)',
+                          border: '1px solid oklch(0.22 0 0)',
+                          borderRadius: '0.5rem',
+                        }}
+                      />
+                      <Bar dataKey="starts" fill="oklch(0.63 0.21 187)" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {content.annotations.map((annotation, idx) => (
+                    <div
+                      key={idx}
+                      className={`rounded-lg border p-4 ${
+                        annotation.highlight
+                          ? 'bg-primary/20 border-primary'
+                          : 'bg-card border-border'
+                      }`}
+                    >
+                      <p className="text-sm text-muted-foreground">{annotation.label}</p>
+                      <p className={`text-2xl font-bold ${annotation.highlight ? 'text-primary' : 'text-foreground'}`}>
+                        {annotation.value}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">{annotation.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Story 3: Top Station Performance */}
+            {content.type === 'ranking' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-4xl font-bold mb-2 text-primary">{content.headline}</h2>
+                  <p className="text-lg text-muted-foreground">{content.narrative}</p>
+                </div>
+
+                <div className="bg-card border border-border rounded-lg p-8">
+                  <div className="space-y-4">
+                    {topStationsData.slice(0, 5).map((station, idx) => (
+                      <div key={idx} className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
+                          #{idx + 1}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-foreground">{station.name}</p>
+                          <p className="text-sm text-muted-foreground">{station.trips.toLocaleString()} trips</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary">{station.usage}%</p>
+                          <p className="text-xs text-green-400">{station.growth}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-muted/30 border border-border rounded-lg p-6">
+                  <h3 className="font-semibold text-primary mb-3">Key Insights</h3>
+                  <ul className="space-y-2">
+                    {content.keyInsights.map((insight, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <span className="text-primary mt-1">•</span>
+                        <span className="text-muted-foreground">{insight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Story 4: Distribution */}
+            {content.type === 'distribution' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-4xl font-bold mb-2 text-primary">{content.headline}</h2>
+                  <p className="text-lg text-muted-foreground">{content.narrative}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="bg-card border border-border rounded-lg p-8 flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={content.distribution}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, value }) => `${name}: ${value}%`}
+                          outerRadius={80}
+                          fill="#1abc9c"
+                          dataKey="value"
+                        >
+                          {content.distribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'oklch(0.13 0 0)',
+                            border: '1px solid oklch(0.22 0 0)',
+                            borderRadius: '0.5rem',
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="space-y-3">
+                    {content.distribution.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                        <div
+                          className="w-4 h-4 rounded"
+                          style={{ backgroundColor: COLORS[idx % COLORS.length] }}
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold text-foreground">{item.name}</p>
+                          <p className="text-sm text-muted-foreground">{item.value}% of activity</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Story 5: Summary */}
+            {content.type === 'summary' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-4xl font-bold mb-2 text-primary">{content.headline}</h2>
+                  <p className="text-lg text-muted-foreground">{content.narrative}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {content.takeaways.map((takeaway, idx) => {
+                    const Icon = takeaway.icon
+                    return (
+                      <div key={idx} className="bg-card border border-border rounded-lg p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="bg-primary/20 p-3 rounded-lg">
+                            <Icon className="w-6 h-6 text-primary" />
+                          </div>
+                          <h3 className="font-bold text-foreground">{takeaway.title}</h3>
+                        </div>
+                        <p className="text-muted-foreground">{takeaway.description}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Story Navigator */}
+        <div className="bg-card border-t border-border p-6">
+          <div className="max-w-5xl mx-auto flex items-center justify-between">
+            <button
+              onClick={() => setCurrentStory(Math.max(0, currentStory - 1))}
+              disabled={currentStory === 0}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/80 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              Previous
+            </button>
+
+            <div className="flex items-center gap-2">
+              {storyPoints.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentStory(idx)}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    idx === currentStory
+                      ? 'bg-primary w-8'
+                      : 'bg-muted hover:bg-muted/80'
+                  }`}
+                  title={storyPoints[idx].title}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={() => setCurrentStory(Math.min(storyPoints.length - 1, currentStory + 1))}
+              disabled={currentStory === storyPoints.length - 1}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+            >
+              Next
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            <p>
+              Story Point {currentStory + 1} of {storyPoints.length}: <span className="text-primary font-semibold">{story.title}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Overview View
   const renderOverview = () => (
@@ -571,6 +936,7 @@ export function DivvyDashboard() {
         {activeView === 'map' && renderMap()}
         {activeView === 'ranking' && renderRanking()}
         {activeView === 'hourly' && renderHourly()}
+        {activeView === 'story' && renderStory()}
       </div>
     </div>
   )
