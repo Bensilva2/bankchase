@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   LineChart,
   Line,
@@ -20,7 +20,7 @@ import {
 } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, Users, Bike, Activity, MapPin, BarChart3, Clock, ChevronLeft, ChevronRight, Info } from 'lucide-react'
+import { TrendingUp, Users, Bike, Activity, MapPin, BarChart3, Clock, ChevronLeft, ChevronRight, Info, RefreshCw } from 'lucide-react'
 
 // Mock data for Divvy stations
 const stationActivityData = [
@@ -217,32 +217,36 @@ export function DivvyDashboard() {
   const [timeRange, setTimeRange] = useState('7d')
   const [activeView, setActiveView] = useState('overview')
   const [currentStory, setCurrentStory] = useState(0)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [lastUpdated, setLastUpdated] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const stats = [
     {
       label: 'Total Trips',
-      value: '18.5K',
+      value: dashboardData?.stats?.totalTrips ? `${(dashboardData.stats.totalTrips / 1000).toFixed(1)}K` : '18.5K',
       change: '+12.5%',
       icon: Bike,
       trend: 'up',
     },
     {
       label: 'Active Stations',
-      value: '587',
+      value: dashboardData?.stats?.activeStations ?? '587',
       change: '+2.4%',
       icon: Activity,
       trend: 'up',
     },
     {
       label: 'Peak Hour Users',
-      value: '1.2K',
+      value: dashboardData?.stats?.peakHourUsers ? `${(dashboardData.stats.peakHourUsers / 1000).toFixed(1)}K` : '1.2K',
       change: '-3.2%',
       icon: Users,
       trend: 'down',
     },
     {
       label: 'Avg Trip Duration',
-      value: '18m',
+      value: dashboardData?.stats?.avgTripDuration ? `${dashboardData.stats.avgTripDuration}m` : '18m',
       change: '+5.1%',
       icon: TrendingUp,
       trend: 'up',
@@ -256,6 +260,54 @@ export function DivvyDashboard() {
     { id: 'hourly', label: 'Starts by Hour', icon: Clock },
     { id: 'story', label: 'Story Points', icon: Info },
   ]
+
+  // Fetch dashboard data from API
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/dashboard-data?type=all')
+      const result = await response.json()
+      if (result.success) {
+        setDashboardData(result.data)
+        setLastUpdated(new Date().toLocaleTimeString())
+        console.log('[v0] Dashboard data updated:', result.data)
+      }
+    } catch (error) {
+      console.error('[v0] Failed to fetch dashboard data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Refresh data manually
+  const handleRefresh = useCallback(async () => {
+    try {
+      setIsRefreshing(true)
+      const response = await fetch('/api/dashboard-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'refresh-all' }),
+      })
+      const result = await response.json()
+      if (result.success) {
+        setDashboardData(result.data)
+        setLastUpdated(new Date().toLocaleTimeString())
+        console.log('[v0] Dashboard data refreshed:', result.data)
+      }
+    } catch (error) {
+      console.error('[v0] Failed to refresh dashboard data:', error)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [])
+
+  // Fetch data on mount and set up refresh interval
+  useEffect(() => {
+    fetchDashboardData()
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchDashboardData, 30000)
+    return () => clearInterval(interval)
+  }, [fetchDashboardData])
 
   // Story Points View
   const renderStory = () => {
@@ -883,8 +935,22 @@ export function DivvyDashboard() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-3xl font-bold">Top Stations Activity Dashboard</h1>
-            <div className="text-muted-foreground text-sm">
-              Time Range: <span className="font-semibold text-primary">{timeRange}</span>
+            <div className="flex items-center gap-4">
+              <div className="text-muted-foreground text-sm">
+                {lastUpdated && <span>Last updated: <span className="font-semibold text-primary">{lastUpdated}</span></span>}
+              </div>
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted text-foreground hover:bg-muted/80 disabled:opacity-50 transition-colors"
+                title="Refresh dashboard data"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Updating...' : 'Refresh'}
+              </button>
+              <div className="text-muted-foreground text-sm">
+                Time Range: <span className="font-semibold text-primary">{timeRange}</span>
+              </div>
             </div>
           </div>
 
