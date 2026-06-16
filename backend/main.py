@@ -15,6 +15,7 @@ from routes import (
     admin_demo_router,
     drift_router,
     webhooks_router,
+    qstash_webhooks,
 )
 from utils.webhook_queue import process_webhook_queue
 from utils.rate_limiting import limiter
@@ -78,6 +79,7 @@ app.include_router(pay_transfer_router, prefix="/api/transfers", tags=["transfer
 app.include_router(admin_demo_router, prefix="/api/admin", tags=["admin"])
 app.include_router(drift_router, prefix="/api/drift", tags=["drift"])
 app.include_router(webhooks_router, prefix="/api/webhooks", tags=["webhooks"])
+app.include_router(qstash_webhooks.router, prefix="/api", tags=["qstash"])
 
 
 @app.get("/health")

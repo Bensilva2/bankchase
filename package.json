@@ -6,7 +6,10 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "qstash:dev": "npx @upstash/qstash-cli@latest dev",
+    "backend:dev": "cd backend && source .venv/bin/activate && python -m uvicorn main:app --reload",
+    "qstash:health": "curl http://localhost:8000/api/qstash/health"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.21.0",
