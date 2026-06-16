@@ -11,7 +11,6 @@ from typing import Optional, Dict, Any
 
 import httpx
 from database import execute, fetch, fetchrow
-from models import WebhookQueueCreate
 
 
 WEBHOOK_TIMEOUT = 10  # seconds

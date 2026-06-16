@@ -74,9 +74,9 @@ async def save_receipt(
         dict with saved receipt data including id and timestamp
     """
     result = await fetchrow(
-        """INSERT INTO receipts 
+        r"""INSERT INTO receipts 
            (receipt_number, transfer_id, from_account_id, to_account_number, amount, currency, status, balance_before, balance_after, narration)
-           VALUES (\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
            RETURNING id, receipt_number, created_at""",
         receipt_number,
         transfer_id,
@@ -100,7 +100,7 @@ async def save_receipt(
 async def get_receipt(receipt_number: str) -> dict:
     """Retrieve a receipt by receipt number"""
     receipt = await fetchrow(
-        "SELECT * FROM receipts WHERE receipt_number = \$1",
+        r"SELECT * FROM receipts WHERE receipt_number = $1",
         receipt_number
     )
     
