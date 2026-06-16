@@ -11,5 +11,6 @@ routes/admin_demo.py
 routes/auth.py
 routes/drift.py
 routes/pay_transfer.py
+routes/qstash_webhooks.py
 routes/transactions.py
 routes/webhooks.py

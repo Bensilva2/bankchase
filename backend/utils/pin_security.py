@@ -49,7 +49,7 @@ async def validate_pin_format(pin: str) -> bool:
 async def check_pin_locked(user_id: str) -> bool:
     """Check if user's PIN is locked due to too many failed attempts"""
     user_pin = await fetchrow(
-        "SELECT locked_until FROM user_pins WHERE user_id = \$1",
+        r"SELECT locked_until FROM user_pins WHERE user_id = $1",
         user_id
     )
     
@@ -67,7 +67,7 @@ async def check_pin_locked(user_id: str) -> bool:
 async def get_pin_attempts(user_id: str) -> int:
     """Get current failed PIN attempt count"""
     user_pin = await fetchrow(
-        "SELECT attempts FROM user_pins WHERE user_id = \$1",
+        r"SELECT attempts FROM user_pins WHERE user_id = $1",
         user_id
     )
     return user_pin["attempts"] if user_pin else 0
@@ -87,7 +87,7 @@ async def validate_pin(user_id: str, provided_pin: str) -> dict:
     is_locked = await check_pin_locked(user_id)
     if is_locked:
         user_pin = await fetchrow(
-            "SELECT locked_until FROM user_pins WHERE user_id = \$1",
+            r"SELECT locked_until FROM user_pins WHERE user_id = $1",
             user_id
         )
         raise HTTPException(
@@ -97,7 +97,7 @@ async def validate_pin(user_id: str, provided_pin: str) -> dict:
     
     # Get stored PIN hash
     user_pin = await fetchrow(
-        "SELECT pin_hash FROM user_pins WHERE user_id = \$1",
+        r"SELECT pin_hash FROM user_pins WHERE user_id = $1",
         user_id
     )
     
@@ -117,8 +117,8 @@ async def validate_pin(user_id: str, provided_pin: str) -> dict:
             locked_until = datetime.now(timezone.utc) + timedelta(minutes=PIN_LOCKOUT_DURATION)
         
         await execute(
-            """UPDATE user_pins SET attempts = \$1, locked_until = \$2, updated_at = CURRENT_TIMESTAMP
-               WHERE user_id = \$3""",
+            r"""UPDATE user_pins SET attempts = $1, locked_until = $2, updated_at = CURRENT_TIMESTAMP
+               WHERE user_id = $3""",
             new_attempts,
             locked_until,
             user_id
@@ -126,7 +126,7 @@ async def validate_pin(user_id: str, provided_pin: str) -> dict:
         
         # Log failed attempt
         await execute(
-            "INSERT INTO pin_attempt_log (user_id, status) VALUES (\$1, 'failed')",
+            r"INSERT INTO pin_attempt_log (user_id, status) VALUES ($1, 'failed')",
             user_id
         )
         
@@ -138,14 +138,14 @@ async def validate_pin(user_id: str, provided_pin: str) -> dict:
     
     # PIN is valid - reset attempts
     await execute(
-        """UPDATE user_pins SET attempts = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP
-           WHERE user_id = \$1""",
+        r"""UPDATE user_pins SET attempts = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = $1""",
         user_id
     )
     
     # Log successful attempt
     await execute(
-        "INSERT INTO pin_attempt_log (user_id, status) VALUES (\$1, 'success')",
+        r"INSERT INTO pin_attempt_log (user_id, status) VALUES ($1, 'success')",
         user_id
     )
     
@@ -164,10 +164,10 @@ async def set_user_pin(user_id: str, pin: str) -> dict:
     
     # Insert or update PIN
     result = await fetchrow(
-        """INSERT INTO user_pins (user_id, pin_hash, attempts, locked_until)
-           VALUES (\$1, \$2, 0, NULL)
+        r"""INSERT INTO user_pins (user_id, pin_hash, attempts, locked_until)
+           VALUES ($1, $2, 0, NULL)
            ON CONFLICT (user_id) DO UPDATE
-           SET pin_hash = \$2, attempts = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP
+           SET pin_hash = $2, attempts = 0, locked_until = NULL, updated_at = CURRENT_TIMESTAMP
            RETURNING user_id""",
         user_id,
         hashed
