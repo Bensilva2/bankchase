@@ -43,9 +43,19 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
 
+    // Create a simple JWT-like token
+    const token = Buffer.from(JSON.stringify({
+      sub: newUser.id,
+      email: newUser.email,
+      username: newUser.username,
+      role: newUser.role,
+      iat: Date.now(),
+    })).toString('base64')
+
     return NextResponse.json(
       {
         success: true,
+        token,
         user: newUser,
         message: 'Registration successful.',
       },

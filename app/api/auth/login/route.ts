@@ -41,17 +41,29 @@ export async function POST(request: NextRequest) {
 
     let user = null
 
+    // Normalize input (trim whitespace, case-insensitive for email)
+    const normalizedIdentifier = loginIdentifier.trim().toLowerCase()
+    const normalizedUsername = DEFAULT_USER.username.toLowerCase()
+    const normalizedEmail = DEFAULT_USER.email.toLowerCase()
+
     // Check default demo user first
     if (
-      (loginIdentifier === DEFAULT_USER.username || loginIdentifier === DEFAULT_USER.email) &&
+      (normalizedIdentifier === normalizedUsername || normalizedIdentifier === normalizedEmail) &&
       password === DEFAULT_USER.password
     ) {
       user = DEFAULT_USER
+    } else {
+      // In production, query database here for other users
+      // For now, only demo user is available
+      return NextResponse.json(
+        { error: 'Invalid email/username or password' },
+        { status: 401 }
+      )
     }
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid username or password' },
+        { error: 'Invalid email/username or password' },
         { status: 401 }
       )
     }
@@ -73,9 +85,19 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
 
+    // Create a simple JWT-like token (in production, use proper JWT library)
+    const token = Buffer.from(JSON.stringify({
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      iat: Date.now(),
+    })).toString('base64')
+
     return NextResponse.json(
       {
         success: true,
+        token,
         user: {
           id: user.id,
           email: user.email,
