@@ -176,7 +176,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setIsLoading(true)
 
     try {
-      await login(username, password)
+      // Support both email and username login
+      const loginIdentifier = username.includes('@') ? username : username
+      await login(loginIdentifier, password)
 
       if (rememberMe) {
         localStorage.setItem("chase_username", username)
