@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { toast } from 'sonner'
 import {
   PicaIcon,
   ParsleyIcon,
@@ -84,6 +85,8 @@ const onboardingSteps: OnboardingStep[] = [
 export function OnboardingCard() {
   const [selectedStep, setSelectedStep] = useState<string | null>(onboardingSteps[0].id)
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set())
+  const [isWorkflowRunning, setIsWorkflowRunning] = useState(false)
+  const [workflowRunId, setWorkflowRunId] = useState<string | null>(null)
 
   const currentStep = onboardingSteps.find(step => step.id === selectedStep)
 
@@ -112,6 +115,38 @@ export function OnboardingCard() {
   }
 
   const progress = Math.round((completedSteps.size / onboardingSteps.length) * 100)
+
+  const handleTriggerWorkflow = async () => {
+    setIsWorkflowRunning(true)
+    try {
+      const response = await fetch('/api/onboarding/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setWorkflowRunId(data.workflowRunId)
+        toast.success('Onboarding workflow started!', {
+          description: `Workflow ID: ${data.workflowRunId}`,
+        })
+        // Mark all steps as complete when workflow succeeds
+        const allSteps = new Set(onboardingSteps.map(s => s.id))
+        setCompletedSteps(allSteps)
+      } else {
+        toast.error('Failed to start workflow', {
+          description: data.error || 'Unknown error',
+        })
+      }
+    } catch (error) {
+      toast.error('Error triggering workflow', {
+        description: error instanceof Error ? error.message : 'Unknown error',
+      })
+    } finally {
+      setIsWorkflowRunning(false)
+    }
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4">
@@ -230,9 +265,25 @@ export function OnboardingCard() {
                     </Button>
                   </div>
 
-                  <Button variant="ghost" className="w-full">
-                    Learn More →
+                  <Button
+                    onClick={handleTriggerWorkflow}
+                    disabled={isWorkflowRunning || completedSteps.size !== onboardingSteps.length}
+                    className="w-full"
+                    variant="default"
+                  >
+                    {isWorkflowRunning ? 'Starting Workflow...' : 'Complete All & Start Workflow'}
                   </Button>
+
+                  {workflowRunId && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs text-green-700 font-medium">
+                        ✓ Workflow executed successfully
+                      </p>
+                      <p className="text-xs text-green-600 break-all">
+                        ID: {workflowRunId}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
