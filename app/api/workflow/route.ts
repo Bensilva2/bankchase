@@ -1,6 +1,13 @@
 import { serve } from "@upstash/workflow/nextjs";
+import { sendWorkflowCompletionEmail } from "@/lib/email/resend-client";
 
 export const { POST } = serve(async (context) => {
+  const { userId, userEmail, userName, workflowRunId } = context.requestPayload;
+
+  if (!workflowRunId) {
+    throw new Error("workflowRunId is required");
+  }
+
   // Step 1: Validate setup
   await context.run("validate-setup", async () => {
     console.log("[Workflow] Validating onboarding setup...");
@@ -25,15 +32,31 @@ export const { POST } = serve(async (context) => {
     return { agentSetup: true };
   });
 
-  // Step 5: Send completion notification
-  await context.run("send-notification", async () => {
-    console.log("[Workflow] Sending completion notification...");
-    return { notificationSent: true };
+  // Step 5: Send completion email
+  await context.run("send-completion-email", async () => {
+    console.log("[Workflow] Sending completion email to", userEmail);
+    
+    if (userEmail && userName) {
+      const result = await sendWorkflowCompletionEmail({
+        email: userEmail,
+        name: userName,
+        workflowRunId,
+      });
+      
+      return {
+        emailSent: result.success,
+        messageId: result.messageId,
+        error: result.error,
+      };
+    }
+    
+    return { emailSent: false, reason: "Missing email or name" };
   });
 
   return {
     success: true,
     message: "Onboarding workflow completed successfully",
     completedAt: new Date().toISOString(),
+    workflowRunId,
   };
 });

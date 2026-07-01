@@ -90,3 +90,17 @@ export const workflowStep = pgTable("workflow_step", {
   error: text("error"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 })
+
+export const emailLog = pgTable("email_log", {
+  id: serial("id").primaryKey(),
+  userId: text("userId").notNull(),
+  email: text("email").notNull(),
+  type: text("type").notNull(), // onboarding, completion, notification, etc.
+  subject: text("subject").notNull(),
+  messageId: text("messageId"),
+  status: text("status").notNull().default("pending"), // pending, sent, failed
+  error: text("error"),
+  workflowRunId: text("workflowRunId"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  sentAt: timestamp("sentAt"),
+})
