@@ -3,6 +3,9 @@ import { getWorkflowRuns, getEmailLogs } from '@/app/actions/onboarding'
 import { BarChart3, Mail, Zap, TrendingUp } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
+// Skip prerendering for this dynamic page
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Admin Dashboard - BankChase',
   description: 'Monitor workflows, emails, and onboarding metrics',
