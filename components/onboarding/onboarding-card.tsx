@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { toast } from 'sonner'
+import { CheckCircle2, Circle, ArrowRight, Zap } from 'lucide-react'
 import {
   PicaIcon,
   ParsleyIcon,
@@ -28,56 +29,56 @@ const onboardingSteps: OnboardingStep[] = [
     id: 'mcp-server',
     title: 'Resend MCP Server',
     description: 'Open protocol for standardizing AI agent context',
-    icon: <RocketIcon className="text-primary" />,
+    icon: <RocketIcon className="w-6 h-6 text-primary" />,
     features: ['Full API surface', 'Open-source', 'Ready to use'],
   },
   {
     id: 'cli',
     title: 'Resend CLI',
     description: 'Command-line interface for email automation',
-    icon: <PicaIcon className="text-primary" />,
+    icon: <PicaIcon className="w-6 h-6 text-primary" />,
     features: ['Fast setup', 'Local testing', 'Production ready'],
   },
   {
     id: 'docs',
     title: 'Resend Docs for Agents',
     description: 'Complete documentation for AI integration',
-    icon: <ParsleyIcon className="text-primary" />,
+    icon: <ParsleyIcon className="w-6 h-6 text-primary" />,
     features: ['Comprehensive', 'Updated docs', 'Code samples'],
   },
   {
     id: 'skills',
     title: 'Email Skills for Agents',
     description: 'Pre-built skills for email operations',
-    icon: <LeapNewIcon className="text-primary" />,
+    icon: <LeapNewIcon className="w-6 h-6 text-primary" />,
     features: ['Ready to deploy', 'Customizable', 'Fast integration'],
   },
   {
     id: 'quickstart',
     title: 'Quick Start Guides',
     description: 'Get up and running in minutes',
-    icon: <Base44Icon className="text-primary" />,
+    icon: <Base44Icon className="w-6 h-6 text-primary" />,
     features: ['Step-by-step', 'Best practices', 'Examples included'],
   },
   {
     id: 'openclaw',
     title: 'OpenClaw Guide',
     description: 'Advanced agent capabilities and patterns',
-    icon: <WildcardIcon className="text-primary" />,
+    icon: <WildcardIcon className="w-6 h-6 text-primary" />,
     features: ['Advanced patterns', 'Best practices', 'Deep dive'],
   },
   {
     id: 'chat-sdk',
     title: 'Chat SDK',
     description: 'Build interactive chat experiences',
-    icon: <AnythingIcon className="text-primary" />,
+    icon: <AnythingIcon className="w-6 h-6 text-primary" />,
     features: ['Real-time', 'Cross-platform', 'Easy integration'],
   },
   {
     id: 'ai-builders',
     title: 'AI Builder Guides',
     description: 'Guides specifically for AI builders',
-    icon: <LovableIcon className="text-primary" />,
+    icon: <LovableIcon className="w-6 h-6 text-primary" />,
     features: ['Expert guidance', 'Tutorials', 'Case studies'],
   },
 ]
@@ -89,6 +90,7 @@ export function OnboardingCard() {
   const [workflowRunId, setWorkflowRunId] = useState<string | null>(null)
 
   const currentStep = onboardingSteps.find(step => step.id === selectedStep)
+  const currentIndex = onboardingSteps.findIndex(step => step.id === selectedStep)
 
   const toggleStepCompletion = (stepId: string) => {
     const newCompleted = new Set(completedSteps)
@@ -101,14 +103,12 @@ export function OnboardingCard() {
   }
 
   const handleNext = () => {
-    const currentIndex = onboardingSteps.findIndex(step => step.id === selectedStep)
     if (currentIndex < onboardingSteps.length - 1) {
       setSelectedStep(onboardingSteps[currentIndex + 1].id)
     }
   }
 
   const handlePrevious = () => {
-    const currentIndex = onboardingSteps.findIndex(step => step.id === selectedStep)
     if (currentIndex > 0) {
       setSelectedStep(onboardingSteps[currentIndex - 1].id)
     }
@@ -131,7 +131,6 @@ export function OnboardingCard() {
         toast.success('Onboarding workflow started!', {
           description: `Workflow ID: ${data.workflowRunId}`,
         })
-        // Mark all steps as complete when workflow succeeds
         const allSteps = new Set(onboardingSteps.map(s => s.id))
         setCompletedSteps(allSteps)
       } else {
@@ -149,141 +148,187 @@ export function OnboardingCard() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4">
-      <Card className="bg-card border-border">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
-          {/* Step List */}
-          <div className="lg:col-span-1">
+    <div className="w-full space-y-8">
+      {/* Progress Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Setup Progress</h2>
+            <p className="text-sm text-muted-foreground mt-1">Complete each step to unlock all features</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-primary">{progress}%</div>
+            <div className="text-xs text-muted-foreground">{completedSteps.size} of {onboardingSteps.length}</div>
+          </div>
+        </div>
+        <div className="w-full bg-card border border-border rounded-full h-3 overflow-hidden">
+          <div
+            className="bg-gradient-to-r from-primary to-accent h-full transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      <Card className="bg-card border-border overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-0">
+          {/* Step List - Sidebar */}
+          <div className="lg:col-span-1 border-r border-border bg-card/50 p-6 space-y-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Setup Steps
+            </h3>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                AI Onboarding Steps
-              </h3>
-              <div className="space-y-2">
-                {onboardingSteps.map((step, index) => (
+              {onboardingSteps.map((step, index) => {
+                const isSelected = selectedStep === step.id
+                const isCompleted = completedSteps.has(step.id)
+
+                return (
                   <button
                     key={step.id}
                     onClick={() => setSelectedStep(step.id)}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 ${
-                      selectedStep === step.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted hover:text-foreground'
+                    className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 group relative ${
+                      isSelected
+                        ? 'bg-primary text-primary-foreground shadow-lg'
+                        : isCompleted
+                          ? 'bg-accent/10 hover:bg-accent/20 text-foreground'
+                          : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-sm font-medium">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm font-medium truncate">{step.title}</span>
-                      {completedSteps.has(step.id) && (
-                        <span className="ml-auto text-xs">✓</span>
+                    <div className="flex items-center gap-3">
+                      {isCompleted ? (
+                        <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-accent" />
+                      ) : (
+                        <Circle className={`w-5 h-5 flex-shrink-0 ${isSelected ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
                       )}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold opacity-70">Step {index + 1}</div>
+                        <div className="text-sm font-medium truncate">{step.title}</div>
+                      </div>
                     </div>
                   </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="mt-6 pt-6 border-t border-border">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-muted-foreground">Progress</span>
-                <span className="text-sm font-bold text-primary">{progress}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-primary h-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+                )
+              })}
             </div>
           </div>
 
           {/* Content Area */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3 p-8">
             {currentStep && (
-              <div className="space-y-6">
-                {/* Header */}
+              <div className="space-y-8">
+                {/* Step Header */}
                 <div className="space-y-4">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
                       {currentStep.icon}
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-foreground">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-semibold text-accent uppercase tracking-wider">
+                          Step {currentIndex + 1} of {onboardingSteps.length}
+                        </span>
+                        {completedSteps.has(currentStep.id) && (
+                          <span className="flex items-center gap-1 text-xs text-accent">
+                            <CheckCircle2 className="w-3 h-3" /> Completed
+                          </span>
+                        )}
+                      </div>
+                      <h2 className="text-3xl font-bold text-foreground mb-2">
                         {currentStep.title}
                       </h2>
-                      <p className="text-muted-foreground mt-1">
+                      <p className="text-muted-foreground text-lg">
                         {currentStep.description}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Features */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-foreground">Key Features</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Features Grid */}
+                <div>
+                  <h4 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wide">Key Features</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {currentStep.features.map((feature, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center gap-2 p-3 bg-muted rounded-lg"
+                        className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border border-border hover:border-primary/50 transition-colors group"
                       >
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        <span className="text-sm text-foreground">{feature}</span>
+                        <div className="w-2 h-2 bg-primary rounded-full group-hover:bg-accent transition-colors" />
+                        <span className="text-sm font-medium text-foreground">{feature}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
+                {/* Workflow Success Message */}
+                {workflowRunId && (
+                  <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/30 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground">Setup Workflow Complete!</p>
+                        <p className="text-xs text-muted-foreground mt-1 break-all">
+                          Workflow ID: <span className="text-primary font-mono">{workflowRunId}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Actions */}
-                <div className="space-y-3 pt-4 border-t border-border">
+                <div className="space-y-3 pt-6 border-t border-border">
                   <Button
                     onClick={() => toggleStepCompletion(currentStep.id)}
                     className="w-full"
+                    size="lg"
                     variant={completedSteps.has(currentStep.id) ? 'default' : 'outline'}
                   >
-                    {completedSteps.has(currentStep.id)
-                      ? '✓ Step Completed'
-                      : 'Mark as Complete'}
+                    {completedSteps.has(currentStep.id) ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Step Completed
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 mr-2" />
+                        Mark as Complete
+                      </>
+                    )}
                   </Button>
 
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <Button
                       onClick={handlePrevious}
-                      disabled={selectedStep === onboardingSteps[0].id}
+                      disabled={currentIndex === 0}
                       variant="outline"
-                      className="flex-1"
+                      size="lg"
                     >
                       Previous
                     </Button>
                     <Button
                       onClick={handleNext}
-                      disabled={selectedStep === onboardingSteps[onboardingSteps.length - 1].id}
-                      className="flex-1"
+                      disabled={currentIndex === onboardingSteps.length - 1}
+                      size="lg"
+                      className="gap-2"
                     >
-                      Next
+                      Next <ArrowRight className="w-4 h-4" />
                     </Button>
                   </div>
 
                   <Button
                     onClick={handleTriggerWorkflow}
                     disabled={isWorkflowRunning || completedSteps.size !== onboardingSteps.length}
-                    className="w-full"
-                    variant="default"
+                    className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                    size="lg"
                   >
-                    {isWorkflowRunning ? 'Starting Workflow...' : 'Complete All & Start Workflow'}
+                    {isWorkflowRunning ? (
+                      <>
+                        <div className="w-4 h-4 mr-2 border-2 border-transparent border-t-current rounded-full animate-spin" />
+                        Starting Workflow...
+                      </>
+                    ) : (
+                      <>
+                        Complete All & Start Workflow
+                      </>
+                    )}
                   </Button>
-
-                  {workflowRunId && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-xs text-green-700 font-medium">
-                        ✓ Workflow executed successfully
-                      </p>
-                      <p className="text-xs text-green-600 break-all">
-                        ID: {workflowRunId}
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
