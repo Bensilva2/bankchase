@@ -1,8 +1,12 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
-export { resend }
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not configured. Set it in your environment variables.')
+  }
+  return new Resend(apiKey)
+}
 
 export async function sendOnboardingEmail({
   email,
@@ -12,6 +16,7 @@ export async function sendOnboardingEmail({
   name: string
 }) {
   try {
+    const resend = getResendClient()
     const result = await resend.emails.send({
       from: 'onboarding@bankchase.app',
       to: email,
@@ -39,6 +44,7 @@ export async function sendWorkflowCompletionEmail({
   workflowRunId: string
 }) {
   try {
+    const resend = getResendClient()
     const result = await resend.emails.send({
       from: 'onboarding@bankchase.app',
       to: email,
