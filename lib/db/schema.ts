@@ -54,26 +54,53 @@ export const verification = pgTable('verification', {
 })
 
 // --- App tables ------------------------------------------------------------
-// Add your app tables below. Always include a plain `userId` column so queries
-// can be scoped per user — the security model depends on this column existing,
-// not on a foreign key. Do NOT add a foreign key constraint
-// (`.references(() => user.id, ...)`) unless the user explicitly asks for
-// foreign keys or referential integrity; FK constraints make iterating on the
-// schema harder.
-//
-// Example:
-//
-// import { serial } from "drizzle-orm/pg-core"
-//
-// export const todos = pgTable("todos", {
-//   id: serial("id").primaryKey(),
-//   userId: text("userId").notNull(),
-//   title: text("title").notNull(),
-//   completed: boolean("completed").notNull().default(false),
-//   createdAt: timestamp("createdAt").notNull().defaultNow(),
-// })
-//
-// If the user asks for foreign keys, add the reference back in:
-//   userId: text("userId")
-//     .notNull()
-//     .references(() => user.id, { onDelete: "cascade" }),
+import { serial } from "drizzle-orm/pg-core"
+
+export const onboardingProgress = pgTable("onboarding_progress", {
+  id: serial("id").primaryKey(),
+  userId: text("userId").notNull(),
+  stepId: text("stepId").notNull(),
+  completed: boolean("completed").notNull().default(false),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+})
+
+export const workflowRun = pgTable("workflow_run", {
+  id: text("id").primaryKey(),
+  userId: text("userId").notNull(),
+  workflowName: text("workflowName").notNull(),
+  status: text("status").notNull().default("pending"), // pending, running, completed, failed
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+  error: text("error"),
+  metadata: text("metadata"), // JSON string
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+})
+
+export const workflowStep = pgTable("workflow_step", {
+  id: serial("id").primaryKey(),
+  workflowRunId: text("workflowRunId").notNull(),
+  stepName: text("stepName").notNull(),
+  status: text("status").notNull().default("pending"), // pending, running, completed, failed
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+  duration: text("duration"), // milliseconds as string
+  error: text("error"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+})
+
+export const emailLog = pgTable("email_log", {
+  id: serial("id").primaryKey(),
+  userId: text("userId").notNull(),
+  email: text("email").notNull(),
+  type: text("type").notNull(), // onboarding, completion, notification, etc.
+  subject: text("subject").notNull(),
+  messageId: text("messageId"),
+  status: text("status").notNull().default("pending"), // pending, sent, failed
+  error: text("error"),
+  workflowRunId: text("workflowRunId"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  sentAt: timestamp("sentAt"),
+})
