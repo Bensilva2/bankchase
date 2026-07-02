@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { withErrorHandler, validateRequiredFields, APIError } from '@/lib/api-error-handler'
+import { triggerNotificationEvent } from '@/lib/inngest-events'
 
 // Demo user credentials - Username-based authentication
 const DEMO_USER = {
@@ -13,79 +15,77 @@ const DEMO_USER = {
   emailVerified: true,
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { username, password } = body
+async function handler(request: NextRequest) {
+  console.log('[v0] Login attempt')
 
-    if (!username || !password) {
-      return NextResponse.json(
-        { error: 'Username and password are required' },
-        { status: 400 }
-      )
-    }
+  const body = await request.json()
+  const { username, password } = body
 
-    // Validate credentials
-    if (username !== DEMO_USER.username || password !== DEMO_USER.password) {
-      return NextResponse.json(
-        { error: 'Invalid username or password' },
-        { status: 401 }
-      )
-    }
+  // Validate required fields
+  validateRequiredFields(body, ['username', 'password'])
 
-    // Create session cookie
-    const cookieStore = await cookies()
-    cookieStore.set('auth_user', JSON.stringify({
-      id: DEMO_USER.id,
-      email: DEMO_USER.email,
-      username: DEMO_USER.username,
-      firstName: DEMO_USER.firstName,
-      lastName: DEMO_USER.lastName,
-      role: DEMO_USER.role,
-      emailVerified: DEMO_USER.emailVerified,
-    }), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    })
-
-    // Also set token for compatibility with auth-context
-    const token = Buffer.from(JSON.stringify({
-      id: DEMO_USER.id,
-      username: DEMO_USER.username,
-      email: DEMO_USER.email,
-      iat: Math.floor(Date.now() / 1000),
-    })).toString('base64')
-
-    cookieStore.set('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    })
-
-    return NextResponse.json(
-      {
-        success: true,
-        token,
-        user: {
-          id: DEMO_USER.id,
-          email: DEMO_USER.email,
-          username: DEMO_USER.username,
-          firstName: DEMO_USER.firstName,
-          lastName: DEMO_USER.lastName,
-          role: DEMO_USER.role,
-          emailVerified: DEMO_USER.emailVerified,
-        },
-      },
-      { status: 200 }
-    )
-  } catch (error) {
-    console.error('[v0] Login error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+  // Validate credentials
+  if (username !== DEMO_USER.username || password !== DEMO_USER.password) {
+    throw new APIError(401, 'Invalid username or password', 'INVALID_CREDENTIALS')
   }
+
+  // Create session cookie
+  const cookieStore = await cookies()
+  const userSession = {
+    id: DEMO_USER.id,
+    email: DEMO_USER.email,
+    username: DEMO_USER.username,
+    firstName: DEMO_USER.firstName,
+    lastName: DEMO_USER.lastName,
+    role: DEMO_USER.role,
+    emailVerified: DEMO_USER.emailVerified,
+  }
+
+  cookieStore.set('auth_user', JSON.stringify(userSession), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  })
+
+  // Create auth token
+  const token = Buffer.from(JSON.stringify({
+    id: DEMO_USER.id,
+    username: DEMO_USER.username,
+    email: DEMO_USER.email,
+    iat: Math.floor(Date.now() / 1000),
+  })).toString('base64')
+
+  cookieStore.set('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  })
+
+  // Trigger welcome notification event
+  try {
+    await triggerNotificationEvent({
+      userId: DEMO_USER.id,
+      type: 'alert',
+      title: 'Welcome back!',
+      message: `Welcome back, ${DEMO_USER.firstName}!`,
+      channels: ['email', 'push'],
+    })
+  } catch (error) {
+    console.error('[v0] Error triggering welcome notification:', error)
+  }
+
+  console.log(`[v0] User ${DEMO_USER.username} logged in successfully`)
+
+  return NextResponse.json(
+    {
+      success: true,
+      token,
+      user: userSession,
+    },
+    { status: 200 }
+  )
 }
+
+export const POST = withErrorHandler(handler)

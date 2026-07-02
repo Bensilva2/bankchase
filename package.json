@@ -60,6 +60,7 @@
     "date-fns": "4.1.0",
     "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "8.5.1",
+    "inngest": "^4.11.0",
     "input-otp": "latest",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.454.0",
