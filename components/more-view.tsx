@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useRef } from "react"
+import NextLink from "next/link"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -612,12 +613,13 @@ export function MoreView({ onLogout }: MoreViewProps) {
   }
 
   const menuItems = [
-    { label: "Profile", description: "View and edit your personal details", icon: User, view: "profile" as ViewType },
+    { label: "Profile", description: "View and edit your personal details", icon: User, view: "profile" as ViewType, href: "/profile" },
     {
       label: "Account Management",
       description: "Manage your account settings",
       icon: UserCog,
       view: "accountManagement" as ViewType,
+      href: "/account-management",
     },
     {
       label: "Notifications",
@@ -625,6 +627,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
       icon: Bell,
       view: "notificationCenter" as ViewType,
       badge: unreadNotificationCount > 0 ? unreadNotificationCount.toString() : undefined,
+      href: "/notifications",
     },
     {
       label: "Messages",
@@ -632,41 +635,47 @@ export function MoreView({ onLogout }: MoreViewProps) {
       icon: Mail,
       view: "messages" as ViewType,
       badge: unreadMessageCount > 0 ? unreadMessageCount.toString() : undefined,
+      href: "/messages",
     },
     {
       label: "Card Management",
       description: "Manage your credit and debit cards",
       icon: CreditCard,
       view: "cards" as ViewType,
+      href: "/cards",
     },
     {
       label: "Chase Ultimate Rewards",
       description: "View and redeem your reward points",
       icon: Award,
       view: "rewards" as ViewType,
+      href: "/rewards",
     },
-    { label: "Savings Goals", description: "Track your financial goals", icon: Target, view: "savings" as ViewType },
+    { label: "Savings Goals", description: "Track your financial goals", icon: Target, view: "savings" as ViewType, href: "/savings" },
     {
       label: "Spending Analysis",
       description: "See where your money is going",
       icon: PieChart,
       view: "spending" as ViewType,
+      href: "/spending",
     },
-    { label: "View Statements", description: "Download account statements", icon: FileText, view: "viewStatements" as ViewType },
+    { label: "View Statements", description: "Download account statements", icon: FileText, view: "viewStatements" as ViewType, href: "/statements" },
     { label: "External Accounts", description: "Link or manage external accounts", icon: Link, view: "linkExternal" as ViewType },
     { label: "Change Username", description: "Update your login username", icon: Edit, view: "changeUsername" as ViewType },
-    { label: "Settings", description: "Customize your app preferences", icon: Settings, view: "settings" as ViewType },
+    { label: "Settings", description: "Customize your app preferences", icon: Settings, view: "settings" as ViewType, href: "/settings" },
     {
       label: "Security & Privacy",
       description: "Manage your account security",
       icon: Shield,
       view: "security" as ViewType,
+      href: "/security",
     },
     {
       label: "Help & Support",
       description: "Get assistance and find answers",
       icon: HelpCircle,
       view: "help" as ViewType,
+      href: "/help",
     },
     { label: "Recent Activity", description: "View your activity log", icon: History, view: "activity" as ViewType },
     { label: "Linked Devices", description: "Manage logged-in devices", icon: Smartphone, view: "devices" as ViewType },
@@ -722,12 +731,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
         </Card>
 
         <div className="space-y-2">
-          {menuItems.map((item) => (
-            <Card
-              key={item.label}
-              className="p-4 cursor-pointer hover:bg-accent transition-colors chase-card-shadow"
-              onClick={() => setCurrentView(item.view)}
-            >
+          {menuItems.map((item: any) => {
+            const menuItemContent = (
               <div className="flex items-center gap-4">
                 <div className="h-10 w-10 rounded-full bg-[#0a4fa6]/10 flex items-center justify-center">
                   <item.icon className="h-5 w-5 text-[#0a4fa6]" />
@@ -745,8 +750,28 @@ export function MoreView({ onLogout }: MoreViewProps) {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-            </Card>
-          ))}
+            );
+
+            if (item.href) {
+              return (
+                <NextLink key={item.label} href={item.href}>
+                  <Card className="p-4 cursor-pointer hover:bg-accent transition-colors chase-card-shadow">
+                    {menuItemContent}
+                  </Card>
+                </NextLink>
+              );
+            }
+
+            return (
+              <Card
+                key={item.label}
+                className="p-4 cursor-pointer hover:bg-accent transition-colors chase-card-shadow"
+                onClick={() => setCurrentView(item.view)}
+              >
+                {menuItemContent}
+              </Card>
+            );
+          })}
 
           <Card
             className="p-4 cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors chase-card-shadow mt-4"
