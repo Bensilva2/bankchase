@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { useBanking } from '@/lib/banking-context'
-import { ArrowLeft, CreditCard, Lock, Unlock, Eye, EyeOff, Plus, Settings } from 'lucide-react'
+import { CreditCard, Lock, Unlock, Eye, EyeOff, Plus, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { BackButton } from '@/components/back-button'
 
 export default function CardsPage() {
   const router = useRouter()
@@ -48,12 +49,7 @@ export default function CardsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.back()}
-              className="p-2 hover:bg-white rounded-lg transition"
-            >
-              <ArrowLeft className="w-6 h-6 text-gray-700" />
-            </button>
+            <BackButton />
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Card Management</h1>
               <p className="text-gray-600">Manage your credit and debit cards</p>

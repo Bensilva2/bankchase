@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { useBanking } from '@/lib/banking-context'
-import { ArrowLeft, Mail, Trash2, Send, Search } from 'lucide-react'
+import { Mail, Trash2, Send, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { BackButton } from '@/components/back-button'
 
 export default function MessagesPage() {
   const router = useRouter()
@@ -39,12 +40,7 @@ export default function MessagesPage() {
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-white rounded-lg transition"
-          >
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
-          </button>
+          <BackButton />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
             <p className="text-gray-600">Communications from Chase</p>

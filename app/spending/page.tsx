@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { useBanking } from '@/lib/banking-context'
-import { ArrowLeft, TrendingDown, Calendar } from 'lucide-react'
+import { TrendingDown, Calendar } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { BackButton } from '@/components/back-button'
 
 export default function SpendingAnalysisPage() {
   const router = useRouter()
@@ -73,12 +74,7 @@ export default function SpendingAnalysisPage() {
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-white rounded-lg transition"
-          >
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
-          </button>
+          <BackButton />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Spending Analysis</h1>
             <p className="text-gray-600">See where your money is going</p>

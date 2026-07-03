@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { useBanking } from '@/lib/banking-context'
-import { ArrowLeft, Gift, TrendingUp, Zap, Send } from 'lucide-react'
+import { Gift, TrendingUp, Zap, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { BackButton } from '@/components/back-button'
 
 export default function RewardsPage() {
   const router = useRouter()
@@ -79,12 +80,7 @@ export default function RewardsPage() {
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-white rounded-lg transition"
-          >
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
-          </button>
+          <BackButton />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Chase Ultimate Rewards</h1>
             <p className="text-gray-600">Earn and redeem your rewards points</p>
