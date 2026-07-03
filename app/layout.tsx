@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { BankingProvider } from "@/lib/banking-context"
 import { Auth0Provider } from "@/lib/auth0-context"
 import { AuthProvider } from "@/lib/auth-context"
+import StatsigWrapper from "./statsig-provider"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -44,37 +45,39 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <ClerkProvider>
-          <header className="border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-            <div>Banking App</div>
-            <div className="flex items-center gap-4">
-              <Show when="signed-out">
-                <SignInButton mode="modal">
-                  <button className="text-sm font-medium text-gray-700 hover:text-gray-900">
-                    Sign In
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-700">
-                    Sign Up
-                  </button>
-                </SignUpButton>
-              </Show>
-              <Show when="signed-in">
-                <UserButton />
-              </Show>
-            </div>
-          </header>
-          <AuthProvider>
-            <Auth0Provider>
-              <BankingProvider>
-                {children}
-                <Toaster />
-                <Analytics />
-              </BankingProvider>
-            </Auth0Provider>
-          </AuthProvider>
-        </ClerkProvider>
+        <StatsigWrapper>
+          <ClerkProvider>
+            <header className="border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+              <div>Banking App</div>
+              <div className="flex items-center gap-4">
+                <Show when="signed-out">
+                  <SignInButton mode="modal">
+                    <button className="text-sm font-medium text-gray-700 hover:text-gray-900">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-700">
+                      Sign Up
+                    </button>
+                  </SignUpButton>
+                </Show>
+                <Show when="signed-in">
+                  <UserButton />
+                </Show>
+              </div>
+            </header>
+            <AuthProvider>
+              <Auth0Provider>
+                <BankingProvider>
+                  {children}
+                  <Toaster />
+                  <Analytics />
+                </BankingProvider>
+              </Auth0Provider>
+            </AuthProvider>
+          </ClerkProvider>
+        </StatsigWrapper>
         <Script id="chatbase-widget" strategy="lazyOnload">
           {`(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="${process.env.NEXT_PUBLIC_CHATBOT_ID}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();`}
         </Script>
