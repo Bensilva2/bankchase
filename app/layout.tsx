@@ -9,6 +9,7 @@ import { BankingProvider } from "@/lib/banking-context"
 import { Auth0Provider } from "@/lib/auth0-context"
 import { AuthProvider } from "@/lib/auth-context"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 import StatsigWrapper from "./statsig-provider"
 import "./globals.css"
 
@@ -52,6 +53,7 @@ export default function RootLayout({
               <header className="border-b border-border px-4 py-3 flex items-center justify-between bg-background text-foreground">
                 <div>Banking App</div>
                 <div className="flex items-center gap-4">
+                  <ThemeToggle />
                   <Show when="signed-out">
                     <SignInButton mode="modal">
                       <button className="text-sm font-medium text-foreground hover:text-primary">
