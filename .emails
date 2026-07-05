@@ -5,5 +5,11 @@
     "subject": "Test Email",
     "text": "This is a test email",
     "timestamp": "2026-07-05T02:12:26.977Z"
+  },
+  {
+    "id": "msg-1783217630442-jexagz4uk",
+    "to": "demo@bankchase.io",
+    "subject": "Welcome to BankChase",
+    "timestamp": "2026-07-05T02:13:50.442Z"
   }
 ]
