@@ -174,7 +174,7 @@ export default function DemoTransferPage() {
               <button
                 type="submit"
                 disabled={isTransferLoading}
-                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition"
+                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-background font-semibold py-3 rounded-lg transition"
               >
                 {isTransferLoading ? 'Processing...' : 'Send Transfer'}
               </button>
@@ -200,7 +200,7 @@ export default function DemoTransferPage() {
                 <button
                   onClick={handleBulkTransfer}
                   disabled={isTransferLoading}
-                  className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
+                  className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-background font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Users className="w-5 h-5" />
                   {isTransferLoading ? 'Processing...' : 'Send to All Users'}

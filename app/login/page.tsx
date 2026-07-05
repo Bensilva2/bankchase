@@ -77,7 +77,7 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Enter your username"
                 required
                 disabled={loading}
@@ -99,7 +99,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="••••••••"
                   required
                   disabled={loading}
@@ -121,7 +121,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary hover:bg-primary disabled:bg-blue-400 text-white font-semibold py-2 rounded-lg transition"
+              className="w-full bg-primary hover:bg-primary disabled:bg-blue-400 text-background font-semibold py-2 rounded-lg transition"
               aria-busy={loading}
             >
               {loading ? 'Signing in...' : 'Sign In'}

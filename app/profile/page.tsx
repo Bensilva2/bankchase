@@ -16,7 +16,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a4fa6] to-[#003087]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border"></div>
       </div>
     )
   }
@@ -89,7 +89,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-6">
                 <Avatar className="h-24 w-24 border-4 border-[#0a4fa6]">
                   <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="bg-[#0a4fa6] text-white text-xl font-bold">
+                  <AvatarFallback className="bg-[#0a4fa6] text-background text-xl font-bold">
                     {user.firstName?.[0]}
                     {user.lastName?.[0]}
                   </AvatarFallback>

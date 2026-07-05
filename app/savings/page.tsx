@@ -92,7 +92,7 @@ export default function SavingsGoalsPage() {
               setEditingGoal(null)
               setFormData({ name: '', targetAmount: '', currentAmount: '', deadline: '', category: 'General' })
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary transition"
+            className="flex items-center gap-2 px-6 py-3 bg-primary text-background rounded-lg hover:bg-primary transition"
           >
             <Plus className="w-5 h-5" />
             Add Goal
@@ -118,7 +118,7 @@ export default function SavingsGoalsPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="e.g., Vacation Fund"
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
 
@@ -132,7 +132,7 @@ export default function SavingsGoalsPage() {
                         value={formData.targetAmount}
                         onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
                         placeholder="0.00"
-                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                     </div>
 
@@ -143,7 +143,7 @@ export default function SavingsGoalsPage() {
                       <select
                         value={formData.category}
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       >
                         <option>General</option>
                         <option>Vacation</option>
@@ -163,7 +163,7 @@ export default function SavingsGoalsPage() {
                       type="date"
                       value={formData.deadline}
                       onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                 </>
@@ -178,14 +178,14 @@ export default function SavingsGoalsPage() {
                   value={formData.currentAmount}
                   onChange={(e) => setFormData({ ...formData, currentAmount: e.target.value })}
                   placeholder="0.00"
-                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               <div className="flex gap-3">
                 <button
                   onClick={editingGoal ? handleUpdateGoal : handleAddGoal}
-                  className="flex-1 px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary transition"
+                  className="flex-1 px-6 py-3 bg-primary text-background font-medium rounded-lg hover:bg-primary transition"
                 >
                   {editingGoal ? 'Update Goal' : 'Create Goal'}
                 </button>

@@ -135,7 +135,7 @@ export default function PlanTrackPage() {
         </div>
         <button
           onClick={() => setShowNewGoalForm(!showNewGoalForm)}
-          className="bg-primary text-white px-6 py-3 rounded-2xl font-medium hover:bg-primary"
+          className="bg-primary text-background px-6 py-3 rounded-2xl font-medium hover:bg-primary"
         >
           + New Goal
         </button>
@@ -179,7 +179,7 @@ export default function PlanTrackPage() {
             required
           />
           <div className="flex gap-2">
-            <button type="submit" disabled={submitting} className="flex-1 bg-primary text-white py-3 rounded-2xl font-semibold hover:bg-primary disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="flex-1 bg-primary text-background py-3 rounded-2xl font-semibold hover:bg-primary disabled:opacity-50">
               {submitting ? 'Adding...' : 'Add Goal'}
             </button>
             <button

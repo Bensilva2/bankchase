@@ -104,7 +104,7 @@ export default function SecurityPage() {
               onClick={() => setCurrentTab(tab as any)}
               className={`px-6 py-3 rounded-lg font-medium whitespace-nowrap transition ${
                 currentTab === tab
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-background'
                   : 'bg-background text-foreground hover:bg-background'
               }`}
             >
@@ -133,7 +133,7 @@ export default function SecurityPage() {
                   type="password"
                   value={passwordForm.current}
                   onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
@@ -146,7 +146,7 @@ export default function SecurityPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={passwordForm.new}
                     onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <button
                     onClick={() => setShowPassword(!showPassword)}
@@ -165,13 +165,13 @@ export default function SecurityPage() {
                   type="password"
                   value={passwordForm.confirm}
                   onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               <button
                 onClick={handlePasswordChange}
-                className="w-full px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary transition"
+                className="w-full px-6 py-3 bg-primary text-background font-medium rounded-lg hover:bg-primary transition"
               >
                 Change Password
               </button>
@@ -215,7 +215,7 @@ export default function SecurityPage() {
                 <p className="text-muted-foreground mb-4">
                   Save your backup codes in a secure place. You can use them to access your account if you lose access to your 2FA device.
                 </p>
-                <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary transition">
+                <button className="px-6 py-2 bg-primary text-background rounded-lg hover:bg-primary transition">
                   View Backup Codes
                 </button>
               </div>
@@ -240,7 +240,7 @@ export default function SecurityPage() {
                     onChange={(e) =>
                       setPrivacySettings({ ...privacySettings, profileVisibility: e.target.value })
                     }
-                    className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-600"
+                    className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="private">Private</option>
                     <option value="friends">Friends Only</option>

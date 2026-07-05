@@ -24,8 +24,8 @@ function AccountsContent() {
         </div>
 
         {/* Total Balance Card */}
-        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 mb-8 text-white shadow-lg">
-          <p className="text-white/80 mb-2 text-sm font-medium">Total Balance</p>
+        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 mb-8 text-background shadow-lg">
+          <p className="text-background/80 mb-2 text-sm font-medium">Total Balance</p>
           <h2 className="text-5xl font-bold mb-6">
             ${totalBalance.toFixed(2)}
           </h2>

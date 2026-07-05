@@ -92,7 +92,7 @@ export default function StatementsPage() {
               onClick={() => setSelectedFormat('pdf')}
               className={`px-6 py-3 rounded-lg font-medium transition ${
                 selectedFormat === 'pdf'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-background'
                   : 'bg-background text-foreground border border-border hover:border-border'
               }`}
             >
@@ -102,7 +102,7 @@ export default function StatementsPage() {
               onClick={() => setSelectedFormat('csv')}
               className={`px-6 py-3 rounded-lg font-medium transition ${
                 selectedFormat === 'csv'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-background'
                   : 'bg-background text-foreground border border-border hover:border-border'
               }`}
             >
@@ -137,14 +137,14 @@ export default function StatementsPage() {
                   <select
                     value={selectedFormat}
                     onChange={(e) => setSelectedFormat(e.target.value as 'pdf' | 'csv')}
-                    className="px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-blue-600"
+                    className="px-3 py-2 border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary"
                   >
                     <option value="pdf">PDF</option>
                     <option value="csv">CSV</option>
                   </select>
                   <button
                     onClick={() => handleDownload(statement.id)}
-                    className="flex items-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary transition"
+                    className="flex items-center gap-2 px-6 py-3 bg-primary text-background font-medium rounded-lg hover:bg-primary transition"
                   >
                     <Download className="w-4 h-4" />
                     Download

@@ -89,19 +89,19 @@ export default function RewardsPage() {
 
         {/* Points Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+          <Card className="p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-background">
             <Gift className="w-8 h-8 mb-2 opacity-80" />
             <p className="text-blue-100 text-sm mb-1">Total Points</p>
             <p className="text-4xl font-bold">{points.toLocaleString()}</p>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-green-600 to-green-800 text-white">
+          <Card className="p-6 bg-gradient-to-br from-green-600 to-green-800 text-background">
             <TrendingUp className="w-8 h-8 mb-2 opacity-80" />
             <p className="text-green-100 text-sm mb-1">This Month</p>
             <p className="text-2xl font-bold">2,450</p>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-purple-600 to-purple-800 text-white">
+          <Card className="p-6 bg-gradient-to-br from-purple-600 to-purple-800 text-background">
             <Zap className="w-8 h-8 mb-2 opacity-80" />
             <p className="text-purple-100 text-sm mb-1">Redeemable Value</p>
             <p className="text-2xl font-bold">${maxRedeemAmount}</p>
@@ -148,7 +148,7 @@ export default function RewardsPage() {
                 value={redeemAmount}
                 onChange={(e) => setRedeemAmount(e.target.value)}
                 max={maxRedeemAmount}
-                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Enter amount"
               />
               <p className="text-muted-foreground text-xs mt-2">
@@ -158,7 +158,7 @@ export default function RewardsPage() {
 
             <button
               onClick={handleRedeem}
-              className="w-full px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary transition"
+              className="w-full px-6 py-3 bg-primary text-background font-medium rounded-lg hover:bg-primary transition"
             >
               Redeem Points
             </button>

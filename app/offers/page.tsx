@@ -88,7 +88,7 @@ export default function OffersPage() {
             <p className="text-sm text-muted-foreground mb-3">{offer.subtitle}</p>
             <p className="text-sm text-muted-foreground mb-6">{offer.description}</p>
 
-            <button className="w-full bg-primary text-white py-3 rounded-2xl font-semibold hover:bg-primary transition">
+            <button className="w-full bg-primary text-background py-3 rounded-2xl font-semibold hover:bg-primary transition">
               {offer.cta}
             </button>
           </div>
@@ -96,7 +96,7 @@ export default function OffersPage() {
       </div>
 
       {/* Banner Section */}
-      <div className="mt-12 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-3xl shadow p-12 text-center">
+      <div className="mt-12 bg-gradient-to-r from-blue-600 to-blue-800 text-background rounded-3xl shadow p-12 text-center">
         <h2 className="text-3xl font-bold mb-3">Refer Friends & Earn Rewards</h2>
         <p className="text-blue-100 mb-6">Get $100 for every friend that opens an account. No limit!</p>
         <button className="bg-background text-blue-600 px-8 py-3 rounded-2xl font-semibold hover:bg-background transition">

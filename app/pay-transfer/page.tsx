@@ -186,7 +186,7 @@ export default function PayTransferPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
+              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-background font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
             >
               <Send className="w-5 h-5" />
               {isLoading ? 'Processing...' : 'Send Money'}

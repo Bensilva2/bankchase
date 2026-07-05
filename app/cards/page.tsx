@@ -55,7 +55,7 @@ export default function CardsPage() {
               <p className="text-muted-foreground">Manage your credit and debit cards</p>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary transition">
+          <button className="flex items-center gap-2 px-6 py-3 bg-primary text-background rounded-lg hover:bg-primary transition">
             <Plus className="w-5 h-5" />
             Add Card
           </button>
@@ -75,7 +75,7 @@ export default function CardsPage() {
             </div>
 
             {/* Card Display */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 mb-8 text-white h-56 flex flex-col justify-between">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 mb-8 text-background h-56 flex flex-col justify-between">
               <div>
                 <p className="text-blue-100 text-sm mb-2">Card Number</p>
                 <p className="text-2xl font-mono tracking-widest">
@@ -127,7 +127,7 @@ export default function CardsPage() {
 
               <button
                 onClick={() => setSelectedCard(null)}
-                className="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary transition"
+                className="w-full px-4 py-3 bg-primary text-background rounded-lg hover:bg-primary transition"
               >
                 Close
               </button>
@@ -143,7 +143,7 @@ export default function CardsPage() {
                   onClick={() => setSelectedCard(card)}
                   className="cursor-pointer transform hover:scale-105 transition"
                 >
-                  <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white h-48 flex flex-col justify-between shadow-lg">
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-background h-48 flex flex-col justify-between shadow-lg">
                     <div className="flex justify-between items-start">
                       <CreditCard className="w-8 h-8" />
                       {card.locked && <Lock className="w-5 h-5 text-yellow-300" />}

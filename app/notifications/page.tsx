@@ -62,7 +62,7 @@ export default function NotificationsPage() {
               onClick={() => setFilterType('all')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 filterType === 'all'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-background'
                   : 'bg-background text-foreground hover:bg-background'
               }`}
             >
@@ -72,7 +72,7 @@ export default function NotificationsPage() {
               onClick={() => setFilterType('unread')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 filterType === 'unread'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-background'
                   : 'bg-background text-foreground hover:bg-background'
               }`}
             >

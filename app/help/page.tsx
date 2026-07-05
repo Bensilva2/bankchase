@@ -154,7 +154,7 @@ export default function HelpPage() {
                   placeholder="Search FAQs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </Card>
@@ -202,7 +202,7 @@ export default function HelpPage() {
                     <div
                       className={`max-w-xs px-4 py-2 rounded-lg ${
                         msg.from === 'user'
-                          ? 'bg-primary text-white'
+                          ? 'bg-primary text-background'
                           : 'bg-card text-foreground'
                       }`}
                     >
@@ -219,11 +219,11 @@ export default function HelpPage() {
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   placeholder="Type your message..."
-                  className="flex-1 px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-600"
+                  className="flex-1 px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary"
                 />
                 <button
                   onClick={handleSendMessage}
-                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary transition"
+                  className="px-6 py-2 bg-primary text-background rounded-lg hover:bg-primary transition"
                 >
                   Send
                 </button>

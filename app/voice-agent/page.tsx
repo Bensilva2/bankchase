@@ -132,9 +132,9 @@ export default function VoiceAgentPage() {
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {voiceState.isRecording ? (
-                <MicOff className="w-16 h-16 text-white" />
+                <MicOff className="w-16 h-16 text-background" />
               ) : (
-                <Mic className="w-16 h-16 text-white" />
+                <Mic className="w-16 h-16 text-background" />
               )}
 
               {/* Pulse Animation */}

@@ -33,7 +33,7 @@ export default function SpendingAnalysisPage() {
 
   const categoryColors: Record<string, string> = {
     'Food & Drink': 'bg-orange-500',
-    'Bills & Utilities': 'bg-blue-500',
+    'Bills & Utilities': 'bg-primary',
     'Shopping': 'bg-pink-500',
     'Transportation': 'bg-green-500',
     'Entertainment': 'bg-purple-500',
@@ -104,13 +104,13 @@ export default function SpendingAnalysisPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+          <Card className="p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-background">
             <TrendingDown className="w-8 h-8 mb-2 opacity-80" />
             <p className="text-blue-100 text-sm mb-1">Total Spending</p>
             <p className="text-4xl font-bold">${totalSpending.toFixed(2)}</p>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-green-600 to-green-800 text-white">
+          <Card className="p-6 bg-gradient-to-br from-green-600 to-green-800 text-background">
             <p className="text-green-100 text-sm mb-1">Largest Category</p>
             <p className="text-2xl font-bold">
               {spendingData.length > 0 ? spendingData[0]?.category : 'N/A'}
@@ -120,7 +120,7 @@ export default function SpendingAnalysisPage() {
             </p>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-purple-600 to-purple-800 text-white">
+          <Card className="p-6 bg-gradient-to-br from-purple-600 to-purple-800 text-background">
             <p className="text-purple-100 text-sm mb-1">Categories</p>
             <p className="text-4xl font-bold">{spendingData.length}</p>
           </Card>

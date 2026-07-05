@@ -176,7 +176,7 @@ export default function SettingsPage() {
                 <select
                   value={settings.autoLogoutMinutes}
                   onChange={(e) => handleNumberChange('autoLogoutMinutes', parseInt(e.target.value))}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary"
                 >
                   <option value={5}>5 minutes</option>
                   <option value={15}>15 minutes</option>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
               <select
                 value={settings.language}
                 onChange={(e) => handleSelectChange('language', e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option>English</option>
                 <option>Spanish</option>
@@ -249,7 +249,7 @@ export default function SettingsPage() {
               <select
                 value={settings.currency}
                 onChange={(e) => handleSelectChange('currency', e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option>USD - US Dollar</option>
                 <option>EUR - Euro</option>
@@ -263,7 +263,7 @@ export default function SettingsPage() {
               <select
                 value={settings.timezone}
                 onChange={(e) => handleSelectChange('timezone', e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               >
                 <option>America/New_York</option>
                 <option>America/Chicago</option>

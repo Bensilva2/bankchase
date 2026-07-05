@@ -37,7 +37,7 @@ export default function PrivacySecurityPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a4fa6] to-[#003087]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border"></div>
       </div>
     )
   }
@@ -331,7 +331,7 @@ export default function PrivacySecurityPage() {
                       Sign out from all devices. You&apos;ll need to log in again on each device.
                     </p>
                   </div>
-                  <Button className="ml-auto bg-primary hover:bg-primary text-white">
+                  <Button className="ml-auto bg-primary hover:bg-primary text-background">
                     Sign Out All
                   </Button>
                 </div>
@@ -391,7 +391,7 @@ export default function PrivacySecurityPage() {
                   <p className="text-sm text-red-600 font-semibold mt-3">
                     Warning: This will delete your account, close all accounts, and erase all transaction history.
                   </p>
-                  <Button className="mt-4 bg-red-600 hover:bg-red-700 text-white">
+                  <Button className="mt-4 bg-red-600 hover:bg-red-700 text-background">
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Account
                   </Button>
