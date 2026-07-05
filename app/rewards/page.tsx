@@ -19,7 +19,7 @@ export default function RewardsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -76,14 +76,14 @@ export default function RewardsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-card pb-8">
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <BackButton />
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Chase Ultimate Rewards</h1>
-            <p className="text-gray-600">Earn and redeem your rewards points</p>
+            <h1 className="text-3xl font-bold text-foreground">Chase Ultimate Rewards</h1>
+            <p className="text-muted-foreground">Earn and redeem your rewards points</p>
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export default function RewardsPage() {
 
         {/* Redeem Section */}
         <Card className="p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Redeem Your Points</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-6">Redeem Your Points</h2>
 
           {redeemSuccess && (
             <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
@@ -126,13 +126,13 @@ export default function RewardsPage() {
                 onClick={() => setRedeemType(option.type)}
                 className={`p-4 rounded-lg border-2 transition ${
                   redeemType === option.type
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    ? 'border-blue-600 bg-background'
+                    : 'border-border bg-background hover:border-border'
                 }`}
               >
                 <div className="text-3xl mb-2">{option.icon}</div>
-                <h3 className="font-semibold text-gray-900 text-sm">{option.title}</h3>
-                <p className="text-gray-600 text-xs mt-1">{option.description}</p>
+                <h3 className="font-semibold text-foreground text-sm">{option.title}</h3>
+                <p className="text-muted-foreground text-xs mt-1">{option.description}</p>
               </button>
             ))}
           </div>
@@ -140,7 +140,7 @@ export default function RewardsPage() {
           {/* Redeem Form */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Amount to Redeem (${})
               </label>
               <input
@@ -148,17 +148,17 @@ export default function RewardsPage() {
                 value={redeemAmount}
                 onChange={(e) => setRedeemAmount(e.target.value)}
                 max={maxRedeemAmount}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                 placeholder="Enter amount"
               />
-              <p className="text-gray-500 text-xs mt-2">
+              <p className="text-muted-foreground text-xs mt-2">
                 Maximum redeemable: ${maxRedeemAmount} ({points} points)
               </p>
             </div>
 
             <button
               onClick={handleRedeem}
-              className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
+              className="w-full px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary transition"
             >
               Redeem Points
             </button>
@@ -167,29 +167,29 @@ export default function RewardsPage() {
 
         {/* Redemption History */}
         <Card className="p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Redemption History</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-6">Redemption History</h2>
 
           {rewardRedemptions.length > 0 ? (
             <div className="space-y-4">
               {rewardRedemptions.map((redemption: any) => (
                 <div
                   key={redemption.id}
-                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg"
+                  className="flex justify-between items-center p-4 bg-background rounded-lg"
                 >
                   <div>
-                    <p className="font-semibold text-gray-900">{redemption.type}</p>
-                    <p className="text-gray-600 text-sm">
+                    <p className="font-semibold text-foreground">{redemption.type}</p>
+                    <p className="text-muted-foreground text-sm">
                       {new Date(redemption.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-foreground">
                     {redemption.amount.toLocaleString()} pts
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-600 text-center py-8">No redemptions yet</p>
+            <p className="text-muted-foreground text-center py-8">No redemptions yet</p>
           )}
         </Card>
       </div>

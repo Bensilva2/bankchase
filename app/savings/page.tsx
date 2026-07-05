@@ -25,7 +25,7 @@ export default function SavingsGoalsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -75,15 +75,15 @@ export default function SavingsGoalsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-card pb-8">
       <div className="max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <BackButton />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Savings Goals</h1>
-              <p className="text-gray-600">Track and manage your financial goals</p>
+              <h1 className="text-3xl font-bold text-foreground">Savings Goals</h1>
+              <p className="text-muted-foreground">Track and manage your financial goals</p>
             </div>
           </div>
           <button
@@ -92,7 +92,7 @@ export default function SavingsGoalsPage() {
               setEditingGoal(null)
               setFormData({ name: '', targetAmount: '', currentAmount: '', deadline: '', category: 'General' })
             }}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary transition"
           >
             <Plus className="w-5 h-5" />
             Add Goal
@@ -102,7 +102,7 @@ export default function SavingsGoalsPage() {
         {/* Add/Edit Goal Modal */}
         {(showAddGoal || editingGoal) && (
           <Card className="p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
               {editingGoal ? 'Update Goal' : 'Create New Goal'}
             </h2>
 
@@ -110,7 +110,7 @@ export default function SavingsGoalsPage() {
               {!editingGoal && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Goal Name
                     </label>
                     <input
@@ -118,13 +118,13 @@ export default function SavingsGoalsPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="e.g., Vacation Fund"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Target Amount ($)
                       </label>
                       <input
@@ -132,18 +132,18 @@ export default function SavingsGoalsPage() {
                         value={formData.targetAmount}
                         onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
                         placeholder="0.00"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Category
                       </label>
                       <select
                         value={formData.category}
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                       >
                         <option>General</option>
                         <option>Vacation</option>
@@ -156,21 +156,21 @@ export default function SavingsGoalsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Deadline
                     </label>
                     <input
                       type="date"
                       value={formData.deadline}
                       onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                     />
                   </div>
                 </>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Current Amount ($)
                 </label>
                 <input
@@ -178,14 +178,14 @@ export default function SavingsGoalsPage() {
                   value={formData.currentAmount}
                   onChange={(e) => setFormData({ ...formData, currentAmount: e.target.value })}
                   placeholder="0.00"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                 />
               </div>
 
               <div className="flex gap-3">
                 <button
                   onClick={editingGoal ? handleUpdateGoal : handleAddGoal}
-                  className="flex-1 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
+                  className="flex-1 px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary transition"
                 >
                   {editingGoal ? 'Update Goal' : 'Create Goal'}
                 </button>
@@ -195,7 +195,7 @@ export default function SavingsGoalsPage() {
                     setEditingGoal(null)
                     setFormData({ name: '', targetAmount: '', currentAmount: '', deadline: '', category: 'General' })
                   }}
-                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-900 font-medium rounded-lg hover:bg-gray-300 transition"
+                  className="flex-1 px-6 py-3 bg-card text-foreground font-medium rounded-lg hover:bg-card transition"
                 >
                   Cancel
                 </button>
@@ -215,8 +215,8 @@ export default function SavingsGoalsPage() {
                 <Card key={goal.id} className="p-6 hover:shadow-lg transition">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">{goal.name}</h3>
-                      <p className="text-gray-600 text-sm">{goal.category}</p>
+                      <h3 className="text-lg font-bold text-foreground">{goal.name}</h3>
+                      <p className="text-muted-foreground text-sm">{goal.category}</p>
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -230,13 +230,13 @@ export default function SavingsGoalsPage() {
                             category: goal.category,
                           })
                         }}
-                        className="p-2 hover:bg-gray-100 rounded transition text-blue-600"
+                        className="p-2 hover:bg-background rounded transition text-blue-600"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => deleteSavingsGoal?.(goal.id)}
-                        className="p-2 hover:bg-gray-100 rounded transition text-red-600"
+                        className="p-2 hover:bg-background rounded transition text-red-600"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -246,23 +246,23 @@ export default function SavingsGoalsPage() {
                   {/* Progress Bar */}
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-2">
-                      <p className="text-sm text-gray-600">${goal.currentAmount.toFixed(2)}</p>
-                      <p className="text-sm text-gray-600">${goal.targetAmount.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">${goal.currentAmount.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">${goal.targetAmount.toFixed(2)}</p>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-card rounded-full h-2">
                       <div
-                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        className="bg-primary h-2 rounded-full transition-all"
                         style={{ width: `${Math.min(progress, 100)}%` }}
                       ></div>
                     </div>
-                    <p className="text-sm text-gray-600 mt-2">{progress.toFixed(0)}% complete</p>
+                    <p className="text-sm text-muted-foreground mt-2">{progress.toFixed(0)}% complete</p>
                   </div>
 
                   {/* Deadline */}
                   {daysRemaining !== null && (
                     <p
                       className={`text-sm font-medium ${
-                        daysRemaining > 0 ? 'text-gray-600' : 'text-red-600'
+                        daysRemaining > 0 ? 'text-muted-foreground' : 'text-red-600'
                       }`}
                     >
                       {daysRemaining > 0
@@ -275,8 +275,8 @@ export default function SavingsGoalsPage() {
             })
           ) : (
             <Card className="col-span-full p-8 text-center">
-              <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No goals yet. Create your first savings goal!</p>
+              <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No goals yet. Create your first savings goal!</p>
             </Card>
           )}
         </div>

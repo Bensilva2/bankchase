@@ -64,7 +64,7 @@ function getRiskColor(risk: string) {
     case 'danger':
       return 'bg-red-100 text-red-800'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-background text-foreground'
   }
 }
 
@@ -89,19 +89,19 @@ export default function WiFiSecurityPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Wifi className="w-8 h-8 text-[#0a4fa6]" />
-            <h1 className="text-4xl font-bold text-gray-900">WiFi & Network Security</h1>
+            <h1 className="text-4xl font-bold text-foreground">WiFi & Network Security</h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Learn how to stay secure on public WiFi networks and protect your banking information
           </p>
         </div>
 
         {/* Current Network Status */}
-        <Card className="bg-white shadow-lg border-0 mb-8 p-6">
+        <Card className="bg-background shadow-lg border-0 mb-8 p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Current Network</h2>
-              <p className="text-gray-600 mt-1">Your current WiFi connection status</p>
+              <h2 className="text-2xl font-bold text-foreground">Current Network</h2>
+              <p className="text-muted-foreground mt-1">Your current WiFi connection status</p>
             </div>
             <div className="flex items-center gap-2">
               {getRiskIcon(currentNetwork.riskLevel)}
@@ -112,17 +112,17 @@ export default function WiFiSecurityPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">Network Name</p>
-              <p className="font-semibold text-gray-900">{currentNetwork.name}</p>
+            <div className="bg-background p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Network Name</p>
+              <p className="font-semibold text-foreground">{currentNetwork.name}</p>
             </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">Signal Strength</p>
-              <p className="font-semibold text-gray-900">{currentNetwork.signal}%</p>
+            <div className="bg-background p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Signal Strength</p>
+              <p className="font-semibold text-foreground">{currentNetwork.signal}%</p>
             </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">Encryption</p>
-              <p className="font-semibold text-gray-900">{currentNetwork.encryption}</p>
+            <div className="bg-background p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Encryption</p>
+              <p className="font-semibold text-foreground">{currentNetwork.encryption}</p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg border border-green-200">
               <p className="text-sm text-green-700 mb-1">Status</p>
@@ -132,7 +132,7 @@ export default function WiFiSecurityPage() {
         </Card>
 
         {/* WiFi Safety Tips */}
-        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 shadow-lg p-6 mb-8">
+        <Card className="bg-gradient-to-r from-background to-card border border-blue-200 shadow-lg p-6 mb-8">
           <div className="flex items-start gap-4">
             <Shield className="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" />
             <div>
@@ -165,10 +165,10 @@ export default function WiFiSecurityPage() {
 
         {/* Public Network Risks */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Nearby Networks & Risk Assessment</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-4">Nearby Networks & Risk Assessment</h2>
           <div className="space-y-4">
             {publicNetworks.map((network, index) => (
-              <Card key={index} className="bg-white shadow-lg border-0 p-6">
+              <Card key={index} className="bg-background shadow-lg border-0 p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
                     <div className="mt-1">
@@ -176,12 +176,12 @@ export default function WiFiSecurityPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-lg text-gray-900">{network.name}</h3>
+                        <h3 className="font-semibold text-lg text-foreground">{network.name}</h3>
                         <Badge className={`${getRiskColor(network.riskLevel)} border-0 text-xs`}>
                           {network.riskLevel.toUpperCase()}
                         </Badge>
                       </div>
-                      <div className="grid grid-cols-2 gap-4 mt-3 text-sm text-gray-600">
+                      <div className="grid grid-cols-2 gap-4 mt-3 text-sm text-muted-foreground">
                         <div>
                           <span className="font-medium">Signal Strength:</span> {network.signal}%
                         </div>
@@ -189,7 +189,7 @@ export default function WiFiSecurityPage() {
                           <span className="font-medium">Encryption:</span> {network.encryption}
                         </div>
                       </div>
-                      <p className="text-sm text-gray-700 mt-3 font-medium">
+                      <p className="text-sm text-foreground mt-3 font-medium">
                         {network.recommendation}
                       </p>
                     </div>
@@ -202,13 +202,13 @@ export default function WiFiSecurityPage() {
 
         {/* VPN Recommendations */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">VPN Recommendations</h2>
-          <Card className="bg-white shadow-lg border-0 p-6">
+          <h2 className="text-2xl font-bold text-foreground mb-4">VPN Recommendations</h2>
+          <Card className="bg-background shadow-lg border-0 p-6">
             <div className="flex items-start gap-4 mb-6">
               <Eye className="w-6 h-6 text-[#0a4fa6] mt-1 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-lg text-gray-900">Why Use a VPN?</h3>
-                <ul className="mt-3 space-y-2 text-gray-600 text-sm">
+                <h3 className="font-semibold text-lg text-foreground">Why Use a VPN?</h3>
+                <ul className="mt-3 space-y-2 text-muted-foreground text-sm">
                   <li>• Encrypts all traffic between your device and the VPN server</li>
                   <li>• Masks your real IP address and location</li>
                   <li>• Prevents interception of sensitive data on public networks</li>
@@ -218,16 +218,16 @@ export default function WiFiSecurityPage() {
               </div>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-6">
-              <h4 className="font-semibold text-gray-900 mb-4">Recommended VPN Providers</h4>
+            <div className="bg-background p-6 rounded-lg border border-border mt-6">
+              <h4 className="font-semibold text-foreground mb-4">Recommended VPN Providers</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded border border-gray-200">
+                <div className="bg-background p-4 rounded border border-border">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h5 className="font-semibold text-gray-900">Proton VPN</h5>
-                      <p className="text-xs text-gray-600 mt-1">Privacy-focused VPN with strong encryption</p>
+                      <h5 className="font-semibold text-foreground">Proton VPN</h5>
+                      <p className="text-xs text-muted-foreground mt-1">Privacy-focused VPN with strong encryption</p>
                       <div className="mt-2 flex flex-wrap gap-1">
-                        <Badge className="bg-blue-100 text-blue-800 border-0 text-xs">AES-256</Badge>
+                        <Badge className="bg-card text-blue-800 border-0 text-xs">AES-256</Badge>
                         <Badge className="bg-green-100 text-green-800 border-0 text-xs">No-Logs</Badge>
                       </div>
                     </div>
@@ -238,13 +238,13 @@ export default function WiFiSecurityPage() {
                   </Button>
                 </div>
 
-                <div className="bg-white p-4 rounded border border-gray-200">
+                <div className="bg-background p-4 rounded border border-border">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h5 className="font-semibold text-gray-900">ExpressVPN</h5>
-                      <p className="text-xs text-gray-600 mt-1">Fast VPN with excellent server coverage</p>
+                      <h5 className="font-semibold text-foreground">ExpressVPN</h5>
+                      <p className="text-xs text-muted-foreground mt-1">Fast VPN with excellent server coverage</p>
                       <div className="mt-2 flex flex-wrap gap-1">
-                        <Badge className="bg-blue-100 text-blue-800 border-0 text-xs">256-bit</Badge>
+                        <Badge className="bg-card text-blue-800 border-0 text-xs">256-bit</Badge>
                         <Badge className="bg-green-100 text-green-800 border-0 text-xs">Audited</Badge>
                       </div>
                     </div>
@@ -255,13 +255,13 @@ export default function WiFiSecurityPage() {
                   </Button>
                 </div>
 
-                <div className="bg-white p-4 rounded border border-gray-200">
+                <div className="bg-background p-4 rounded border border-border">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h5 className="font-semibold text-gray-900">Mullvad VPN</h5>
-                      <p className="text-xs text-gray-600 mt-1">Anonymous VPN with no account required</p>
+                      <h5 className="font-semibold text-foreground">Mullvad VPN</h5>
+                      <p className="text-xs text-muted-foreground mt-1">Anonymous VPN with no account required</p>
                       <div className="mt-2 flex flex-wrap gap-1">
-                        <Badge className="bg-blue-100 text-blue-800 border-0 text-xs">Open Source</Badge>
+                        <Badge className="bg-card text-blue-800 border-0 text-xs">Open Source</Badge>
                         <Badge className="bg-green-100 text-green-800 border-0 text-xs">Privacy</Badge>
                       </div>
                     </div>
@@ -272,13 +272,13 @@ export default function WiFiSecurityPage() {
                   </Button>
                 </div>
 
-                <div className="bg-white p-4 rounded border border-gray-200">
+                <div className="bg-background p-4 rounded border border-border">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h5 className="font-semibold text-gray-900">CyberGhost</h5>
-                      <p className="text-xs text-gray-600 mt-1">User-friendly VPN for beginners</p>
+                      <h5 className="font-semibold text-foreground">CyberGhost</h5>
+                      <p className="text-xs text-muted-foreground mt-1">User-friendly VPN for beginners</p>
                       <div className="mt-2 flex flex-wrap gap-1">
-                        <Badge className="bg-blue-100 text-blue-800 border-0 text-xs">256-bit</Badge>
+                        <Badge className="bg-card text-blue-800 border-0 text-xs">256-bit</Badge>
                         <Badge className="bg-green-100 text-green-800 border-0 text-xs">Streaming</Badge>
                       </div>
                     </div>

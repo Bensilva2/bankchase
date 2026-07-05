@@ -29,8 +29,8 @@ export default function AdminDashboard() {
               <Lock className="w-6 h-6 text-red-600" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600 text-center mb-6">
+          <h1 className="text-2xl font-bold text-center text-foreground mb-2">Access Denied</h1>
+          <p className="text-muted-foreground text-center mb-6">
             You don&apos;t have permission to access the admin dashboard. Only administrators can view this page.
           </p>
           <Button
@@ -58,8 +58,8 @@ export default function AdminDashboard() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage users, permissions, and system settings</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage users, permissions, and system settings</p>
         </div>
 
         {/* Admin Stats Cards */}
@@ -68,13 +68,13 @@ export default function AdminDashboard() {
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Users</h3>
-                <div className="bg-blue-100 p-3 rounded-lg">
+                <h3 className="text-lg font-semibold text-foreground">Users</h3>
+                <div className="bg-card p-3 rounded-lg">
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
               </div>
-              <p className="text-3xl font-bold text-gray-900 mb-2">--</p>
-              <p className="text-sm text-gray-600">Total registered users</p>
+              <p className="text-3xl font-bold text-foreground mb-2">--</p>
+              <p className="text-sm text-muted-foreground">Total registered users</p>
               <Button variant="ghost" className="mt-4 text-[#0a4fa6] p-0 hover:underline">
                 View All Users →
               </Button>
@@ -85,13 +85,13 @@ export default function AdminDashboard() {
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Roles</h3>
+                <h3 className="text-lg font-semibold text-foreground">Roles</h3>
                 <div className="bg-purple-100 p-3 rounded-lg">
                   <Lock className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
-              <p className="text-3xl font-bold text-gray-900 mb-2">3</p>
-              <p className="text-sm text-gray-600">Admin, Editor, Viewer</p>
+              <p className="text-3xl font-bold text-foreground mb-2">3</p>
+              <p className="text-sm text-muted-foreground">Admin, Editor, Viewer</p>
               <Button variant="ghost" className="mt-4 text-[#0a4fa6] p-0 hover:underline">
                 Manage Roles →
               </Button>
@@ -102,13 +102,13 @@ export default function AdminDashboard() {
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
+                <h3 className="text-lg font-semibold text-foreground">Analytics</h3>
                 <div className="bg-green-100 p-3 rounded-lg">
                   <BarChart3 className="w-6 h-6 text-green-600" />
                 </div>
               </div>
-              <p className="text-3xl font-bold text-gray-900 mb-2">--</p>
-              <p className="text-sm text-gray-600">System activity</p>
+              <p className="text-3xl font-bold text-foreground mb-2">--</p>
+              <p className="text-sm text-muted-foreground">System activity</p>
               <Button variant="ghost" className="mt-4 text-[#0a4fa6] p-0 hover:underline">
                 View Analytics →
               </Button>
@@ -118,39 +118,39 @@ export default function AdminDashboard() {
 
         {/* Features Section */}
         <Card className="border-0 shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Admin Features</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-6">Admin Features</h2>
           <div className="space-y-4">
-            <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
-              <div className="bg-blue-100 p-2 rounded">
+            <div className="flex items-start gap-4 pb-4 border-b border-border">
+              <div className="bg-card p-2 rounded">
                 <Users className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">User Management</h3>
-                <p className="text-gray-600 text-sm mt-1">
+                <h3 className="font-semibold text-foreground">User Management</h3>
+                <p className="text-muted-foreground text-sm mt-1">
                   View, manage, and delete user accounts. Assign roles and permissions.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
+            <div className="flex items-start gap-4 pb-4 border-b border-border">
               <div className="bg-purple-100 p-2 rounded">
                 <Lock className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Role-Based Access Control</h3>
-                <p className="text-gray-600 text-sm mt-1">
+                <h3 className="font-semibold text-foreground">Role-Based Access Control</h3>
+                <p className="text-muted-foreground text-sm mt-1">
                   Configure roles and permissions. Control what each user role can do.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
+            <div className="flex items-start gap-4 pb-4 border-b border-border">
               <div className="bg-yellow-100 p-2 rounded">
                 <AlertCircle className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">System Monitoring</h3>
-                <p className="text-gray-600 text-sm mt-1">
+                <h3 className="font-semibold text-foreground">System Monitoring</h3>
+                <p className="text-muted-foreground text-sm mt-1">
                   Monitor system health, activities, and security logs.
                 </p>
               </div>
@@ -161,8 +161,8 @@ export default function AdminDashboard() {
                 <Settings className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">System Settings</h3>
-                <p className="text-gray-600 text-sm mt-1">
+                <h3 className="font-semibold text-foreground">System Settings</h3>
+                <p className="text-muted-foreground text-sm mt-1">
                   Configure application settings, integrations, and preferences.
                 </p>
               </div>
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Admin Info */}
-        <Card className="border-0 shadow-lg p-6 bg-blue-50">
+        <Card className="border-0 shadow-lg p-6 bg-background">
           <div className="flex items-start gap-4">
             <AlertCircle className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
             <div>

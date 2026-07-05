@@ -191,7 +191,7 @@ export default function DemoTransferPage() {
                   Send demo funds to all registered users in your organization.
                 </p>
 
-                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+                <div className="bg-background dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     <span className="font-semibold">Total Users:</span> {accounts.length}
                   </p>

@@ -60,7 +60,7 @@ export default function OffersPage() {
 
   const badgeColors: Record<string, string> = {
     'Limited Time': 'bg-red-100 text-red-700',
-    'Popular': 'bg-blue-100 text-blue-700',
+    'Popular': 'bg-card text-blue-700',
     'New': 'bg-green-100 text-green-700',
     'Featured': 'bg-purple-100 text-purple-700',
     'Special': 'bg-yellow-100 text-yellow-700',
@@ -71,24 +71,24 @@ export default function OffersPage() {
     <div className="max-w-5xl mx-auto pb-24 md:pb-0">
       <div className="mb-10">
         <h1 className="text-4xl font-bold">Offers & Deals</h1>
-        <p className="text-gray-600 mt-2">Exclusive offers tailored just for you</p>
+        <p className="text-muted-foreground mt-2">Exclusive offers tailored just for you</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {offers.map((offer) => (
-          <div key={offer.id} className="bg-white rounded-3xl shadow hover:shadow-lg transition-all p-8">
+          <div key={offer.id} className="bg-background rounded-3xl shadow hover:shadow-lg transition-all p-8">
             <div className="flex items-start justify-between mb-4">
               <span className="text-5xl">{offer.icon}</span>
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badgeColors[offer.badge] || 'bg-gray-100 text-gray-700'}`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badgeColors[offer.badge] || 'bg-background text-foreground'}`}>
                 {offer.badge}
               </span>
             </div>
 
             <h3 className="text-xl font-bold mb-1">{offer.title}</h3>
-            <p className="text-sm text-gray-500 mb-3">{offer.subtitle}</p>
-            <p className="text-sm text-gray-600 mb-6">{offer.description}</p>
+            <p className="text-sm text-muted-foreground mb-3">{offer.subtitle}</p>
+            <p className="text-sm text-muted-foreground mb-6">{offer.description}</p>
 
-            <button className="w-full bg-blue-600 text-white py-3 rounded-2xl font-semibold hover:bg-blue-700 transition">
+            <button className="w-full bg-primary text-white py-3 rounded-2xl font-semibold hover:bg-primary transition">
               {offer.cta}
             </button>
           </div>
@@ -99,7 +99,7 @@ export default function OffersPage() {
       <div className="mt-12 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-3xl shadow p-12 text-center">
         <h2 className="text-3xl font-bold mb-3">Refer Friends & Earn Rewards</h2>
         <p className="text-blue-100 mb-6">Get $100 for every friend that opens an account. No limit!</p>
-        <button className="bg-white text-blue-600 px-8 py-3 rounded-2xl font-semibold hover:bg-blue-50 transition">
+        <button className="bg-background text-blue-600 px-8 py-3 rounded-2xl font-semibold hover:bg-background transition">
           Share Your Code
         </button>
       </div>

@@ -73,7 +73,7 @@ export default function WorkflowsPage() {
         </div>
 
         {/* Info Box */}
-        <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mt-8 p-6 bg-background border border-blue-200 rounded-lg">
           <h4 className="font-semibold text-blue-900 mb-2">
             Local Development
           </h4>

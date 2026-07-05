@@ -194,7 +194,7 @@ export default function PayTransferPage() {
           </form>
 
           {/* Info Box */}
-          <div className="mt-6 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+          <div className="mt-6 bg-background dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
             <p className="text-sm text-blue-700 dark:text-blue-300">
               <span className="font-semibold">Note:</span> Internal Chase transfers are instant. External transfers may show as pending and will auto-refund after 7-14 days for demo accounts.
             </p>

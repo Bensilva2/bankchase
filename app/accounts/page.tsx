@@ -31,10 +31,10 @@ function AccountsContent() {
           </h2>
           <div className="flex justify-between items-end">
             <div className="flex gap-4">
-              <button className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+              <button className="bg-background/20 hover:bg-background/30 px-4 py-2 rounded-lg transition">
                 Send Money
               </button>
-              <button className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+              <button className="bg-background/20 hover:bg-background/30 px-4 py-2 rounded-lg transition">
                 Request
               </button>
             </div>
@@ -94,7 +94,7 @@ function AccountsContent() {
         {demoBalance > 0 && (
           <div className="mb-8">
             <h3 className="text-2xl font-bold text-foreground mb-4">Demo Funds</h3>
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-xl p-6">
+            <div className="bg-background dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">Available Demo Balance</p>
