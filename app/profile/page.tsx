@@ -16,7 +16,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a4fa6] to-[#003087]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border"></div>
       </div>
     )
   }
@@ -49,11 +49,11 @@ export default function ProfilePage() {
       case 'admin':
         return 'bg-red-100 text-red-800'
       case 'editor':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-card text-blue-800'
       case 'viewer':
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-background text-foreground'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-background text-foreground'
     }
   }
 
@@ -83,22 +83,22 @@ export default function ProfilePage() {
         </button>
 
         {/* Header Section */}
-        <Card className="bg-white shadow-lg mb-6 border-0">
+        <Card className="bg-background shadow-lg mb-6 border-0">
           <div className="p-8">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-6">
                 <Avatar className="h-24 w-24 border-4 border-[#0a4fa6]">
                   <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="bg-[#0a4fa6] text-white text-xl font-bold">
+                  <AvatarFallback className="bg-[#0a4fa6] text-background text-xl font-bold">
                     {user.firstName?.[0]}
                     {user.lastName?.[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
+                  <h1 className="text-3xl font-bold text-foreground">
                     {user.firstName} {user.lastName}
                   </h1>
-                  <p className="text-gray-600 mt-1">@{user.username}</p>
+                  <p className="text-muted-foreground mt-1">@{user.username}</p>
                   <div className="mt-3 flex items-center gap-2">
                     <Shield className="w-4 h-4 text-[#0a4fa6]" />
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getRoleBadgeColor(user.role)}`}>
@@ -120,45 +120,45 @@ export default function ProfilePage() {
         </Card>
 
         {/* Personal Information Section */}
-        <Card className="bg-white shadow-lg border-0 mb-6">
+        <Card className="bg-background shadow-lg border-0 mb-6">
           <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">Personal Information</h2>
 
             <div className="space-y-6">
               {/* Email */}
-              <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
+              <div className="flex items-start gap-4 pb-6 border-b border-border">
                 <Mail className="w-5 h-5 text-[#0a4fa6] mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600 font-medium">Email Address</p>
-                  <p className="text-lg text-gray-900 mt-1">{user.email}</p>
+                  <p className="text-sm text-muted-foreground font-medium">Email Address</p>
+                  <p className="text-lg text-foreground mt-1">{user.email}</p>
                 </div>
               </div>
 
               {/* Phone */}
-              <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
+              <div className="flex items-start gap-4 pb-6 border-b border-border">
                 <Phone className="w-5 h-5 text-[#0a4fa6] mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600 font-medium">Phone Number</p>
-                  <p className="text-lg text-gray-900 mt-1">{user.phone || 'Not provided'}</p>
+                  <p className="text-sm text-muted-foreground font-medium">Phone Number</p>
+                  <p className="text-lg text-foreground mt-1">{user.phone || 'Not provided'}</p>
                 </div>
               </div>
 
               {/* Date of Birth */}
-              <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
+              <div className="flex items-start gap-4 pb-6 border-b border-border">
                 <Calendar className="w-5 h-5 text-[#0a4fa6] mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600 font-medium">Date of Birth</p>
-                  <p className="text-lg text-gray-900 mt-1">{formattedDOB}</p>
+                  <p className="text-sm text-muted-foreground font-medium">Date of Birth</p>
+                  <p className="text-lg text-foreground mt-1">{formattedDOB}</p>
                 </div>
               </div>
 
               {/* SSN */}
-              <div className="flex items-start gap-4 pb-6 border-b border-gray-200">
+              <div className="flex items-start gap-4 pb-6 border-b border-border">
                 <Lock className="w-5 h-5 text-[#0a4fa6] mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600 font-medium">Social Security Number</p>
-                  <p className="text-lg text-gray-900 mt-1 font-mono">{maskedSSN}</p>
-                  <p className="text-xs text-gray-500 mt-1">Last 4 digits displayed for security</p>
+                  <p className="text-sm text-muted-foreground font-medium">Social Security Number</p>
+                  <p className="text-lg text-foreground mt-1 font-mono">{maskedSSN}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Last 4 digits displayed for security</p>
                 </div>
               </div>
 
@@ -166,12 +166,12 @@ export default function ProfilePage() {
               <div className="flex items-start gap-4">
                 <MapPin className="w-5 h-5 text-[#0a4fa6] mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600 font-medium">Address</p>
-                  <p className="text-lg text-gray-900 mt-1">
+                  <p className="text-sm text-muted-foreground font-medium">Address</p>
+                  <p className="text-lg text-foreground mt-1">
                     {user.address || 'Not provided'}
                   </p>
                   {(user.city || user.state || user.zipCode) && (
-                    <p className="text-lg text-gray-900 mt-1">
+                    <p className="text-lg text-foreground mt-1">
                       {user.city && `${user.city}, `}
                       {user.state && `${user.state} `}
                       {user.zipCode}
@@ -184,30 +184,30 @@ export default function ProfilePage() {
         </Card>
 
         {/* Account Information Section */}
-        <Card className="bg-white shadow-lg border-0">
+        <Card className="bg-background shadow-lg border-0">
           <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Information</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">Account Information</h2>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-                <span className="text-gray-600 font-medium">Account Type</span>
-                <span className="text-gray-900 font-semibold">Checking</span>
+              <div className="flex justify-between items-center pb-4 border-b border-border">
+                <span className="text-muted-foreground font-medium">Account Type</span>
+                <span className="text-foreground font-semibold">Checking</span>
               </div>
 
-              <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-                <span className="text-gray-600 font-medium">Account Status</span>
+              <div className="flex justify-between items-center pb-4 border-b border-border">
+                <span className="text-muted-foreground font-medium">Account Status</span>
                 <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
                   Active
                 </span>
               </div>
 
-              <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-                <span className="text-gray-600 font-medium">Member Since</span>
-                <span className="text-gray-900 font-semibold">{memberSinceDate}</span>
+              <div className="flex justify-between items-center pb-4 border-b border-border">
+                <span className="text-muted-foreground font-medium">Member Since</span>
+                <span className="text-foreground font-semibold">{memberSinceDate}</span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 font-medium">Role</span>
+                <span className="text-muted-foreground font-medium">Role</span>
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getRoleBadgeColor(user.role)}`}>
                   {getRoleBadgeLabel(user.role)}
                 </span>

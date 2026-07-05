@@ -44,7 +44,7 @@ export default function TransferStatusCard({
       icon: '⚙️',
       label: 'Processing',
       color: 'blue',
-      bgColor: 'bg-blue-50',
+      bgColor: 'bg-background',
       textColor: 'text-blue-800'
     },
     completed: {
@@ -74,7 +74,7 @@ export default function TransferStatusCard({
             <span className="text-3xl">{config.icon}</span>
             <div>
               <CardTitle className="text-lg">{config.label}</CardTitle>
-              <p className="text-xs text-gray-500 mt-1">{timeago}</p>
+              <p className="text-xs text-muted-foreground mt-1">{timeago}</p>
             </div>
           </div>
           <span className={`text-sm font-medium px-2 py-1 rounded ${config.textColor}`}>
@@ -86,7 +86,7 @@ export default function TransferStatusCard({
       <CardContent className="space-y-4">
         {/* Amount */}
         <div className="flex items-baseline justify-between">
-          <span className="text-gray-600">Amount</span>
+          <span className="text-muted-foreground">Amount</span>
           <span className="text-2xl font-bold">
             {transfer.currency} {transfer.amount.toFixed(2)}
           </span>
@@ -94,10 +94,10 @@ export default function TransferStatusCard({
 
         {/* Receiver */}
         <div className="space-y-1">
-          <p className="text-sm text-gray-600">To</p>
+          <p className="text-sm text-muted-foreground">To</p>
           <p className="text-sm font-medium">{transfer.receiverAccount}</p>
           {transfer.receiverBank && (
-            <p className="text-xs text-gray-500">{transfer.receiverBank}</p>
+            <p className="text-xs text-muted-foreground">{transfer.receiverBank}</p>
           )}
         </div>
 
@@ -121,7 +121,7 @@ export default function TransferStatusCard({
           {transfer.status === 'failed' && onRetry && (
             <button
               onClick={() => onRetry(transfer.id)}
-              className="flex-1 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded"
+              className="flex-1 px-3 py-2 text-sm font-medium text-blue-700 bg-card hover:bg-blue-200 rounded"
             >
               Retry
             </button>
@@ -130,7 +130,7 @@ export default function TransferStatusCard({
             onClick={() => {
               navigator.clipboard.writeText(transfer.id)
             }}
-            className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded"
+            className="flex-1 px-3 py-2 text-sm font-medium text-foreground bg-background hover:bg-card rounded"
           >
             Copy ID
           </button>

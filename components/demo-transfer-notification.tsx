@@ -42,14 +42,14 @@ export function DemoTransferNotification({
 
       <div className="relative flex items-center justify-between">
         <div className="flex items-start gap-4">
-          <div className="p-2 bg-blue-100 rounded-lg">
+          <div className="p-2 bg-card rounded-lg">
             <TrendingUp className="h-5 w-5 text-blue-600" />
           </div>
           <div>
-            <p className="font-semibold text-gray-900">
+            <p className="font-semibold text-foreground">
               Demo Money Received!
             </p>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               You received ${latestTransfer.amount.toLocaleString()} in demo money
               {latestTransfer.type === 'external' ? ' (pending refund)' : ''}
             </p>
@@ -70,7 +70,7 @@ export function DemoTransferNotification({
           </Link>
           <button
             onClick={handleDismiss}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-muted-foreground transition-colors"
             aria-label="Dismiss notification"
           >
             <X className="h-5 w-5" />

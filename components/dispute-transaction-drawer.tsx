@@ -181,7 +181,7 @@ export function DisputeTransactionDrawer({ open, onOpenChange, transactionId }: 
                     key={reason.id}
                     className={`flex items-start space-x-3 p-4 rounded-xl border-2 transition-colors cursor-pointer ${
                       selectedReason === reason.id
-                        ? "border-[#0a4fa6] bg-blue-50"
+                        ? "border-[#0a4fa6] bg-background"
                         : "border-border hover:border-muted-foreground/30"
                     }`}
                     onClick={() => setSelectedReason(reason.id)}
@@ -364,7 +364,7 @@ export function DisputeTransactionDrawer({ open, onOpenChange, transactionId }: 
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="h-4 w-4 border-2 border-border border-t-transparent rounded-full animate-spin" />
                     Submitting Dispute...
                   </div>
                 ) : (
@@ -407,7 +407,7 @@ export function DisputeTransactionDrawer({ open, onOpenChange, transactionId }: 
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-left">
+              <div className="bg-background border border-blue-200 rounded-xl p-4 text-left">
                 <h4 className="font-semibold text-blue-900 flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   What happens next?

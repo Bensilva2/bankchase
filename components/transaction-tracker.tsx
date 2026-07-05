@@ -97,7 +97,7 @@ export function TransactionTracker({
     }
     const inProgress = steps.find((s) => s.status === "in_progress")
     if (inProgress) {
-      return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Processing</Badge>
+      return <Badge className="bg-primary/10 text-blue-600 border-blue-500/20">Processing</Badge>
     }
     return <Badge variant="outline">Pending</Badge>
   }

@@ -77,7 +77,7 @@ export default function VoiceAgentPage() {
       case 'ESCALATE':
         return 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300';
       default:
-        return 'bg-gray-100 dark:bg-gray-950 text-gray-700 dark:text-gray-300';
+        return 'bg-background dark:bg-gray-950 text-foreground dark:text-muted-foreground';
     }
   };
 
@@ -132,9 +132,9 @@ export default function VoiceAgentPage() {
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {voiceState.isRecording ? (
-                <MicOff className="w-16 h-16 text-white" />
+                <MicOff className="w-16 h-16 text-background" />
               ) : (
-                <Mic className="w-16 h-16 text-white" />
+                <Mic className="w-16 h-16 text-background" />
               )}
 
               {/* Pulse Animation */}
@@ -243,7 +243,7 @@ export default function VoiceAgentPage() {
               </div>
 
               {/* Action */}
-              <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+              <div className="bg-background dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
                   <span className="font-semibold">Action:</span>{' '}
                   {voiceState.securityResult.action === 'proceed'

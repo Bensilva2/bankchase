@@ -528,9 +528,9 @@ Thank you for using Chase.
                 <div
                   className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
                     isComplete
-                      ? "bg-green-500 text-white"
+                      ? "bg-green-500 text-background"
                       : isActive
-                        ? "bg-[#0a4fa6] text-white"
+                        ? "bg-[#0a4fa6] text-background"
                         : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -739,7 +739,7 @@ Thank you for using Chase.
 
     return (
       <div className="px-4 space-y-4 overflow-y-auto pb-4">
-        <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg text-sm text-blue-800 dark:text-blue-200">
+        <div className="bg-background dark:bg-blue-950/30 p-3 rounded-lg text-sm text-blue-800 dark:text-blue-200">
           <div className="flex items-start gap-2">
             <Shield className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span>Please review all details carefully. After verification, this transfer cannot be cancelled.</span>
@@ -917,7 +917,7 @@ Thank you for using Chase.
           {cotError && <p className="text-sm text-destructive mt-2">{cotError}</p>}
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg text-sm">
+        <div className="bg-background dark:bg-blue-950/30 p-4 rounded-lg text-sm">
           <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">What is a COT Code?</h4>
           <p className="text-blue-800 dark:text-blue-200 text-xs">
             The Cost of Transfer (COT) code is a security verification code required for high-value wire transfers. This

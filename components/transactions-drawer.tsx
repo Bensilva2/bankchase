@@ -183,24 +183,24 @@ export function TransactionsDrawer({ open, onOpenChange, onReceiptOpen }: Transa
       case "failed":
         return "bg-red-100 text-red-700"
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-background text-foreground"
     }
   }
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="h-[95vh] flex flex-col">
-        <DrawerHeader className="border-b bg-gradient-to-r from-[#0a4fa6] to-[#117aca] text-white rounded-t-xl">
+        <DrawerHeader className="border-b bg-gradient-to-r from-[#0a4fa6] to-[#117aca] text-background rounded-t-xl">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => onOpenChange(false)}
-              className="text-white hover:bg-white/20"
+              className="text-background hover:bg-background/20"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <DrawerTitle className="text-white text-lg">All Transactions</DrawerTitle>
+            <DrawerTitle className="text-background text-lg">All Transactions</DrawerTitle>
           </div>
         </DrawerHeader>
 
@@ -221,7 +221,7 @@ export function TransactionsDrawer({ open, onOpenChange, onReceiptOpen }: Transa
                 variant="outline"
                 size="icon"
                 onClick={() => setShowFilters(!showFilters)}
-                className={showFilters ? "bg-primary text-white" : ""}
+                className={showFilters ? "bg-primary text-background" : ""}
               >
                 <Filter className="h-4 w-4" />
               </Button>

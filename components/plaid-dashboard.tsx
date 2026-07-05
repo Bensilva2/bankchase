@@ -108,7 +108,7 @@ export function PlaidDashboard() {
       {/* Total Balance Card */}
       <Card className="p-6 bg-gradient-to-br from-blue-600 to-blue-700">
         <div className="flex items-center justify-between">
-          <div className="text-white">
+          <div className="text-background">
             <p className="text-sm font-medium opacity-90">Total Balance</p>
             <div className="flex items-center gap-2 mt-2">
               {!showBalances && <Eye className="h-4 w-4 cursor-pointer" onClick={() => setShowBalances(!showBalances)} />}
@@ -118,7 +118,7 @@ export function PlaidDashboard() {
               {showBalances && <Eye className="h-4 w-4 cursor-pointer opacity-75" onClick={() => setShowBalances(!showBalances)} />}
             </div>
           </div>
-          <div className="text-white opacity-75">
+          <div className="text-background opacity-75">
             <CreditCard className="h-12 w-12" />
           </div>
         </div>

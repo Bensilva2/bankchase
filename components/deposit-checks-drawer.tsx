@@ -254,13 +254,13 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
     >
       <DrawerContent className="max-h-[95vh]">
         {/* Header */}
-        <DrawerHeader className="border-b bg-[#0a4fa6] text-white rounded-t-lg">
+        <DrawerHeader className="border-b bg-[#0a4fa6] text-background rounded-t-lg">
           <div className="flex items-center justify-between">
-            <DrawerTitle className="text-white flex items-center gap-2">
+            <DrawerTitle className="text-background flex items-center gap-2">
               <Camera className="h-5 w-5" />
               Deposit Checks
             </DrawerTitle>
-            <Button variant="ghost" size="icon" onClick={handleClose} className="text-white hover:bg-white/20">
+            <Button variant="ghost" size="icon" onClick={handleClose} className="text-background hover:bg-background/20">
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -272,8 +272,8 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                   key={s}
                   className={`h-1.5 flex-1 rounded-full transition-colors ${
                     ["select-account", "enter-amount", "capture-front", "capture-back", "review"].indexOf(step) >= i
-                      ? "bg-white"
-                      : "bg-white/30"
+                      ? "bg-background"
+                      : "bg-background/30"
                   }`}
                 />
               ))}
@@ -300,14 +300,14 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                     }}
                     className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                       selectedAccount === account.id
-                        ? "border-[#0a4fa6] bg-blue-50"
-                        : "border-gray-200 hover:border-[#0a4fa6]/50"
+                        ? "border-[#0a4fa6] bg-background"
+                        : "border-border hover:border-[#0a4fa6]/50"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-[#0a4fa6] rounded-full flex items-center justify-center">
-                          <Building2 className="h-5 w-5 text-white" />
+                          <Building2 className="h-5 w-5 text-background" />
                         </div>
                         <div>
                           <p className="font-medium">{account.name}</p>
@@ -324,14 +324,14 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
               </div>
 
               {/* Deposit Limits Info */}
-              <div className="bg-blue-50 rounded-lg p-4 mt-4">
+              <div className="bg-background rounded-lg p-4 mt-4">
                 <div className="flex items-start gap-3">
                   <Info className="h-5 w-5 text-[#0a4fa6] mt-0.5" />
                   <div className="text-sm">
                     <p className="font-medium text-[#0a4fa6]">Deposit Limits</p>
-                    <p className="text-gray-600 mt-1">Daily: ${depositLimits.daily.toLocaleString()}</p>
-                    <p className="text-gray-600">Per Check: ${depositLimits.perCheck.toLocaleString()}</p>
-                    <p className="text-gray-600">Monthly: ${depositLimits.monthly.toLocaleString()}</p>
+                    <p className="text-muted-foreground mt-1">Daily: ${depositLimits.daily.toLocaleString()}</p>
+                    <p className="text-muted-foreground">Per Check: ${depositLimits.perCheck.toLocaleString()}</p>
+                    <p className="text-muted-foreground">Monthly: ${depositLimits.monthly.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -346,12 +346,12 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                 <p className="text-sm text-muted-foreground">Enter the exact amount written on your check</p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-6">
+              <div className="bg-background rounded-lg p-6">
                 <Label htmlFor="check-amount" className="text-sm text-muted-foreground">
                   Check Amount
                 </Label>
                 <div className="relative mt-2">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground" />
                   <Input
                     id="check-amount"
                     type="number"
@@ -413,14 +413,14 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
               </div>
 
               {isCapturing ? (
-                <div className="relative bg-black rounded-lg overflow-hidden aspect-[16/9]">
+                <div className="relative bg-foreground rounded-lg overflow-hidden aspect-[16/9]">
                   <video ref={videoRef} className="w-full h-full object-cover" playsInline autoPlay muted />
                   {/* Overlay frame guide */}
-                  <div className="absolute inset-4 border-2 border-white/50 rounded-lg pointer-events-none">
-                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-lg" />
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-lg" />
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-lg" />
-                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-lg" />
+                  <div className="absolute inset-4 border-2 border-border/50 rounded-lg pointer-events-none">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-border rounded-tl-lg" />
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-border rounded-tr-lg" />
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-border rounded-bl-lg" />
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-border rounded-br-lg" />
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
 
@@ -430,14 +430,14 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                       variant="outline"
                       size="icon"
                       onClick={() => setFlashOn(!flashOn)}
-                      className="bg-black/50 border-white/50 text-white hover:bg-black/70"
+                      className="bg-foreground/50 border-border/50 text-background hover:bg-foreground/70"
                     >
                       <Flashlight className={`h-5 w-5 ${flashOn ? "text-yellow-400" : ""}`} />
                     </Button>
                     <Button
                       size="lg"
                       onClick={captureImage}
-                      className="bg-white text-black hover:bg-gray-200 rounded-full w-16 h-16"
+                      className="bg-background text-foreground hover:bg-card rounded-full w-16 h-16"
                     >
                       <Camera className="h-8 w-8" />
                     </Button>
@@ -445,20 +445,20 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                       variant="outline"
                       size="icon"
                       onClick={stopCamera}
-                      className="bg-black/50 border-white/50 text-white hover:bg-black/70"
+                      className="bg-foreground/50 border-border/50 text-background hover:bg-foreground/70"
                     >
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
                 </div>
               ) : frontImage ? (
-                <div className="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden">
+                <div className="relative aspect-[16/9] bg-background rounded-lg overflow-hidden">
                   <img
                     src={frontImage || "/placeholder.svg"}
                     alt="Front of check"
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
+                  <div className="absolute top-2 right-2 bg-green-500 text-background px-2 py-1 rounded text-xs flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" />
                     Captured
                   </div>
@@ -473,9 +473,9 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                   </Button>
                 </div>
               ) : (
-                <div className="aspect-[16/9] bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center">
-                  <div className="w-24 h-16 border-2 border-gray-400 rounded mb-4 flex items-center justify-center">
-                    <FileText className="h-8 w-8 text-gray-400" />
+                <div className="aspect-[16/9] bg-background rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center">
+                  <div className="w-24 h-16 border-2 border-border rounded mb-4 flex items-center justify-center">
+                    <FileText className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">Front of Check</p>
                   <div className="flex gap-2">
@@ -502,7 +502,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
               {/* Tips */}
               <button
                 onClick={() => setShowTips(!showTips)}
-                className="w-full flex items-center justify-between p-3 bg-blue-50 rounded-lg text-sm"
+                className="w-full flex items-center justify-between p-3 bg-background rounded-lg text-sm"
               >
                 <span className="flex items-center gap-2 text-[#0a4fa6]">
                   <HelpCircle className="h-4 w-4" />
@@ -514,7 +514,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
               </button>
 
               {showTips && (
-                <div className="bg-blue-50 rounded-lg p-4 space-y-2 text-sm">
+                <div className="bg-background rounded-lg p-4 space-y-2 text-sm">
                   <p className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-green-500 mt-0.5" />
                     Place check on a dark, flat surface
@@ -565,13 +565,13 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
               </div>
 
               {isCapturing ? (
-                <div className="relative bg-black rounded-lg overflow-hidden aspect-[16/9]">
+                <div className="relative bg-foreground rounded-lg overflow-hidden aspect-[16/9]">
                   <video ref={videoRef} className="w-full h-full object-cover" playsInline autoPlay muted />
-                  <div className="absolute inset-4 border-2 border-white/50 rounded-lg pointer-events-none">
-                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-lg" />
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-lg" />
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-lg" />
-                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-lg" />
+                  <div className="absolute inset-4 border-2 border-border/50 rounded-lg pointer-events-none">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-border rounded-tl-lg" />
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-border rounded-tr-lg" />
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-border rounded-bl-lg" />
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-border rounded-br-lg" />
                   </div>
                   <canvas ref={canvasRef} className="hidden" />
 
@@ -580,14 +580,14 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                       variant="outline"
                       size="icon"
                       onClick={() => setFlashOn(!flashOn)}
-                      className="bg-black/50 border-white/50 text-white hover:bg-black/70"
+                      className="bg-foreground/50 border-border/50 text-background hover:bg-foreground/70"
                     >
                       <Flashlight className={`h-5 w-5 ${flashOn ? "text-yellow-400" : ""}`} />
                     </Button>
                     <Button
                       size="lg"
                       onClick={captureImage}
-                      className="bg-white text-black hover:bg-gray-200 rounded-full w-16 h-16"
+                      className="bg-background text-foreground hover:bg-card rounded-full w-16 h-16"
                     >
                       <Camera className="h-8 w-8" />
                     </Button>
@@ -595,20 +595,20 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                       variant="outline"
                       size="icon"
                       onClick={stopCamera}
-                      className="bg-black/50 border-white/50 text-white hover:bg-black/70"
+                      className="bg-foreground/50 border-border/50 text-background hover:bg-foreground/70"
                     >
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
                 </div>
               ) : backImage ? (
-                <div className="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden">
+                <div className="relative aspect-[16/9] bg-background rounded-lg overflow-hidden">
                   <img
                     src={backImage || "/placeholder.svg"}
                     alt="Back of check"
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
+                  <div className="absolute top-2 right-2 bg-green-500 text-background px-2 py-1 rounded text-xs flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" />
                     Captured
                   </div>
@@ -623,9 +623,9 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                   </Button>
                 </div>
               ) : (
-                <div className="aspect-[16/9] bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center">
-                  <div className="w-24 h-16 border-2 border-gray-400 rounded mb-4 flex items-center justify-center">
-                    <FileText className="h-8 w-8 text-gray-400" />
+                <div className="aspect-[16/9] bg-background rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center">
+                  <div className="w-24 h-16 border-2 border-border rounded mb-4 flex items-center justify-center">
+                    <FileText className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">Back of Check</p>
                   <div className="flex gap-2">
@@ -671,7 +671,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
               </div>
 
               {/* Deposit Summary */}
-              <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+              <div className="bg-background rounded-lg p-4 space-y-4">
                 <div className="flex justify-between items-center pb-3 border-b">
                   <span className="text-muted-foreground">Deposit Amount</span>
                   <span className="text-2xl font-bold text-[#0a4fa6]">${Number.parseFloat(amount).toFixed(2)}</span>
@@ -697,7 +697,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-center">Front</p>
                   <div
-                    className="aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden cursor-pointer relative group"
+                    className="aspect-[16/9] bg-background rounded-lg overflow-hidden cursor-pointer relative group"
                     onClick={() => setImagePreview(frontImage)}
                   >
                     {frontImage && (
@@ -707,8 +707,8 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                           alt="Front of check"
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <ZoomIn className="h-6 w-6 text-white" />
+                        <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <ZoomIn className="h-6 w-6 text-background" />
                         </div>
                       </>
                     )}
@@ -721,7 +721,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-center">Back</p>
                   <div
-                    className="aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden cursor-pointer relative group"
+                    className="aspect-[16/9] bg-background rounded-lg overflow-hidden cursor-pointer relative group"
                     onClick={() => setImagePreview(backImage)}
                   >
                     {backImage && (
@@ -731,8 +731,8 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                           alt="Back of check"
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <ZoomIn className="h-6 w-6 text-white" />
+                        <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <ZoomIn className="h-6 w-6 text-background" />
                         </div>
                       </>
                     )}
@@ -745,15 +745,15 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
               </div>
 
               {/* Funds Availability */}
-              <div className="bg-blue-50 rounded-lg p-4">
+              <div className="bg-background rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <Clock className="h-5 w-5 text-[#0a4fa6] mt-0.5" />
                   <div className="text-sm">
                     <p className="font-medium text-[#0a4fa6]">Funds Availability</p>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-muted-foreground mt-1">
                       ${(Number.parseFloat(amount) * 0.225).toFixed(2)} available immediately
                     </p>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       ${(Number.parseFloat(amount) * 0.775).toFixed(2)} available in 1-2 business days
                     </p>
                   </div>
@@ -775,7 +775,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
           {step === "processing" && (
             <div className="p-8 flex flex-col items-center justify-center min-h-[300px]">
               <div className="relative w-24 h-24 mb-6">
-                <div className="absolute inset-0 border-4 border-gray-200 rounded-full" />
+                <div className="absolute inset-0 border-4 border-border rounded-full" />
                 <div
                   className="absolute inset-0 border-4 border-[#0a4fa6] rounded-full transition-all duration-500"
                   style={{
@@ -788,7 +788,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
               </div>
               <p className="text-lg font-medium mb-2">Processing Your Deposit</p>
               <p className="text-sm text-muted-foreground mb-4">Please wait while we verify your check...</p>
-              <div className="w-full max-w-xs bg-gray-200 rounded-full h-2">
+              <div className="w-full max-w-xs bg-card rounded-full h-2">
                 <div
                   className="bg-[#0a4fa6] h-2 rounded-full transition-all duration-300"
                   style={{ width: `${processingProgress}%` }}
@@ -811,7 +811,7 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
                 {accounts.find((a) => a.id === selectedAccount)?.name || "Checking"} account
               </p>
 
-              <div className="w-full bg-gray-50 rounded-lg p-4 space-y-2 mb-6">
+              <div className="w-full bg-background rounded-lg p-4 space-y-2 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Confirmation #</span>
                   <span className="font-mono">{depositedTransaction}</span>
@@ -854,13 +854,13 @@ export function DepositChecksDrawer({ open, onOpenChange, onReceiptOpen }: Depos
         {/* Image Preview Modal */}
         {imagePreview && (
           <div
-            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-foreground/90 z-50 flex items-center justify-center p-4"
             onClick={() => setImagePreview(null)}
           >
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-4 right-4 text-white hover:bg-white/20"
+              className="absolute top-4 right-4 text-background hover:bg-background/20"
               onClick={() => setImagePreview(null)}
             >
               <X className="h-6 w-6" />

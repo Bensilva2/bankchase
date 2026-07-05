@@ -156,7 +156,7 @@ export function NotificationsDrawer({ open, onOpenChange }: NotificationsDrawerP
                             ? "bg-amber-100"
                             : notification.type === "alert"
                               ? "bg-red-100"
-                              : "bg-blue-100"
+                              : "bg-card"
                       }`}
                     >
                       {getNotificationIcon(notification.type, notification.category)}

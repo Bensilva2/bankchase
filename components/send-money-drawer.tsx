@@ -258,14 +258,14 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
       }}
     >
       <DrawerContent className="h-[85vh]">
-        <DrawerHeader className="bg-[#0a4fa6] text-white rounded-t-lg">
-          <DrawerTitle className="text-white">Send with Zelle®</DrawerTitle>
+        <DrawerHeader className="bg-[#0a4fa6] text-background rounded-t-lg">
+          <DrawerTitle className="text-background">Send with Zelle®</DrawerTitle>
           <div className="flex items-center gap-2 mt-2">
             {["select", "amount", "confirm", "success"].map((s, i) => (
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
-                  ["select", "amount", "confirm", "success"].indexOf(step) >= i ? "bg-white" : "bg-white/30"
+                  ["select", "amount", "confirm", "success"].indexOf(step) >= i ? "bg-background" : "bg-background/30"
                 }`}
               />
             ))}
@@ -310,7 +310,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors border"
                       onClick={() => handleSelectContact(contact)}
                     >
-                      <div className="h-10 w-10 rounded-full bg-[#0a4fa6] flex items-center justify-center text-sm font-medium text-white">
+                      <div className="h-10 w-10 rounded-full bg-[#0a4fa6] flex items-center justify-center text-sm font-medium text-background">
                         {contact.avatar}
                       </div>
                       <div className="flex-1">
@@ -353,7 +353,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
                 ← Back to contacts
               </Button>
 
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-background p-4 rounded-lg">
                 <h3 className="font-semibold mb-1">Add New Zelle Contact</h3>
                 <p className="text-sm text-muted-foreground">Enter their details to send money</p>
               </div>
@@ -397,7 +397,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
           {step === "amount" && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
-                <div className="h-12 w-12 rounded-full bg-[#0a4fa6] flex items-center justify-center text-lg font-medium text-white">
+                <div className="h-12 w-12 rounded-full bg-[#0a4fa6] flex items-center justify-center text-lg font-medium text-background">
                   {selectedContact?.avatar || <User className="h-6 w-6" />}
                 </div>
                 <div>
@@ -479,7 +479,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
             <div className="space-y-4 py-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-[#0a4fa6] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-3 border-border border-t-transparent rounded-full animate-spin" />
                 </div>
                 <h3 className="text-xl font-semibold">Sending Money...</h3>
                 <p className="text-muted-foreground mt-2">
@@ -493,7 +493,7 @@ export function SendMoneyDrawer({ open, onOpenChange, onReceiptOpen }: SendMoney
             <div className="space-y-4 py-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="h-8 w-8 text-white" />
+                  <CheckCircle2 className="h-8 w-8 text-background" />
                 </div>
                 <h3 className="text-xl font-semibold text-green-600">Money Sent!</h3>
                 <p className="text-muted-foreground mt-2">

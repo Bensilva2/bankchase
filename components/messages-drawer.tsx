@@ -151,7 +151,7 @@ export function MessagesDrawer({ open, onOpenChange }: MessagesDrawerProps) {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <Avatar className="h-10 w-10 flex-shrink-0">
-                    <AvatarFallback className="bg-[#0a4fa6] text-white text-xs">
+                    <AvatarFallback className="bg-[#0a4fa6] text-background text-xs">
                       {message.from
                         .split(" ")
                         .map((n) => n[0])
@@ -213,7 +213,7 @@ export function MessagesDrawer({ open, onOpenChange }: MessagesDrawerProps) {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           <div className="flex items-start gap-3">
             <Avatar className="h-12 w-12">
-              <AvatarFallback className="bg-[#0a4fa6] text-white">
+              <AvatarFallback className="bg-[#0a4fa6] text-background">
                 {selectedMessage.from
                   .split(" ")
                   .map((n) => n[0])

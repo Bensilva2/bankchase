@@ -464,11 +464,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     if (modalView === "none") return null
 
     return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
-        <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-300">
+      <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end sm:items-center justify-center">
+        <div className="bg-background w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-300">
           {/* Modal Header */}
-          <div className="sticky top-0 bg-[#117aca] text-white p-4 flex items-center justify-between sm:rounded-t-2xl">
-            <button onClick={closeModal} className="p-1 hover:bg-white/20 rounded-full transition-colors">
+          <div className="sticky top-0 bg-[#117aca] text-background p-4 flex items-center justify-between sm:rounded-t-2xl">
+            <button onClick={closeModal} className="p-1 hover:bg-background/20 rounded-full transition-colors">
               {modalView === "forgot-username" ||
               modalView === "forgot-password" ||
               modalView === "signup-form" ||
@@ -505,20 +505,20 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* Token Setup Modal */}
           {modalView === "token-setup" && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Security Token</h2>
-              <p className="text-gray-600 mb-6">Generate a one-time security token for enhanced protection.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Security Token</h2>
+              <p className="text-muted-foreground mb-6">Generate a one-time security token for enhanced protection.</p>
 
-              <div className="bg-blue-50 p-6 rounded-xl mb-6 text-center">
+              <div className="bg-background p-6 rounded-xl mb-6 text-center">
                 <Key className="w-12 h-12 text-[#117aca] mx-auto mb-4" />
                 {generatedToken ? (
                   <>
                     <p className="text-3xl font-mono font-bold text-[#117aca] tracking-widest mb-2">{generatedToken}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Expires in {Math.max(0, Math.ceil((tokenExpiry - Date.now()) / 1000))} seconds
                     </p>
                   </>
                 ) : (
-                  <p className="text-gray-600">Click the button below to generate a token</p>
+                  <p className="text-muted-foreground">Click the button below to generate a token</p>
                 )}
               </div>
 
@@ -536,12 +536,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 Generate New Token
               </Button>
 
-              <div className="p-4 bg-gray-50 rounded-xl">
+              <div className="p-4 bg-background rounded-xl">
                 <div className="flex items-start gap-3">
                   <Shield className="w-5 h-5 text-[#117aca] mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">How to use</p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-sm font-medium text-foreground">How to use</p>
+                    <p className="text-xs text-muted-foreground">
                       1. Generate a token above
                       <br />
                       2. Enter it in the "Security Token" field on the login screen
@@ -557,43 +557,43 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* Forgot Password/Username Modal */}
           {modalView === "forgot" && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Forgot username or password?</h2>
-              <p className="text-gray-600 mb-6">Choose what you need help with:</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Forgot username or password?</h2>
+              <p className="text-muted-foreground mb-6">Choose what you need help with:</p>
 
               <div className="space-y-3">
                 <button
                   onClick={() => setModalView("forgot-username")}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all flex items-center gap-4"
+                  className="w-full p-4 border-2 border-border rounded-xl hover:border-[#117aca] hover:bg-background transition-all flex items-center gap-4"
                 >
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center">
                     <User className="w-6 h-6 text-[#117aca]" />
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900">Forgot Username</p>
-                    <p className="text-sm text-gray-500">Recover your Chase username</p>
+                    <p className="font-semibold text-foreground">Forgot Username</p>
+                    <p className="text-sm text-muted-foreground">Recover your Chase username</p>
                   </div>
                 </button>
 
                 <button
                   onClick={() => setModalView("forgot-password")}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all flex items-center gap-4"
+                  className="w-full p-4 border-2 border-border rounded-xl hover:border-[#117aca] hover:bg-background transition-all flex items-center gap-4"
                 >
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center">
                     <Lock className="w-6 h-6 text-[#117aca]" />
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900">Forgot Password</p>
-                    <p className="text-sm text-gray-500">Reset your Chase password</p>
+                    <p className="font-semibold text-foreground">Forgot Password</p>
+                    <p className="text-sm text-muted-foreground">Reset your Chase password</p>
                   </div>
                 </button>
               </div>
 
-              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+              <div className="mt-6 p-4 bg-background rounded-xl">
                 <div className="flex items-start gap-3">
                   <Shield className="w-5 h-5 text-[#117aca] mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Security Tip</p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-sm font-medium text-foreground">Security Tip</p>
+                    <p className="text-xs text-muted-foreground">
                       Chase will never ask for your full password or PIN via email or phone.
                     </p>
                   </div>
@@ -605,13 +605,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* Forgot Username Form */}
           {modalView === "forgot-username" && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Recover Username</h2>
-              <p className="text-gray-600 mb-6">Verify your identity to recover your username.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Recover Username</h2>
+              <p className="text-muted-foreground mb-6">Verify your identity to recover your username.</p>
 
               {!showVerification ? (
                 <>
                   <div className="space-y-4 mb-6">
-                    <p className="text-sm font-medium text-gray-700">Choose verification method:</p>
+                    <p className="text-sm font-medium text-foreground">Choose verification method:</p>
                     <div className="grid grid-cols-3 gap-2">
                       {(["email", "phone", "ssn"] as const).map((method) => (
                         <button
@@ -619,8 +619,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                           onClick={() => setRecoveryMethod(method)}
                           className={`p-3 rounded-lg border-2 transition-all ${
                             recoveryMethod === method
-                              ? "border-[#117aca] bg-blue-50"
-                              : "border-gray-200 hover:border-gray-300"
+                              ? "border-[#117aca] bg-background"
+                              : "border-border hover:border-border"
                           }`}
                         >
                           {method === "email" && <Mail className="w-5 h-5 mx-auto mb-1 text-[#117aca]" />}
@@ -634,12 +634,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
                   {recoveryMethod === "email" && (
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">Email Address</label>
                       <input
                         type="email"
                         value={recoveryEmail}
                         onChange={(e) => setRecoveryEmail(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
                         placeholder="Enter your registered email"
                       />
                     </div>
@@ -647,12 +647,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
                   {recoveryMethod === "phone" && (
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
                       <input
                         type="tel"
                         value={recoveryPhone}
                         onChange={(e) => setRecoveryPhone(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
                         placeholder="Enter your registered phone"
                       />
                     </div>
@@ -660,13 +660,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
                   {recoveryMethod === "ssn" && (
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Last 4 digits of SSN</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">Last 4 digits of SSN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={recoverySSN}
                         onChange={(e) => setRecoverySSN(e.target.value.replace(/\D/g, ""))}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
                         placeholder="****"
                       />
                     </div>
@@ -683,16 +683,16 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               ) : (
                 <>
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Verification Code</label>
                     <input
                       type="text"
                       maxLength={6}
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent text-center text-2xl tracking-widest"
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent text-center text-2xl tracking-widest"
                       placeholder="000000"
                     />
-                    <p className="text-xs text-gray-500 mt-2">Enter the 6-digit code sent to your {recoveryMethod}</p>
+                    <p className="text-xs text-muted-foreground mt-2">Enter the 6-digit code sent to your {recoveryMethod}</p>
                   </div>
 
                   <Button
@@ -723,13 +723,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* Forgot Password Form */}
           {modalView === "forgot-password" && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Reset Password</h2>
-              <p className="text-gray-600 mb-6">Verify your identity to reset your password.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Reset Password</h2>
+              <p className="text-muted-foreground mb-6">Verify your identity to reset your password.</p>
 
               {!showVerification ? (
                 <>
                   <div className="space-y-4 mb-6">
-                    <p className="text-sm font-medium text-gray-700">Choose verification method:</p>
+                    <p className="text-sm font-medium text-foreground">Choose verification method:</p>
                     <div className="grid grid-cols-3 gap-2">
                       {(["email", "phone", "ssn"] as const).map((method) => (
                         <button
@@ -737,8 +737,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                           onClick={() => setRecoveryMethod(method)}
                           className={`p-3 rounded-lg border-2 transition-all ${
                             recoveryMethod === method
-                              ? "border-[#117aca] bg-blue-50"
-                              : "border-gray-200 hover:border-gray-300"
+                              ? "border-[#117aca] bg-background"
+                              : "border-border hover:border-border"
                           }`}
                         >
                           {method === "email" && <Mail className="w-5 h-5 mx-auto mb-1 text-[#117aca]" />}
@@ -752,12 +752,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
                   {recoveryMethod === "email" && (
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">Email Address</label>
                       <input
                         type="email"
                         value={recoveryEmail}
                         onChange={(e) => setRecoveryEmail(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
                         placeholder="Enter your registered email"
                       />
                     </div>
@@ -765,12 +765,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
                   {recoveryMethod === "phone" && (
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
                       <input
                         type="tel"
                         value={recoveryPhone}
                         onChange={(e) => setRecoveryPhone(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
                         placeholder="Enter your registered phone"
                       />
                     </div>
@@ -778,13 +778,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
                   {recoveryMethod === "ssn" && (
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Last 4 digits of SSN</label>
+                      <label className="block text-sm font-medium text-foreground mb-2">Last 4 digits of SSN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={recoverySSN}
                         onChange={(e) => setRecoverySSN(e.target.value.replace(/\D/g, ""))}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
                         placeholder="****"
                       />
                     </div>
@@ -801,42 +801,42 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               ) : (
                 <>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Verification Code</label>
                     <input
                       type="text"
                       maxLength={6}
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent text-center text-2xl tracking-widest"
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent text-center text-2xl tracking-widest"
                       placeholder="000000"
                     />
                   </div>
 
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">New Password</label>
                     <input
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
                       placeholder="Enter new password"
                     />
                   </div>
 
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Confirm New Password</label>
                     <input
                       type="password"
                       value={confirmNewPassword}
                       onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent"
                       placeholder="Confirm new password"
                     />
                   </div>
 
-                  <div className="mb-6 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-2">Password requirements:</p>
-                    <ul className="text-xs text-gray-500 space-y-1">
+                  <div className="mb-6 p-3 bg-background rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-2">Password requirements:</p>
+                    <ul className="text-xs text-muted-foreground space-y-1">
                       <li className={newPassword.length >= 8 ? "text-green-600" : ""}>
                         {newPassword.length >= 8 ? "✓" : "○"} At least 8 characters
                       </li>
@@ -867,20 +867,20 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* Sign Up Modal */}
           {modalView === "signup" && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Sign up for Chase Online</h2>
-              <p className="text-gray-600 mb-6">Access your accounts anytime, anywhere.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Sign up for Chase Online</h2>
+              <p className="text-muted-foreground mb-6">Access your accounts anytime, anywhere.</p>
 
               <div className="space-y-4">
                 <button
                   onClick={() => setModalView("signup-form")}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all flex items-center gap-4"
+                  className="w-full p-4 border-2 border-border rounded-xl hover:border-[#117aca] hover:bg-background transition-all flex items-center gap-4"
                 >
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center">
                     <CreditCard className="w-6 h-6 text-[#117aca]" />
                   </div>
                   <div className="text-left flex-1">
-                    <p className="font-semibold text-gray-900">I have a Chase account</p>
-                    <p className="text-sm text-gray-500">Sign up for online access to your existing account</p>
+                    <p className="font-semibold text-foreground">I have a Chase account</p>
+                    <p className="text-sm text-muted-foreground">Sign up for online access to your existing account</p>
                   </div>
                 </button>
 
@@ -889,21 +889,21 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     setModalView("account-type")
                     setSignupStep(1)
                   }}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-[#117aca] hover:bg-blue-50 transition-all flex items-center gap-4"
+                  className="w-full p-4 border-2 border-border rounded-xl hover:border-[#117aca] hover:bg-background transition-all flex items-center gap-4"
                 >
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <Building2 className="w-6 h-6 text-green-600" />
                   </div>
                   <div className="text-left flex-1">
-                    <p className="font-semibold text-gray-900">I'm new to Chase</p>
-                    <p className="text-sm text-gray-500">Open a new Chase account today</p>
+                    <p className="font-semibold text-foreground">I'm new to Chase</p>
+                    <p className="text-sm text-muted-foreground">Open a new Chase account today</p>
                   </div>
                 </button>
               </div>
 
-              <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                <h3 className="font-semibold text-gray-900 mb-2">Benefits of Chase Online</h3>
-                <ul className="text-sm text-gray-600 space-y-2">
+              <div className="mt-6 p-4 bg-background rounded-xl">
+                <h3 className="font-semibold text-foreground mb-2">Benefits of Chase Online</h3>
+                <ul className="text-sm text-muted-foreground space-y-2">
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-green-600" /> 24/7 account access
                   </li>
@@ -920,7 +920,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </div>
 
               <div className="mt-6 text-center">
-                <p className="text-gray-600 text-sm mb-2">Already have online access?</p>
+                <p className="text-muted-foreground text-sm mb-2">Already have online access?</p>
                 <button
                   onClick={() => setModalView("login")}
                   className="text-[#117aca] hover:underline font-medium text-sm"
@@ -942,8 +942,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 Back to signup options
               </button>
               
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Sign in</h2>
-              <p className="text-gray-600 mb-6">Access your Chase accounts</p>
+              <h2 className="text-2xl font-bold text-foreground mb-1">Sign in</h2>
+              <p className="text-muted-foreground mb-6">Access your Chase accounts</p>
 
               {error && (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
@@ -953,7 +953,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               )}
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Username or User ID *</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Username or User ID *</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -965,15 +965,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     onKeyPress={(e) => {
                       if (e.key === "Enter" && !isLoading) handleSignIn()
                     }}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent pr-10"
+                    className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent pr-10"
                     placeholder="example@chase.com"
                   />
-                  <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 </div>
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Password *</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -985,13 +985,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     onKeyPress={(e) => {
                       if (e.key === "Enter" && !isLoading) handleSignIn()
                     }}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent pr-10"
+                    className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca] focus:border-transparent pr-10"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -1006,7 +1006,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                     className="border-[#117aca] data-[state=checked]:bg-[#117aca] data-[state=checked]:border-[#117aca]"
                   />
-                  <label htmlFor="remember" className="text-sm text-gray-600 cursor-pointer">
+                  <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
                     Remember me
                   </label>
                 </div>
@@ -1027,7 +1027,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </Button>
 
               <div className="mt-4 text-center">
-                <p className="text-gray-600 text-sm">Don&apos;t have online access?</p>
+                <p className="text-muted-foreground text-sm">Don&apos;t have online access?</p>
                 <button
                   onClick={() => setModalView("signup")}
                   className="text-[#117aca] hover:underline font-medium text-sm mt-1"
@@ -1046,56 +1046,56 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   <div key={step} className="flex items-center">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                        signupStep >= step ? "bg-[#117aca] text-white" : "bg-gray-200 text-gray-500"
+                        signupStep >= step ? "bg-[#117aca] text-background" : "bg-card text-muted-foreground"
                       }`}
                     >
                       {signupStep > step ? <Check className="w-4 h-4" /> : step}
                     </div>
-                    {step < 3 && <div className={`w-8 h-1 ${signupStep > step ? "bg-[#117aca]" : "bg-gray-200"}`} />}
+                    {step < 3 && <div className={`w-8 h-1 ${signupStep > step ? "bg-[#117aca]" : "bg-card"}`} />}
                   </div>
                 ))}
               </div>
 
               {signupStep === 1 && (
                 <>
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Personal Information</h2>
+                  <h2 className="text-xl font-bold text-foreground mb-4">Personal Information</h2>
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                        <label className="block text-sm font-medium text-foreground mb-1">First Name *</label>
                         <input
                           type="text"
                           value={signupData.firstName}
                           onChange={(e) => setSignupData({ ...signupData, firstName: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                        <label className="block text-sm font-medium text-foreground mb-1">Last Name *</label>
                         <input
                           type="text"
                           value={signupData.lastName}
                           onChange={(e) => setSignupData({ ...signupData, lastName: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Email Address *</label>
                       <input
                         type="email"
                         value={signupData.email}
                         onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Phone Number *</label>
                       <input
                         type="tel"
                         value={signupData.phone}
                         onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                       />
                     </div>
                   </div>
@@ -1104,53 +1104,53 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
               {signupStep === 2 && (
                 <>
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Identity Verification</h2>
+                  <h2 className="text-xl font-bold text-foreground mb-4">Identity Verification</h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Social Security Number *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Social Security Number *</label>
                       <input
                         type="password"
                         value={signupData.ssn}
                         onChange={(e) => setSignupData({ ...signupData, ssn: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                         placeholder="***-**-****"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Date of Birth *</label>
                       <input
                         type="date"
                         value={signupData.dob}
                         onChange={(e) => setSignupData({ ...signupData, dob: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Street Address *</label>
                       <input
                         type="text"
                         value={signupData.address}
                         onChange={(e) => setSignupData({ ...signupData, address: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                        <label className="block text-sm font-medium text-foreground mb-1">City</label>
                         <input
                           type="text"
                           value={signupData.city}
                           onChange={(e) => setSignupData({ ...signupData, city: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                        <label className="block text-sm font-medium text-foreground mb-1">State</label>
                         <input
                           type="text"
                           value={signupData.state}
                           onChange={(e) => setSignupData({ ...signupData, state: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                          className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                         />
                       </div>
                     </div>
@@ -1160,49 +1160,49 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
               {signupStep === 3 && (
                 <>
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Create Credentials</h2>
+                  <h2 className="text-xl font-bold text-foreground mb-4">Create Credentials</h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Username *</label>
                       <input
                         type="text"
                         value={signupData.username}
                         onChange={(e) => setSignupData({ ...signupData, username: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Password *</label>
                       <input
                         type="password"
                         value={signupData.password}
                         onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                       />
-                      <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+                      <div className="mt-2 p-2 bg-background rounded text-xs">
                         <ul className="space-y-1">
-                          <li className={signupData.password.length >= 8 ? "text-green-600" : "text-gray-500"}>
+                          <li className={signupData.password.length >= 8 ? "text-green-600" : "text-muted-foreground"}>
                             {signupData.password.length >= 8 ? "✓" : "○"} At least 8 characters
                           </li>
-                          <li className={/[A-Z]/.test(signupData.password) ? "text-green-600" : "text-gray-500"}>
+                          <li className={/[A-Z]/.test(signupData.password) ? "text-green-600" : "text-muted-foreground"}>
                             {/[A-Z]/.test(signupData.password) ? "✓" : "○"} One uppercase letter
                           </li>
-                          <li className={/[a-z]/.test(signupData.password) ? "text-green-600" : "text-gray-500"}>
+                          <li className={/[a-z]/.test(signupData.password) ? "text-green-600" : "text-muted-foreground"}>
                             {/[a-z]/.test(signupData.password) ? "✓" : "○"} One lowercase letter
                           </li>
-                          <li className={/\d/.test(signupData.password) ? "text-green-600" : "text-gray-500"}>
+                          <li className={/\d/.test(signupData.password) ? "text-green-600" : "text-muted-foreground"}>
                             {/\d/.test(signupData.password) ? "✓" : "○"} One number
                           </li>
                         </ul>
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+                      <label className="block text-sm font-medium text-foreground mb-1">Confirm Password *</label>
                       <input
                         type="password"
                         value={signupData.confirmPassword}
                         onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#117aca]"
+                        className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-[#117aca]"
                       />
                       {signupData.confirmPassword && signupData.password !== signupData.confirmPassword && (
                         <p className="text-red-500 text-xs mt-1">Passwords do not match</p>
@@ -1217,7 +1217,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                           }
                           className="mt-0.5"
                         />
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           I agree to the{" "}
                           <a href="#" className="text-[#117aca] hover:underline">
                             Terms of Service
@@ -1236,7 +1236,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                           }
                           className="mt-0.5"
                         />
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           I agree to receive electronic communications from Chase
                         </span>
                       </label>
@@ -1258,33 +1258,33 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* Account Type Details */}
           {modalView === "account-type" && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Chase Total Checking</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">Chase Total Checking</h2>
 
-              <div className="bg-gradient-to-r from-[#117aca] to-[#0a5a9e] text-white p-6 rounded-xl mb-6">
+              <div className="bg-gradient-to-r from-[#117aca] to-[#0a5a9e] text-background p-6 rounded-xl mb-6">
                 <p className="text-3xl font-bold">$300</p>
                 <p className="text-sm opacity-90">New account bonus when you set up direct deposit</p>
               </div>
 
               <div className="space-y-4 mb-6">
-                <h3 className="font-semibold text-gray-900">Account Benefits</h3>
+                <h3 className="font-semibold text-foreground">Account Benefits</h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                    <span className="text-sm text-gray-600">Access to 15,000+ Chase ATMs and 4,700+ branches</span>
+                    <span className="text-sm text-muted-foreground">Access to 15,000+ Chase ATMs and 4,700+ branches</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                    <span className="text-sm text-gray-600">Chase Mobile app with mobile check deposit</span>
+                    <span className="text-sm text-muted-foreground">Chase Mobile app with mobile check deposit</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-muted-foreground">
                       Zero Liability Protection on unauthorized transactions
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-green-600 mt-0.5" />
-                    <span className="text-sm text-gray-600">Send money with Zelle</span>
+                    <span className="text-sm text-muted-foreground">Send money with Zelle</span>
                   </li>
                 </ul>
               </div>
@@ -1293,8 +1293,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Monthly Service Fee</p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-sm font-medium text-foreground">Monthly Service Fee</p>
+                    <p className="text-xs text-muted-foreground">
                       $12/month. Easily waived with direct deposit of $500+ or $1,500+ daily balance.
                     </p>
                   </div>
@@ -1309,7 +1309,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 Open Account on Chase.com
               </Button>
 
-              <p className="text-xs text-center text-gray-500 mt-4">
+              <p className="text-xs text-center text-muted-foreground mt-4">
                 You will be redirected to the official Chase website to complete your application.
               </p>
             </div>
@@ -1318,31 +1318,31 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* Privacy Modal */}
           {modalView === "privacy" && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Privacy & Security</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">Privacy & Security</h2>
 
               <div className="space-y-4">
                 <button
                   onClick={() => window.open("https://www.chase.com/digital/resources/privacy-security", "_blank")}
-                  className="w-full p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-between"
+                  className="w-full p-4 border border-border rounded-xl hover:bg-background transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <Shield className="w-5 h-5 text-[#117aca]" />
-                    <span className="font-medium text-gray-900">Privacy Policy</span>
+                    <span className="font-medium text-foreground">Privacy Policy</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </button>
 
                 <button
                   onClick={() =>
                     window.open("https://www.chase.com/digital/resources/privacy-security/security", "_blank")
                   }
-                  className="w-full p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-between"
+                  className="w-full p-4 border border-border rounded-xl hover:bg-background transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <Lock className="w-5 h-5 text-[#117aca]" />
-                    <span className="font-medium text-gray-900">Security Center</span>
+                    <span className="font-medium text-foreground">Security Center</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </button>
 
                 <button
@@ -1352,19 +1352,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                       "_blank",
                     )
                   }
-                  className="w-full p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-between"
+                  className="w-full p-4 border border-border rounded-xl hover:bg-background transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <User className="w-5 h-5 text-[#117aca]" />
-                    <span className="font-medium text-gray-900">Online Privacy Policy</span>
+                    <span className="font-medium text-foreground">Online Privacy Policy</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
 
-              <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                <h3 className="font-semibold text-gray-900 mb-2">Your Security Matters</h3>
-                <ul className="text-sm text-gray-600 space-y-2">
+              <div className="mt-6 p-4 bg-background rounded-xl">
+                <h3 className="font-semibold text-foreground mb-2">Your Security Matters</h3>
+                <ul className="text-sm text-muted-foreground space-y-2">
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-green-600 mt-0.5" />
                     <span>256-bit encryption protects your data</span>
@@ -1384,8 +1384,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 </ul>
               </div>
 
-              <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-                <p className="text-xs text-gray-600">
+              <div className="mt-4 p-4 bg-background rounded-xl">
+                <p className="text-xs text-muted-foreground">
                   <strong>Report suspicious activity:</strong> Call 1-800-935-9935 or visit chase.com/reportfraud
                 </p>
               </div>
@@ -1395,69 +1395,69 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* More Options Modal */}
           {modalView === "more-options" && (
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">More Options</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">More Options</h2>
 
               <div className="space-y-3">
                 <button
                   onClick={() => window.open("https://locator.chase.com/", "_blank")}
-                  className="w-full p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-between"
+                  className="w-full p-4 border border-border rounded-xl hover:bg-background transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <Building2 className="w-5 h-5 text-[#117aca]" />
-                    <span className="font-medium text-gray-900">Find a Branch or ATM</span>
+                    <span className="font-medium text-foreground">Find a Branch or ATM</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </button>
 
                 <button
                   onClick={() => window.open("https://www.chase.com/personal/credit-cards", "_blank")}
-                  className="w-full p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-between"
+                  className="w-full p-4 border border-border rounded-xl hover:bg-background transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <CreditCard className="w-5 h-5 text-[#117aca]" />
-                    <span className="font-medium text-gray-900">Credit Cards</span>
+                    <span className="font-medium text-foreground">Credit Cards</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </button>
 
                 <button
                   onClick={() => window.open("https://www.chase.com/personal/mortgage", "_blank")}
-                  className="w-full p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-between"
+                  className="w-full p-4 border border-border rounded-xl hover:bg-background transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <HomeIcon className="w-5 h-5 text-[#117aca]" />
-                    <span className="font-medium text-gray-900">Home Loans</span>
+                    <span className="font-medium text-foreground">Home Loans</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </button>
 
                 <button
                   onClick={() => window.open("https://www.chase.com/business", "_blank")}
-                  className="w-full p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-between"
+                  className="w-full p-4 border border-border rounded-xl hover:bg-background transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <Building2 className="w-5 h-5 text-[#117aca]" />
-                    <span className="font-medium text-gray-900">Business Banking</span>
+                    <span className="font-medium text-foreground">Business Banking</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </button>
 
                 <button
                   onClick={() => window.open("mailto:chase.org_info247@zohomail.com", "_blank")}
-                  className="w-full p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-between"
+                  className="w-full p-4 border border-border rounded-xl hover:bg-background transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-[#117aca]" />
-                    <span className="font-medium text-gray-900">Customer Support</span>
+                    <span className="font-medium text-foreground">Customer Support</span>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
 
-              <div className="mt-6 p-4 bg-gray-50 rounded-xl text-center">
-                <p className="text-sm text-gray-600 mb-2">Need help?</p>
+              <div className="mt-6 p-4 bg-background rounded-xl text-center">
+                <p className="text-sm text-muted-foreground mb-2">Need help?</p>
                 <p className="text-[#117aca] font-semibold">1-800-935-9935</p>
-                <p className="text-xs text-gray-500 mt-1">Available 24/7</p>
+                <p className="text-xs text-muted-foreground mt-1">Available 24/7</p>
               </div>
             </div>
           )}
@@ -1471,14 +1471,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       {/* Header with CHASE logo */}
       <div className="py-8 flex justify-center items-center">
         <div className="flex items-center gap-2">
-          <span className="text-white text-2xl font-bold tracking-wide">CHASE</span>
+          <span className="text-background text-2xl font-bold tracking-wide">CHASE</span>
           <Image src="/images/chase-logo.png" alt="Chase" width={36} height={36} className="rounded" />
         </div>
       </div>
 
       {/* Main Content - Login Card */}
       <div className="flex-1 flex flex-col justify-center px-4 pb-4">
-        <div className="bg-white rounded-xl shadow-lg mx-auto w-full max-w-sm px-6 py-8">
+        <div className="bg-background rounded-xl shadow-lg mx-auto w-full max-w-sm px-6 py-8">
           {/* Error Message */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -1493,7 +1493,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="w-full border-b border-gray-300 py-3 px-0 text-gray-900 focus:outline-none focus:border-[#117aca] transition-colors bg-transparent placeholder-gray-500"
+              className="w-full border-b border-border py-3 px-0 text-foreground focus:outline-none focus:border-[#117aca] transition-colors bg-transparent placeholder-gray-500"
               placeholder="Enter your username"
               autoComplete="username"
             />
@@ -1507,14 +1507,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full border-b border-gray-300 py-3 px-0 pr-10 text-gray-900 focus:outline-none focus:border-[#117aca] transition-colors bg-transparent placeholder-gray-500"
+                className="w-full border-b border-border py-3 px-0 pr-10 text-foreground focus:outline-none focus:border-[#117aca] transition-colors bg-transparent placeholder-gray-500"
                 placeholder="Enter your password"
                 autoComplete="current-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -1530,7 +1530,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   value={tokenCode}
                   onChange={(e) => setTokenCode(e.target.value.replace(/\D/g, ""))}
                   onKeyPress={handleKeyPress}
-                  className="w-full border-b border-gray-300 py-3 px-0 pr-10 text-gray-900 focus:outline-none focus:border-[#117aca] transition-colors bg-transparent placeholder-gray-500 text-center tracking-widest"
+                  className="w-full border-b border-border py-3 px-0 pr-10 text-foreground focus:outline-none focus:border-[#117aca] transition-colors bg-transparent placeholder-gray-500 text-center tracking-widest"
                   placeholder="Enter security token"
                 />
                 <button
@@ -1541,7 +1541,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   <Key className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1 text-center">
+              <p className="text-xs text-muted-foreground mt-1 text-center">
                 <button onClick={() => setModalView("token-setup")} className="text-[#117aca] hover:underline">
                   Generate a token
                 </button>
@@ -1558,7 +1558,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                 className="border-[#117aca] data-[state=checked]:bg-[#117aca] data-[state=checked]:border-[#117aca]"
               />
-              <label htmlFor="remember" className="text-sm text-gray-600 cursor-pointer">
+              <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
                 Remember me
               </label>
             </div>
@@ -1572,9 +1572,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     setModalView("token-setup")
                   }
                 }}
-                className="border-gray-400"
+                className="border-border"
               />
-              <label htmlFor="token" className="text-sm text-gray-600 cursor-pointer">
+              <label htmlFor="token" className="text-sm text-muted-foreground cursor-pointer">
                 Use token
               </label>
             </div>
@@ -1584,11 +1584,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           <Button
             onClick={handleSignIn}
             disabled={isLoading}
-            className="w-full bg-[#117aca] hover:bg-[#0a5a9e] text-white py-6 rounded-md text-base font-medium transition-colors border-2 border-[#117aca]"
+            className="w-full bg-[#117aca] hover:bg-[#0a5a9e] text-background py-6 rounded-md text-base font-medium transition-colors border-2 border-[#117aca]"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-border border-t-transparent rounded-full animate-spin"></div>
                 <span>Signing in...</span>
               </div>
             ) : (
@@ -1605,19 +1605,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         </div>
 
         <div className="flex items-center justify-center gap-3 mt-6 text-sm">
-          <button onClick={() => setModalView("signup")} className="text-white hover:underline">
+          <button onClick={() => setModalView("signup")} className="text-background hover:underline">
             Sign up
           </button>
-          <span className="text-white">|</span>
-          <button onClick={() => setModalView("signup")} className="text-white hover:underline">
+          <span className="text-background">|</span>
+          <button onClick={() => setModalView("signup")} className="text-background hover:underline">
             Open an account
           </button>
-          <span className="text-white">|</span>
-          <button onClick={() => setModalView("privacy")} className="text-white hover:underline">
+          <span className="text-background">|</span>
+          <button onClick={() => setModalView("privacy")} className="text-background hover:underline">
             Privacy
           </button>
-          <span className="text-white">|</span>
-          <button onClick={() => setModalView("more-options")} className="text-white font-bold hover:underline">
+          <span className="text-background">|</span>
+          <button onClick={() => setModalView("more-options")} className="text-background font-bold hover:underline">
             •••
           </button>
         </div>
@@ -1625,21 +1625,21 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
       {/* Footer - Equal Housing Lender, FDIC, Copyright - Updated year to 2025 */}
       <div className="pb-6 pt-4 text-center space-y-2 px-4">
-        <div className="flex items-center justify-center gap-1 text-xs text-white/80">
+        <div className="flex items-center justify-center gap-1 text-xs text-background/80">
           <HomeIcon className="w-4 h-4" />
           <span>Equal Housing Lender</span>
         </div>
-        <p className="text-xs text-white/80 leading-relaxed">
+        <p className="text-xs text-background/80 leading-relaxed">
           Deposit products provided by JPMorgan Chase Bank, N.A.
           <br />
           Member FDIC
         </p>
-        <p className="text-xs text-white/80 leading-relaxed">
+        <p className="text-xs text-background/80 leading-relaxed">
           Credit cards are issued by JPMorgan Chase Bank, N.A.
           <br />
           Member FDIC
         </p>
-        <p className="text-xs text-white/80 mt-2">© 2025 JPMorgan Chase & Co.</p>
+        <p className="text-xs text-background/80 mt-2">© 2025 JPMorgan Chase & Co.</p>
       </div>
 
       {renderModal()}

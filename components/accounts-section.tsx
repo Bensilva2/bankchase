@@ -44,7 +44,7 @@ export function AccountsSection({
       case "failed":
         return "bg-red-100 text-red-700"
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-background text-foreground"
     }
   }
 
@@ -80,8 +80,8 @@ export function AccountsSection({
 
       <Card className="chase-card-shadow border-0 overflow-hidden">
         <div className="bg-gradient-to-r from-[#0a4fa6] to-[#117aca] px-4 py-3">
-          <p className="text-white/80 text-sm">Total Balance</p>
-          <p className="text-white text-3xl font-bold">${formatBalance(totalBalance)}</p>
+          <p className="text-background/80 text-sm">Total Balance</p>
+          <p className="text-background text-3xl font-bold">${formatBalance(totalBalance)}</p>
           {pendingCount > 0 && (
             <div className="flex items-center gap-1 mt-1">
               <Clock className="h-3 w-3 text-yellow-300" />
@@ -95,7 +95,7 @@ export function AccountsSection({
 
       <Card className="chase-card-shadow border-0 overflow-hidden">
         <div className="bg-[#0a4fa6] px-4 py-2">
-          <h3 className="text-white font-medium text-sm">Bank Accounts ({accounts.length})</h3>
+          <h3 className="text-background font-medium text-sm">Bank Accounts ({accounts.length})</h3>
         </div>
         <CardContent className="p-0 divide-y divide-border">
           {accounts.map((account) => {

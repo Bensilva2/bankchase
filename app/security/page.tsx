@@ -28,7 +28,7 @@ export default function SecurityPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -80,19 +80,19 @@ export default function SecurityPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-card pb-8">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-white rounded-lg transition"
+            className="p-2 hover:bg-background rounded-lg transition"
           >
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
+            <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Security & Privacy</h1>
-            <p className="text-gray-600">Manage your account security</p>
+            <h1 className="text-3xl font-bold text-foreground">Security & Privacy</h1>
+            <p className="text-muted-foreground">Manage your account security</p>
           </div>
         </div>
 
@@ -104,8 +104,8 @@ export default function SecurityPage() {
               onClick={() => setCurrentTab(tab as any)}
               className={`px-6 py-3 rounded-lg font-medium whitespace-nowrap transition ${
                 currentTab === tab
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-primary text-background'
+                  : 'bg-background text-foreground hover:bg-background'
               }`}
             >
               {tab === 'password' && 'Password'}
@@ -119,26 +119,26 @@ export default function SecurityPage() {
         {/* Password Tab */}
         {currentTab === 'password' && (
           <Card className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
               <Lock className="w-6 h-6 text-blue-600" />
               Change Password
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Current Password
                 </label>
                 <input
                   type="password"
                   value={passwordForm.current}
                   onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   New Password
                 </label>
                 <div className="relative">
@@ -146,11 +146,11 @@ export default function SecurityPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={passwordForm.new}
                     onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <button
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-500"
+                    className="absolute right-3 top-3 text-muted-foreground"
                   >
                     {showPassword ? <Eye className="w-5 h-5" /> : <Eye className="w-5 h-5 opacity-50" />}
                   </button>
@@ -158,26 +158,26 @@ export default function SecurityPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Confirm Password
                 </label>
                 <input
                   type="password"
                   value={passwordForm.confirm}
                   onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               <button
                 onClick={handlePasswordChange}
-                className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
+                className="w-full px-6 py-3 bg-primary text-background font-medium rounded-lg hover:bg-primary transition"
               >
                 Change Password
               </button>
             </div>
 
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mt-8 p-4 bg-background rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800">
                 <strong>Password Tips:</strong> Use at least 12 characters with a mix of uppercase, lowercase, numbers, and symbols.
               </p>
@@ -188,7 +188,7 @@ export default function SecurityPage() {
         {/* 2FA Tab */}
         {currentTab === 'twofa' && (
           <Card className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
               <Smartphone className="w-6 h-6 text-blue-600" />
               Two-Factor Authentication
             </h2>
@@ -203,19 +203,19 @@ export default function SecurityPage() {
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Current 2FA Method</h3>
-                <p className="text-gray-700">SMS to ••••• 9999</p>
-                <button className="mt-4 px-6 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition">
+                <h3 className="font-semibold text-foreground mb-4">Current 2FA Method</h3>
+                <p className="text-foreground">SMS to ••••• 9999</p>
+                <button className="mt-4 px-6 py-2 bg-card text-foreground rounded-lg hover:bg-card transition">
                   Change Method
                 </button>
               </div>
 
               <div className="border-t pt-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Backup Codes</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="font-semibold text-foreground mb-4">Backup Codes</h3>
+                <p className="text-muted-foreground mb-4">
                   Save your backup codes in a secure place. You can use them to access your account if you lose access to your 2FA device.
                 </p>
-                <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                <button className="px-6 py-2 bg-primary text-background rounded-lg hover:bg-primary transition">
                   View Backup Codes
                 </button>
               </div>
@@ -226,33 +226,33 @@ export default function SecurityPage() {
         {/* Privacy Tab */}
         {currentTab === 'privacy' && (
           <Card className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
               <FileText className="w-6 h-6 text-blue-600" />
               Privacy Settings
             </h2>
 
             <div className="space-y-6">
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-background rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium text-gray-900">Profile Visibility</label>
+                  <label className="font-medium text-foreground">Profile Visibility</label>
                   <select
                     value={privacySettings.profileVisibility}
                     onChange={(e) =>
                       setPrivacySettings({ ...privacySettings, profileVisibility: e.target.value })
                     }
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                    className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="private">Private</option>
                     <option value="friends">Friends Only</option>
                     <option value="public">Public</option>
                   </select>
                 </div>
-                <p className="text-sm text-gray-600">Control who can see your profile information</p>
+                <p className="text-sm text-muted-foreground">Control who can see your profile information</p>
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-background rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium text-gray-900">Show Activity Status</label>
+                  <label className="font-medium text-foreground">Show Activity Status</label>
                   <input
                     type="checkbox"
                     checked={privacySettings.showActivity}
@@ -262,12 +262,12 @@ export default function SecurityPage() {
                     className="w-5 h-5 rounded cursor-pointer"
                   />
                 </div>
-                <p className="text-sm text-gray-600">Let others see when you&apos;re online</p>
+                <p className="text-sm text-muted-foreground">Let others see when you&apos;re online</p>
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-background rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="font-medium text-gray-900">Allow Messages</label>
+                  <label className="font-medium text-foreground">Allow Messages</label>
                   <input
                     type="checkbox"
                     checked={privacySettings.allowMessages}
@@ -277,7 +277,7 @@ export default function SecurityPage() {
                     className="w-5 h-5 rounded cursor-pointer"
                   />
                 </div>
-                <p className="text-sm text-gray-600">Allow others to send you messages</p>
+                <p className="text-sm text-muted-foreground">Allow others to send you messages</p>
               </div>
             </div>
 
@@ -292,7 +292,7 @@ export default function SecurityPage() {
         {/* Devices Tab */}
         {currentTab === 'devices' && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
               <Smartphone className="w-6 h-6 text-blue-600" />
               Linked Devices
             </h2>
@@ -302,16 +302,16 @@ export default function SecurityPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-gray-900">{device.name}</h3>
+                      <h3 className="font-semibold text-foreground">{device.name}</h3>
                       {device.current && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        <span className="text-xs bg-card text-blue-800 px-2 py-1 rounded-full">
                           Current Device
                         </span>
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm">{device.type}</p>
-                    <p className="text-gray-600 text-sm">Last active: {device.lastActive}</p>
-                    <p className="text-gray-600 text-sm">{device.location}</p>
+                    <p className="text-muted-foreground text-sm">{device.type}</p>
+                    <p className="text-muted-foreground text-sm">Last active: {device.lastActive}</p>
+                    <p className="text-muted-foreground text-sm">{device.location}</p>
                   </div>
                   {!device.current && (
                     <button

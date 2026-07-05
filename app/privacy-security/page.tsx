@@ -37,7 +37,7 @@ export default function PrivacySecurityPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a4fa6] to-[#003087]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border"></div>
       </div>
     )
   }
@@ -63,18 +63,18 @@ export default function PrivacySecurityPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Shield className="w-8 h-8 text-[#0a4fa6]" />
-            <h1 className="text-4xl font-bold text-gray-900">Privacy & Security</h1>
+            <h1 className="text-4xl font-bold text-foreground">Privacy & Security</h1>
           </div>
-          <p className="text-gray-600">Manage your account security, data privacy, and authentication methods</p>
+          <p className="text-muted-foreground">Manage your account security, data privacy, and authentication methods</p>
         </div>
 
         {/* Security Status Overview */}
-        <Card className="bg-white shadow-lg border-0 mb-8 p-6">
+        <Card className="bg-background shadow-lg border-0 mb-8 p-6">
           <div className="flex items-start gap-4">
             <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <h3 className="font-semibold text-lg text-gray-900">Account Security Status</h3>
-              <p className="text-gray-600 text-sm mt-2">
+              <h3 className="font-semibold text-lg text-foreground">Account Security Status</h3>
+              <p className="text-muted-foreground text-sm mt-2">
                 Your account is protected with industry-leading security measures. Enable additional features 
                 below to enhance your protection.
               </p>
@@ -91,7 +91,7 @@ export default function PrivacySecurityPage() {
 
         {/* Main Settings Tabs */}
         <Tabs defaultValue="authentication" className="space-y-6">
-          <TabsList className="bg-white border shadow-sm w-full justify-start overflow-x-auto">
+          <TabsList className="bg-background border shadow-sm w-full justify-start overflow-x-auto">
             <TabsTrigger value="authentication" className="gap-2">
               <Lock className="w-4 h-4" />
               Authentication
@@ -113,17 +113,17 @@ export default function PrivacySecurityPage() {
           {/* Authentication Tab */}
           <TabsContent value="authentication" className="space-y-6">
             {/* Two-Factor Authentication */}
-            <Card className="bg-white shadow-lg border-0 p-6">
+            <Card className="bg-background shadow-lg border-0 p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   <Smartphone className="w-6 h-6 text-[#0a4fa6] mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Two-Factor Authentication (2FA)</h3>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <h3 className="text-lg font-semibold text-foreground">Two-Factor Authentication (2FA)</h3>
+                    <p className="text-muted-foreground text-sm mt-1">
                       Add an extra layer of security to your account by requiring a code from your phone in addition to your password.
                     </p>
                     <div className="mt-3">
-                      <Badge className={twoFactorEnabled ? 'bg-green-100 text-green-800 border-0' : 'bg-gray-100 text-gray-800 border-0'}>
+                      <Badge className={twoFactorEnabled ? 'bg-green-100 text-green-800 border-0' : 'bg-background text-foreground border-0'}>
                         {twoFactorEnabled ? 'Enabled' : 'Disabled'}
                       </Badge>
                     </div>
@@ -134,7 +134,7 @@ export default function PrivacySecurityPage() {
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     twoFactorEnabled
                       ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      : 'bg-card text-blue-700 hover:bg-blue-200'
                   }`}
                 >
                   {twoFactorEnabled ? 'Disable' : 'Enable'}
@@ -143,17 +143,17 @@ export default function PrivacySecurityPage() {
             </Card>
 
             {/* Biometric Authentication */}
-            <Card className="bg-white shadow-lg border-0 p-6">
+            <Card className="bg-background shadow-lg border-0 p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   <Fingerprint className="w-6 h-6 text-[#0a4fa6] mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Biometric Authentication</h3>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <h3 className="text-lg font-semibold text-foreground">Biometric Authentication</h3>
+                    <p className="text-muted-foreground text-sm mt-1">
                       Use your fingerprint or face recognition to quickly and securely access your account.
                     </p>
                     <div className="mt-3">
-                      <Badge className={biometricsEnabled ? 'bg-green-100 text-green-800 border-0' : 'bg-gray-100 text-gray-800 border-0'}>
+                      <Badge className={biometricsEnabled ? 'bg-green-100 text-green-800 border-0' : 'bg-background text-foreground border-0'}>
                         {biometricsEnabled ? 'Enabled' : 'Disabled'}
                       </Badge>
                     </div>
@@ -164,7 +164,7 @@ export default function PrivacySecurityPage() {
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     biometricsEnabled
                       ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      : 'bg-card text-blue-700 hover:bg-blue-200'
                   }`}
                 >
                   {biometricsEnabled ? 'Disable' : 'Enable'}
@@ -173,17 +173,17 @@ export default function PrivacySecurityPage() {
             </Card>
 
             {/* Password Management */}
-            <Card className="bg-white shadow-lg border-0 p-6">
+            <Card className="bg-background shadow-lg border-0 p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   <Lock className="w-6 h-6 text-[#0a4fa6] mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Password Management</h3>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <h3 className="text-lg font-semibold text-foreground">Password Management</h3>
+                    <p className="text-muted-foreground text-sm mt-1">
                       Update your password regularly to maintain account security.
                     </p>
                     <div className="mt-4 flex items-center gap-2">
-                      <span className="text-sm text-gray-600">Last changed: 45 days ago</span>
+                      <span className="text-sm text-muted-foreground">Last changed: 45 days ago</span>
                       <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Recommended to change soon</span>
                     </div>
                   </div>
@@ -196,16 +196,16 @@ export default function PrivacySecurityPage() {
           {/* Privacy Tab */}
           <TabsContent value="privacy" className="space-y-6">
             {/* Data Sharing */}
-            <Card className="bg-white shadow-lg border-0 p-6">
+            <Card className="bg-background shadow-lg border-0 p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   <Eye className="w-6 h-6 text-[#0a4fa6] mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Data Sharing</h3>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <h3 className="text-lg font-semibold text-foreground">Data Sharing</h3>
+                    <p className="text-muted-foreground text-sm mt-1">
                       Control whether your transaction data is shared with partners for personalized offers and insights.
                     </p>
-                    <ul className="mt-3 space-y-2 text-sm text-gray-600">
+                    <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                       <li>• Marketing partners for personalized offers</li>
                       <li>• Affiliate services and third-party integrations</li>
                       <li>• Analytics providers for usage insights</li>
@@ -217,7 +217,7 @@ export default function PrivacySecurityPage() {
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     dataSharing
                       ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      : 'bg-card text-blue-700 hover:bg-blue-200'
                   }`}
                 >
                   {dataSharing ? 'Disable' : 'Enable'}
@@ -226,17 +226,17 @@ export default function PrivacySecurityPage() {
             </Card>
 
             {/* Location Tracking */}
-            <Card className="bg-white shadow-lg border-0 p-6">
+            <Card className="bg-background shadow-lg border-0 p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   <Wifi className="w-6 h-6 text-[#0a4fa6] mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Location Services</h3>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <h3 className="text-lg font-semibold text-foreground">Location Services</h3>
+                    <p className="text-muted-foreground text-sm mt-1">
                       Allow the app to use your location for fraud detection, ATM finder, and branch locator features.
                     </p>
                     <div className="mt-3">
-                      <Badge className={locationTracking ? 'bg-blue-100 text-blue-800 border-0' : 'bg-gray-100 text-gray-800 border-0'}>
+                      <Badge className={locationTracking ? 'bg-card text-blue-800 border-0' : 'bg-background text-foreground border-0'}>
                         {locationTracking ? 'Enabled' : 'Disabled'}
                       </Badge>
                     </div>
@@ -247,7 +247,7 @@ export default function PrivacySecurityPage() {
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     locationTracking
                       ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      : 'bg-card text-blue-700 hover:bg-blue-200'
                   }`}
                 >
                   {locationTracking ? 'Disable' : 'Enable'}
@@ -256,18 +256,18 @@ export default function PrivacySecurityPage() {
             </Card>
 
             {/* HTTPS & Encryption */}
-            <Card className="bg-white shadow-lg border-0 p-6">
+            <Card className="bg-background shadow-lg border-0 p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   <Shield className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">Encrypted Connection Only</h3>
-                    <p className="text-gray-600 text-sm mt-1">
+                    <h3 className="text-lg font-semibold text-foreground">Encrypted Connection Only</h3>
+                    <p className="text-muted-foreground text-sm mt-1">
                       Require all connections to use HTTPS encryption. This protects your data from interception.
                     </p>
                     <div className="mt-3 flex items-center gap-2">
                       <Badge className="bg-green-100 text-green-800 border-0">Always On</Badge>
-                      <span className="text-xs text-gray-600">This setting cannot be disabled for security</span>
+                      <span className="text-xs text-muted-foreground">This setting cannot be disabled for security</span>
                     </div>
                   </div>
                 </div>
@@ -280,17 +280,17 @@ export default function PrivacySecurityPage() {
           <TabsContent value="sessions" className="space-y-6">
             <div className="space-y-4">
               {/* Current Session */}
-              <Card className="bg-white shadow-lg border-0 p-6">
+              <Card className="bg-background shadow-lg border-0 p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
                     <Smartphone className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-gray-900">Current Session</h3>
+                        <h3 className="text-lg font-semibold text-foreground">Current Session</h3>
                         <Badge className="bg-green-100 text-green-800 border-0">Active</Badge>
                       </div>
-                      <p className="text-gray-600 text-sm mt-1">Chrome on macOS</p>
-                      <div className="mt-3 text-xs text-gray-600 space-y-1">
+                      <p className="text-muted-foreground text-sm mt-1">Chrome on macOS</p>
+                      <div className="mt-3 text-xs text-muted-foreground space-y-1">
                         <p>IP Address: 203.0.113.42</p>
                         <p>Location: San Francisco, CA</p>
                         <p>Last Active: Just now</p>
@@ -301,14 +301,14 @@ export default function PrivacySecurityPage() {
               </Card>
 
               {/* Other Sessions */}
-              <Card className="bg-white shadow-lg border-0 p-6">
+              <Card className="bg-background shadow-lg border-0 p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
-                    <Smartphone className="w-6 h-6 text-gray-400 mt-1 flex-shrink-0" />
+                    <Smartphone className="w-6 h-6 text-muted-foreground mt-1 flex-shrink-0" />
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900">Mobile App</h3>
-                      <p className="text-gray-600 text-sm mt-1">Safari on iPhone</p>
-                      <div className="mt-3 text-xs text-gray-600 space-y-1">
+                      <h3 className="text-lg font-semibold text-foreground">Mobile App</h3>
+                      <p className="text-muted-foreground text-sm mt-1">Safari on iPhone</p>
+                      <div className="mt-3 text-xs text-muted-foreground space-y-1">
                         <p>IP Address: 203.0.113.99</p>
                         <p>Location: San Francisco, CA</p>
                         <p>Last Active: 2 hours ago</p>
@@ -322,7 +322,7 @@ export default function PrivacySecurityPage() {
               </Card>
 
               {/* Sign Out All */}
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mt-6 p-4 bg-background border border-blue-200 rounded-lg">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
                   <div>
@@ -331,7 +331,7 @@ export default function PrivacySecurityPage() {
                       Sign out from all devices. You&apos;ll need to log in again on each device.
                     </p>
                   </div>
-                  <Button className="ml-auto bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button className="ml-auto bg-primary hover:bg-primary text-background">
                     Sign Out All
                   </Button>
                 </div>
@@ -342,32 +342,32 @@ export default function PrivacySecurityPage() {
           {/* Data Tab */}
           <TabsContent value="data" className="space-y-6">
             {/* Download Data */}
-            <Card className="bg-white shadow-lg border-0 p-6">
+            <Card className="bg-background shadow-lg border-0 p-6">
               <div className="flex items-start gap-4">
                 <Download className="w-6 h-6 text-[#0a4fa6] mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">Download Your Data</h3>
-                  <p className="text-gray-600 text-sm mt-1">
+                  <h3 className="text-lg font-semibold text-foreground">Download Your Data</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
                     Download a copy of all your personal data, transactions, and account information in a portable format (JSON/CSV).
                   </p>
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-600 mb-3">Select the data you want to download:</p>
+                  <div className="mt-4 p-4 bg-background rounded-lg border border-border">
+                    <p className="text-sm text-muted-foreground mb-3">Select the data you want to download:</p>
                     <div className="space-y-2">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" defaultChecked className="w-4 h-4" />
-                        <span className="text-sm text-gray-700">Personal Information</span>
+                        <span className="text-sm text-foreground">Personal Information</span>
                       </label>
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" defaultChecked className="w-4 h-4" />
-                        <span className="text-sm text-gray-700">Transaction History</span>
+                        <span className="text-sm text-foreground">Transaction History</span>
                       </label>
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" defaultChecked className="w-4 h-4" />
-                        <span className="text-sm text-gray-700">Account Details</span>
+                        <span className="text-sm text-foreground">Account Details</span>
                       </label>
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" defaultChecked className="w-4 h-4" />
-                        <span className="text-sm text-gray-700">Login History & Security Logs</span>
+                        <span className="text-sm text-foreground">Login History & Security Logs</span>
                       </label>
                     </div>
                   </div>
@@ -380,18 +380,18 @@ export default function PrivacySecurityPage() {
             </Card>
 
             {/* Delete Account */}
-            <Card className="bg-white shadow-lg border-0 p-6 border-l-4 border-l-red-600">
+            <Card className="bg-background shadow-lg border-0 p-6 border-l-4 border-l-red-600">
               <div className="flex items-start gap-4">
                 <Trash2 className="w-6 h-6 text-red-600 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">Delete Account</h3>
-                  <p className="text-gray-600 text-sm mt-1">
+                  <h3 className="text-lg font-semibold text-foreground">Delete Account</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
                     Permanently delete your account and all associated data. This action cannot be undone.
                   </p>
                   <p className="text-sm text-red-600 font-semibold mt-3">
                     Warning: This will delete your account, close all accounts, and erase all transaction history.
                   </p>
-                  <Button className="mt-4 bg-red-600 hover:bg-red-700 text-white">
+                  <Button className="mt-4 bg-red-600 hover:bg-red-700 text-background">
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Account
                   </Button>
@@ -402,7 +402,7 @@ export default function PrivacySecurityPage() {
         </Tabs>
 
         {/* Privacy Policy Footer */}
-        <Card className="bg-blue-50 border border-blue-200 shadow-lg p-6 mt-8">
+        <Card className="bg-background border border-blue-200 shadow-lg p-6 mt-8">
           <div className="flex items-start gap-4">
             <Shield className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
             <div>

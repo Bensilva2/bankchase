@@ -45,6 +45,11 @@ export default function HomePage() {
                   View Accounts
                 </Button>
               </Link>
+              <Link href="/email-management">
+                <Button size="lg" variant="outline" className="px-8">
+                  Email Management
+                </Button>
+              </Link>
             </div>
           </div>
         ) : (

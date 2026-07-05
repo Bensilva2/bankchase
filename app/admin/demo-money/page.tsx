@@ -174,7 +174,7 @@ export default function DemoTransferPage() {
               <button
                 type="submit"
                 disabled={isTransferLoading}
-                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition"
+                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-background font-semibold py-3 rounded-lg transition"
               >
                 {isTransferLoading ? 'Processing...' : 'Send Transfer'}
               </button>
@@ -191,7 +191,7 @@ export default function DemoTransferPage() {
                   Send demo funds to all registered users in your organization.
                 </p>
 
-                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+                <div className="bg-background dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     <span className="font-semibold">Total Users:</span> {accounts.length}
                   </p>
@@ -200,7 +200,7 @@ export default function DemoTransferPage() {
                 <button
                   onClick={handleBulkTransfer}
                   disabled={isTransferLoading}
-                  className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
+                  className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-background font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
                 >
                   <Users className="w-5 h-5" />
                   {isTransferLoading ? 'Processing...' : 'Send to All Users'}

@@ -62,7 +62,7 @@ function getSeverityColor(severity: string) {
     case 'low':
       return 'bg-green-100 text-green-800'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-background text-foreground'
   }
 }
 
@@ -85,21 +85,21 @@ export function SecurityAlerts() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Security Alerts</h2>
+        <h2 className="text-2xl font-bold text-foreground">Security Alerts</h2>
         <Button variant="outline" className="text-sm">
           Clear All
         </Button>
       </div>
 
       {mockAlerts.length === 0 ? (
-        <Card className="bg-white shadow-lg border-0 p-8 text-center">
+        <Card className="bg-background shadow-lg border-0 p-8 text-center">
           <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900">No Security Alerts</h3>
-          <p className="text-gray-600 mt-2">Your account appears to be secure. No suspicious activity detected.</p>
+          <h3 className="text-lg font-semibold text-foreground">No Security Alerts</h3>
+          <p className="text-muted-foreground mt-2">Your account appears to be secure. No suspicious activity detected.</p>
         </Card>
       ) : (
         mockAlerts.map((alert) => (
-          <Card key={alert.id} className="bg-white shadow-lg border-0 p-6">
+          <Card key={alert.id} className="bg-background shadow-lg border-0 p-6">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 mt-1">
                 {getTypeIcon(alert.type)}
@@ -108,25 +108,25 @@ export function SecurityAlerts() {
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{alert.title}</h3>
-                    <p className="text-gray-600 text-sm mt-1">{alert.description}</p>
+                    <h3 className="text-lg font-semibold text-foreground">{alert.title}</h3>
+                    <p className="text-muted-foreground text-sm mt-1">{alert.description}</p>
                   </div>
                   <Badge className={`ml-4 flex-shrink-0 ${getSeverityColor(alert.severity)}`}>
                     {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Clock className="w-4 h-4 text-gray-400" />
+                <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
                     {alert.timestamp}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
                     {alert.location}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Smartphone className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Smartphone className="w-4 h-4 text-muted-foreground" />
                     {alert.device}
                   </div>
                 </div>

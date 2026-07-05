@@ -50,7 +50,7 @@ export class ErrorBoundary extends React.Component<
                   this.setState({ hasError: false, error: null });
                   window.location.href = '/';
                 }}
-                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-background rounded-lg transition"
               >
                 Go Home
               </button>

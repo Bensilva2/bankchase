@@ -3,7 +3,7 @@
  * Handles all backend communication
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export interface ApiError {
   status: number;
@@ -105,7 +105,7 @@ export class ApiClient {
 
   // Accounts
   static async getAccounts() {
-    return this.request('/accounts/');
+    return this.request('/accounts');
   }
 
   static async getAccount(accountId: number) {

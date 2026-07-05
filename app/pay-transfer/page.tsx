@@ -186,7 +186,7 @@ export default function PayTransferPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
+              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-background font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
             >
               <Send className="w-5 h-5" />
               {isLoading ? 'Processing...' : 'Send Money'}
@@ -194,7 +194,7 @@ export default function PayTransferPage() {
           </form>
 
           {/* Info Box */}
-          <div className="mt-6 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
+          <div className="mt-6 bg-background dark:bg-blue-950 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
             <p className="text-sm text-blue-700 dark:text-blue-300">
               <span className="font-semibold">Note:</span> Internal Chase transfers are instant. External transfers may show as pending and will auto-refund after 7-14 days for demo accounts.
             </p>

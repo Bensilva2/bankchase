@@ -17,7 +17,7 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -44,14 +44,14 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-card pb-8">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <BackButton />
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
-            <p className="text-gray-600">Stay updated with your account activity</p>
+            <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
+            <p className="text-muted-foreground">Stay updated with your account activity</p>
           </div>
         </div>
 
@@ -62,8 +62,8 @@ export default function NotificationsPage() {
               onClick={() => setFilterType('all')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 filterType === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-primary text-background'
+                  : 'bg-background text-foreground hover:bg-background'
               }`}
             >
               All ({notifications.length})
@@ -72,8 +72,8 @@ export default function NotificationsPage() {
               onClick={() => setFilterType('unread')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 filterType === 'unread'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-primary text-background'
+                  : 'bg-background text-foreground hover:bg-background'
               }`}
             >
               Unread ({notifications.filter((n: any) => !n.read).length})
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
                     ? 'border-l-red-500 bg-red-50'
                     : notification.type === 'success'
                     ? 'border-l-green-500 bg-green-50'
-                    : 'border-l-blue-500 bg-blue-50'
+                    : 'border-l-blue-500 bg-background'
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -109,9 +109,9 @@ export default function NotificationsPage() {
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{notification.title}</h3>
-                      <p className="text-gray-600 text-sm">{notification.message}</p>
-                      <p className="text-gray-500 text-xs mt-2">
+                      <h3 className="font-semibold text-foreground">{notification.title}</h3>
+                      <p className="text-muted-foreground text-sm">{notification.message}</p>
+                      <p className="text-muted-foreground text-xs mt-2">
                         {new Date(notification.date).toLocaleDateString()} at{' '}
                         {new Date(notification.date).toLocaleTimeString()}
                       </p>
@@ -121,7 +121,7 @@ export default function NotificationsPage() {
                     {!notification.read && (
                       <button
                         onClick={() => markNotificationRead?.(notification.id)}
-                        className="p-2 hover:bg-white rounded transition"
+                        className="p-2 hover:bg-background rounded transition"
                         title="Mark as read"
                       >
                         <CheckCircle className="w-4 h-4 text-blue-600" />
@@ -129,7 +129,7 @@ export default function NotificationsPage() {
                     )}
                     <button
                       onClick={() => deleteNotification?.(notification.id)}
-                      className="p-2 hover:bg-white rounded transition text-red-600"
+                      className="p-2 hover:bg-background rounded transition text-red-600"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -140,8 +140,8 @@ export default function NotificationsPage() {
             ))
           ) : (
             <Card className="p-8 text-center">
-              <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No notifications to display</p>
+              <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No notifications to display</p>
             </Card>
           )}
         </div>
