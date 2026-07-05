@@ -36,14 +36,21 @@ export function EmailComposer({
     e.preventDefault()
     setSubmitted(true)
 
-    if (!email || !name) {
-      alert('Please fill in email and name fields')
+    if (!email) {
+      alert('Please fill in email field')
       return
     }
 
-    if (emailType === 'custom' && !subject) {
-      alert('Please enter a subject for custom emails')
-      return
+    if (emailType === 'custom') {
+      if (!subject) {
+        alert('Please enter a subject for custom emails')
+        return
+      }
+    } else {
+      if (!name) {
+        alert('Please fill in name field')
+        return
+      }
     }
 
     if (emailType === 'completion' && !workflowRunId) {
@@ -54,7 +61,10 @@ export function EmailComposer({
     const params: any = {
       type: emailType,
       email,
-      name,
+    }
+
+    if (name) {
+      params.name = name
     }
 
     if (emailType === 'completion') {
@@ -65,8 +75,8 @@ export function EmailComposer({
       params.subject = subject
       if (htmlContent) params.html = htmlContent
       if (textContent) params.text = textContent
-      if (cc) params.cc = cc.split(',').map(e => e.trim())
-      if (bcc) params.bcc = bcc.split(',').map(e => e.trim())
+      if (cc) params.cc = cc.split(',').map(e => e.trim()).filter(e => e)
+      if (bcc) params.bcc = bcc.split(',').map(e => e.trim()).filter(e => e)
       if (replyTo) params.replyTo = replyTo
     }
 
