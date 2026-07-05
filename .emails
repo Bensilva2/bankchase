@@ -1,0 +1,9 @@
+[
+  {
+    "id": "msg-1783217546977-eqfg7gz16",
+    "to": "test@example.com",
+    "subject": "Test Email",
+    "text": "This is a test email",
+    "timestamp": "2026-07-05T02:12:26.977Z"
+  }
+]
