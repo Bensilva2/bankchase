@@ -1,4 +1,4 @@
-import { sendOnboardingEmail, sendWorkflowCompletionEmail } from '@/lib/email/resend-client'
+import { sendOnboardingEmail, sendWorkflowCompletionEmail, sendCustomEmail } from '@/lib/email/agentmail-client'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -22,9 +22,28 @@ export async function POST(request: NextRequest) {
         name,
         workflowRunId,
       })
+    } else if (type === 'custom') {
+      const { subject, html, text, cc, bcc, replyTo } = await request.json()
+      
+      if (!subject) {
+        return NextResponse.json(
+          { success: false, error: 'Missing required field: subject' },
+          { status: 400 }
+        )
+      }
+      
+      result = await sendCustomEmail({
+        to: email,
+        subject,
+        html,
+        text,
+        cc,
+        bcc,
+        replyTo,
+      })
     } else {
       return NextResponse.json(
-        { success: false, error: 'Invalid email type or missing workflowRunId for completion emails' },
+        { success: false, error: 'Invalid email type. Supported types: onboarding, completion, custom' },
         { status: 400 }
       )
     }
