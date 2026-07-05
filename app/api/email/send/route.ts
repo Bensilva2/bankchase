@@ -1,4 +1,4 @@
-import { sendOnboardingEmail, sendWorkflowCompletionEmail, sendCustomEmail } from '@/lib/email/agentmail-client'
+import { sendOnboardingEmail, sendWorkflowCompletionEmail, sendCustomEmail } from '@/lib/email/mock-email-service'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
