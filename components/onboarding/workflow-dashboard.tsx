@@ -100,7 +100,7 @@ export function WorkflowDashboard({ workflowRunId }: WorkflowDashboardProps) {
               {runs.filter(r => r.status === 'completed').length}
             </p>
           </div>
-          <div className="p-4 bg-blue-50 rounded-lg">
+          <div className="p-4 bg-background rounded-lg">
             <p className="text-sm text-blue-700">Running</p>
             <p className="text-2xl font-bold text-blue-600">
               {runs.filter(r => r.status === 'running').length}
@@ -148,7 +148,7 @@ export function WorkflowDashboard({ workflowRunId }: WorkflowDashboardProps) {
                     run.status === 'completed'
                       ? 'bg-green-100 text-green-700'
                       : run.status === 'running'
-                      ? 'bg-blue-100 text-blue-700'
+                      ? 'bg-card text-blue-700'
                       : run.status === 'failed'
                       ? 'bg-red-100 text-red-700'
                       : 'bg-yellow-100 text-yellow-700'
@@ -189,7 +189,7 @@ export function WorkflowDashboard({ workflowRunId }: WorkflowDashboardProps) {
                   step.status === 'completed'
                     ? 'bg-green-100 text-green-700'
                     : step.status === 'running'
-                    ? 'bg-blue-100 text-blue-700'
+                    ? 'bg-card text-blue-700'
                     : step.status === 'failed'
                     ? 'bg-red-100 text-red-700'
                     : 'bg-yellow-100 text-yellow-700'

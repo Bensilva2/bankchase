@@ -317,7 +317,7 @@ export function LinkExternalDrawer({ open, onOpenChange }: LinkExternalDrawerPro
                 <div
                   key={step}
                   className={`h-2 w-8 rounded-full transition-colors ${
-                    verificationStep >= step ? "bg-[#0a4fa6]" : "bg-gray-200"
+                    verificationStep >= step ? "bg-[#0a4fa6]" : "bg-card"
                   }`}
                 />
               ))}
@@ -326,7 +326,7 @@ export function LinkExternalDrawer({ open, onOpenChange }: LinkExternalDrawerPro
         ) : (
           <>
             <div className="px-4 space-y-4 overflow-y-auto pb-10">
-              <div className="bg-blue-50 p-3 rounded-lg flex items-start gap-3">
+              <div className="bg-background p-3 rounded-lg flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-[#0a4fa6] flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-muted-foreground">
                   Link accounts from other banks to view all your finances in one place. Your credentials are never

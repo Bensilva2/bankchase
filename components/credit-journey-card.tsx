@@ -28,7 +28,7 @@ export function CreditJourneyCard({ onViewScore }: CreditJourneyCardProps) {
   const progressPercentage = ((creditScore - 300) / (850 - 300)) * 100
 
   return (
-    <Card className="bg-gradient-to-r from-[#0060A9] to-[#117ACA] text-white border-none p-6 shadow-md">
+    <Card className="bg-gradient-to-r from-[#0060A9] to-[#117ACA] text-background border-none p-6 shadow-md">
       <div className="flex justify-between items-start">
         <div>
           <h3 className="text-xl font-semibold mb-2">Credit Journey</h3>
@@ -57,7 +57,7 @@ export function CreditJourneyCard({ onViewScore }: CreditJourneyCardProps) {
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center">
+            <div className="h-12 w-12 bg-background rounded-full flex items-center justify-center">
               <span className="text-[#0060A9] font-bold text-sm">{creditScore}</span>
             </div>
           </div>
@@ -67,7 +67,7 @@ export function CreditJourneyCard({ onViewScore }: CreditJourneyCardProps) {
         <Button
           variant="secondary"
           onClick={onViewScore}
-          className="bg-white text-[#0060A9] hover:bg-blue-50 font-semibold rounded-full px-6"
+          className="bg-background text-[#0060A9] hover:bg-background font-semibold rounded-full px-6"
         >
           See latest score
         </Button>

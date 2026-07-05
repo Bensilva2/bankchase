@@ -186,18 +186,18 @@ export function PlaidLinkButton({ onSuccess, onError }: PlaidLinkButtonProps) {
       {/* List of connected institutions */}
       {connectedItems.length > 0 && (
         <div className="mt-6 space-y-3 border-t pt-6">
-          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
             Connected Accounts
           </h3>
           {connectedItems.map((item, i) => (
-            <div key={i} className="rounded-lg border border-gray-200 p-4 bg-white">
-              <p className="font-semibold text-gray-900">{item.institution}</p>
+            <div key={i} className="rounded-lg border border-border p-4 bg-background">
+              <p className="font-semibold text-foreground">{item.institution}</p>
               <ul className="mt-2 space-y-1">
                 {item.accounts?.map((account: any) => (
-                  <li key={account.id} className="text-sm text-gray-600">
+                  <li key={account.id} className="text-sm text-muted-foreground">
                     <div className="flex justify-between">
                       <span>{account.name}</span>
-                      <span className="text-gray-400">{account.subtype} •••{account.mask}</span>
+                      <span className="text-muted-foreground">{account.subtype} •••{account.mask}</span>
                     </div>
                   </li>
                 ))}

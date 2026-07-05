@@ -90,12 +90,12 @@ export function DashboardHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10 relative"
+              className="text-background hover:bg-background/10 relative"
               onClick={() => setMessagesOpen(true)}
             >
               <MessageSquare className="h-5 w-5" />
               {unreadMessages > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] font-bold text-background flex items-center justify-center">
                   {unreadMessages}
                 </span>
               )}
@@ -103,12 +103,12 @@ export function DashboardHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10 relative"
+              className="text-background hover:bg-background/10 relative"
               onClick={() => setNotificationsOpen(true)}
             >
               <Bell className="h-5 w-5" />
               {unreadNotificationCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] font-bold text-background flex items-center justify-center">
                   {unreadNotificationCount}
                 </span>
               )}
@@ -117,7 +117,7 @@ export function DashboardHeader() {
 
           <div className="flex items-center gap-2">
             <Image src="/images/chase-logo.png" alt="Chase" width={36} height={36} className="rounded" />
-            <span className="text-white text-xl font-bold tracking-wide">CHASE</span>
+            <span className="text-background text-xl font-bold tracking-wide">CHASE</span>
           </div>
 
           <Button
@@ -128,7 +128,7 @@ export function DashboardHeader() {
           >
             <Avatar className="h-10 w-10">
               <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={user?.firstName || user?.username || ""} />
-              <AvatarFallback className="bg-white text-[#0a4fa6] font-semibold">
+              <AvatarFallback className="bg-background text-[#0a4fa6] font-semibold">
                 {((user?.firstName || "") + " " + (user?.lastName || ""))
                   .trim()
                   .split(" ")
@@ -146,7 +146,7 @@ export function DashboardHeader() {
               placeholder="Search transactions, payees..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white/95 border-0 h-10 rounded-full"
+              className="pl-10 bg-background/95 border-0 h-10 rounded-full"
             />
           </div>
         </form>
@@ -267,7 +267,7 @@ export function DashboardHeader() {
               <div className="relative">
                 <Avatar className="h-24 w-24 border-4 border-[#0a4fa6]">
                   <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={user?.firstName || user?.username || ""} />
-                  <AvatarFallback className="bg-[#0a4fa6] text-white text-2xl font-bold">
+                  <AvatarFallback className="bg-[#0a4fa6] text-background text-2xl font-bold">
                     {((user?.firstName || "") + " " + (user?.lastName || ""))
                       .trim()
                       .split(" ")
@@ -319,16 +319,16 @@ export function DashboardHeader() {
             </div>
 
             {/* Rewards Card */}
-            <div className="chase-gradient rounded-xl p-4 text-white">
+            <div className="chase-gradient rounded-xl p-4 text-background">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm opacity-90">Chase Ultimate Rewards</span>
-                <Badge variant="secondary" className="bg-white/20 text-white">
+                <Badge variant="secondary" className="bg-background/20 text-background">
                   Private Client
                 </Badge>
               </div>
               <p className="text-3xl font-bold">{userProfile.ultimateRewardsPoints?.toLocaleString() || "287,450"}</p>
               <p className="text-sm opacity-80">points available</p>
-              <Button variant="secondary" size="sm" className="mt-3 w-full bg-white text-[#0a4fa6] hover:bg-white/90">
+              <Button variant="secondary" size="sm" className="mt-3 w-full bg-background text-[#0a4fa6] hover:bg-background/90">
                 Redeem Points
               </Button>
             </div>

@@ -31,14 +31,14 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="bg-white shadow">
+    <nav className="bg-background shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/accounts" className="flex items-center">
               <span className="text-2xl font-bold text-blue-600">Chase</span>
-              <span className="text-xs text-gray-500 ml-2">Voice Banking</span>
+              <span className="text-xs text-muted-foreground ml-2">Voice Banking</span>
             </Link>
           </div>
 
@@ -48,14 +48,14 @@ export function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition"
+                className="px-3 py-2 rounded-md text-sm font-medium text-foreground hover:text-blue-600 hover:bg-background transition"
               >
                 {item.label}
               </Link>
             ))}
             <button
               onClick={handleLogout}
-              className="ml-4 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
+              className="ml-4 px-4 py-2 rounded-lg text-sm font-medium text-background bg-primary hover:bg-primary transition"
             >
               Logout
             </button>
@@ -65,7 +65,7 @@ export function Navigation() {
           <div className="flex md:hidden items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+              className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-blue-600 hover:bg-background"
             >
               <span className="sr-only">Open main menu</span>
               {isOpen ? (
@@ -90,7 +90,7 @@ export function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-blue-600 hover:bg-background"
                 onClick={() => setIsOpen(false)}
               >
                 {item.label}
@@ -101,7 +101,7 @@ export function Navigation() {
                 handleLogout();
                 setIsOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 mt-4"
+              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-background bg-primary hover:bg-primary mt-4"
             >
               Logout
             </button>

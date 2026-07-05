@@ -49,11 +49,11 @@ export function PlanTrackView() {
 
   const categoryColors: Record<string, string> = {
     "Food & Drink": "bg-orange-500",
-    "Bills & Utilities": "bg-blue-500",
+    "Bills & Utilities": "bg-primary",
     Shopping: "bg-purple-500",
     Entertainment: "bg-pink-500",
     Transportation: "bg-green-500",
-    Transfers: "bg-gray-500",
+    Transfers: "bg-secondary",
     Income: "bg-emerald-500",
     Savings: "bg-cyan-500",
   }
@@ -253,7 +253,7 @@ export function PlanTrackView() {
                   <Card key={index} className="p-4 chase-card-shadow border-0">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
-                        <div className={`h-3 w-3 rounded-full ${categoryColors[item.category] || "bg-gray-400"}`} />
+                        <div className={`h-3 w-3 rounded-full ${categoryColors[item.category] || "bg-secondary"}`} />
                         <span className="font-medium">{item.category}</span>
                       </div>
                       <span className="font-bold">${item.amount.toLocaleString()}</span>

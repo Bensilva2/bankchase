@@ -80,18 +80,18 @@ export function TransactionList({ accountId, limit = 20, showFilters = true }: T
   const CategoryBadge = ({ category }: { category: string }) => {
     const colors: Record<string, string> = {
       'Income': 'bg-green-100 text-green-800',
-      'Shopping': 'bg-blue-100 text-blue-800',
+      'Shopping': 'bg-card text-blue-800',
       'Food & Drink': 'bg-orange-100 text-orange-800',
       'Dining': 'bg-orange-100 text-orange-800',
       'Bills & Utilities': 'bg-red-100 text-red-800',
       'Entertainment': 'bg-purple-100 text-purple-800',
       'Transportation': 'bg-yellow-100 text-yellow-800',
-      'Cash': 'bg-gray-100 text-gray-800',
+      'Cash': 'bg-background text-foreground',
       'Transfers': 'bg-indigo-100 text-indigo-800',
       'Interest': 'bg-emerald-100 text-emerald-800',
     }
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[category] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[category] || 'bg-background text-foreground'}`}>
         {category}
       </span>
     )
@@ -106,20 +106,20 @@ export function TransactionList({ accountId, limit = 20, showFilters = true }: T
     )
 
     return (
-      <div className="flex items-center justify-between py-4 border-b hover:bg-gray-50 px-4">
+      <div className="flex items-center justify-between py-4 border-b hover:bg-background px-4">
         <div className="flex items-center gap-3 flex-1">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100">{icon}</div>
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background">{icon}</div>
           <div className="flex-1">
-            <p className="font-medium text-gray-900">{tx.description}</p>
+            <p className="font-medium text-foreground">{tx.description}</p>
             <div className="flex items-center gap-2 mt-1">
               <CategoryBadge category={tx.category} />
-              <span className="text-xs text-gray-500">{new Date(tx.date).toLocaleDateString()}</span>
-              {tx.reference && <span className="text-xs text-gray-400">• {tx.reference}</span>}
+              <span className="text-xs text-muted-foreground">{new Date(tx.date).toLocaleDateString()}</span>
+              {tx.reference && <span className="text-xs text-muted-foreground">• {tx.reference}</span>}
             </div>
           </div>
         </div>
         <div className="text-right">
-          <p className={`font-semibold ${isCredit ? 'text-green-600' : 'text-gray-900'}`}>
+          <p className={`font-semibold ${isCredit ? 'text-green-600' : 'text-foreground'}`}>
             {isCredit ? '+' : '-'}${tx.amount.toFixed(2)}
           </p>
           {tx.status && (
@@ -135,10 +135,10 @@ export function TransactionList({ accountId, limit = 20, showFilters = true }: T
   return (
     <div className="space-y-4">
       {showFilters && (
-        <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+        <div className="space-y-4 bg-background p-4 rounded-lg">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search transactions..."
               value={searchQuery}
@@ -204,11 +204,11 @@ export function TransactionList({ accountId, limit = 20, showFilters = true }: T
       )}
 
       {/* Transactions List */}
-      <div className="bg-white rounded-lg border">
+      <div className="bg-background rounded-lg border">
         {filteredTransactions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No transactions found</p>
-            {searchQuery && <p className="text-sm text-gray-400 mt-2">Try adjusting your search or filters</p>}
+            <p className="text-muted-foreground">No transactions found</p>
+            {searchQuery && <p className="text-sm text-muted-foreground mt-2">Try adjusting your search or filters</p>}
           </div>
         ) : (
           <div>

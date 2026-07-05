@@ -181,8 +181,8 @@ export function CreditScoreDrawer({ open, onOpenChange }: CreditScoreDrawerProps
         </DrawerHeader>
         <div className="px-4 pb-6 space-y-4 overflow-auto flex-1">
           {/* Main Score Card */}
-          <Card className="p-6 text-center bg-gradient-to-br from-[#0a4fa6] to-[#117aca] text-white">
-            <p className="text-sm text-white/80 mb-2">VantageScore® 3.0</p>
+          <Card className="p-6 text-center bg-gradient-to-br from-[#0a4fa6] to-[#117aca] text-background">
+            <p className="text-sm text-background/80 mb-2">VantageScore® 3.0</p>
             <div className="relative inline-block">
               <p className="text-6xl font-bold mb-2">{creditScore}</p>
               {scoreChange !== 0 && (
@@ -194,10 +194,10 @@ export function CreditScoreDrawer({ open, onOpenChange }: CreditScoreDrawerProps
                 </div>
               )}
             </div>
-            <p className={`text-lg font-medium ${category.color} bg-white/20 rounded-full px-4 py-1 inline-block`}>
+            <p className={`text-lg font-medium ${category.color} bg-background/20 rounded-full px-4 py-1 inline-block`}>
               {category.label}
             </p>
-            <p className="text-sm text-white/70 mt-3">
+            <p className="text-sm text-background/70 mt-3">
               Updated {lastUpdated.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
             </p>
           </Card>
@@ -230,7 +230,7 @@ export function CreditScoreDrawer({ open, onOpenChange }: CreditScoreDrawerProps
               <div className="relative">
                 <Progress value={progressPercentage} className="h-3" />
                 <div
-                  className="absolute top-0 h-3 w-1 bg-white border border-gray-400 rounded"
+                  className="absolute top-0 h-3 w-1 bg-background border border-border rounded"
                   style={{ left: `${progressPercentage}%`, transform: "translateX(-50%)" }}
                 />
               </div>

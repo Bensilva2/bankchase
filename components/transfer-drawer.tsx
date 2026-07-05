@@ -299,7 +299,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
               <div className="space-y-2">
                 <Label>Amount</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-gray-500">$</span>
+                  <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
                   <Input
                     type="number"
                     className="pl-8"
@@ -318,7 +318,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
 
             {/* External Transfer Tab */}
             <TabsContent value="external" className="space-y-4 pb-4">
-              <div className="bg-blue-50 p-3 rounded text-sm text-blue-800 mb-2">
+              <div className="bg-background p-3 rounded text-sm text-blue-800 mb-2">
                 Transfer to another bank account using the recipient's routing and account number.
               </div>
 
@@ -406,7 +406,7 @@ export function TransferDrawer({ open, onOpenChange, onReceiptOpen }: TransferDr
               <div className="space-y-2">
                 <Label>Amount</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-gray-500">$</span>
+                  <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
                   <Input
                     type="number"
                     className="pl-8"

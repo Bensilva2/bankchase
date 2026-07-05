@@ -56,7 +56,7 @@ export default function TransactionMetrics() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {Array(4).fill(0).map((_, i) => (
           <Card key={i} className="animate-pulse">
-            <CardContent className="pt-6 h-24 bg-gray-100 rounded" />
+            <CardContent className="pt-6 h-24 bg-background rounded" />
           </Card>
         ))}
       </div>
@@ -105,7 +105,7 @@ export default function TransactionMetrics() {
   ]
 
   const colorStyles: Record<string, { bg: string; text: string; border: string }> = {
-    blue: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+    blue: { bg: 'bg-background', text: 'text-blue-700', border: 'border-blue-200' },
     green: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
     purple: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
     orange: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' }
@@ -120,11 +120,11 @@ export default function TransactionMetrics() {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600">{metric.title}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{metric.title}</p>
                   <p className={`text-2xl font-bold ${style.text} mt-1`}>
                     {metric.value}
                   </p>
-                  <p className="text-xs text-gray-500 mt-2">{metric.subtext}</p>
+                  <p className="text-xs text-muted-foreground mt-2">{metric.subtext}</p>
                 </div>
                 <span className="text-2xl">{metric.icon}</span>
               </div>

@@ -470,7 +470,7 @@ ${transaction.routingNumber ? `Routing: ${transaction.routingNumber}` : ""}
 
           {/* Email Form */}
           {showEmailForm && (
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-background rounded-lg">
               <Label className="text-sm">Send receipt to email:</Label>
               <Input
                 type="email"

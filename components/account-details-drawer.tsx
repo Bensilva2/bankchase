@@ -72,7 +72,7 @@ export function AccountDetailsDrawer({ open, onOpenChange, accountId, onReceiptO
       case "failed":
         return "bg-red-100 text-red-700"
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-background text-foreground"
     }
   }
 
@@ -93,16 +93,16 @@ export function AccountDetailsDrawer({ open, onOpenChange, accountId, onReceiptO
 
         <div className="flex-1 overflow-auto px-4 pb-6">
           {/* Balance Card */}
-          <Card className="p-6 my-4 bg-gradient-to-r from-[#0a4fa6] to-[#117aca] text-white">
-            <p className="text-sm text-white/80 mb-1">Available Balance</p>
+          <Card className="p-6 my-4 bg-gradient-to-r from-[#0a4fa6] to-[#117aca] text-background">
+            <p className="text-sm text-background/80 mb-1">Available Balance</p>
             <p className="text-4xl font-bold">${formatBalance(account.balance)}</p>
             <div className="flex items-center gap-4 mt-4 text-sm">
               <div>
-                <p className="text-white/70">Account Number</p>
+                <p className="text-background/70">Account Number</p>
                 <p className="font-medium">...{account.accountNumber}</p>
               </div>
               <div>
-                <p className="text-white/70">Routing Number</p>
+                <p className="text-background/70">Routing Number</p>
                 <p className="font-medium">{account.routingNumber}</p>
               </div>
             </div>

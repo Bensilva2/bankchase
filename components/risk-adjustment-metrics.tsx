@@ -58,7 +58,7 @@ export function RiskAdjustmentMetrics({
     critical: "bg-red-50",
     high: "bg-orange-50",
     medium: "bg-yellow-50",
-    low: "bg-blue-50",
+    low: "bg-background",
     safe: "bg-green-50",
   }[riskLevel]
 
@@ -90,7 +90,7 @@ export function RiskAdjustmentMetrics({
               </span>
             </div>
             <Progress value={adjustedRisk * 100} className="h-3" />
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-muted-foreground">
               Base: {(baselineRisk * 100).toFixed(1)}% → Adjusted: {(adjustedRisk * 100).toFixed(1)}%
             </p>
           </div>
@@ -98,13 +98,13 @@ export function RiskAdjustmentMetrics({
           {/* Risk Multiplier */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <p className="text-sm text-gray-600">Risk Multiplier</p>
+              <p className="text-sm text-muted-foreground">Risk Multiplier</p>
               <p className="text-2xl font-bold">
                 {metrics.rolling_risk_multiplier.toFixed(2)}x
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-gray-600">Consecutive Drifts</p>
+              <p className="text-sm text-muted-foreground">Consecutive Drifts</p>
               <p className="text-2xl font-bold">{metrics.consecutive_drift_count}</p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export function RiskAdjustmentMetrics({
             <div className="flex items-center gap-2">
               <div
                 className={`w-3 h-3 rounded-full ${
-                  metrics.adaptive_alpha ? "bg-green-500" : "bg-gray-300"
+                  metrics.adaptive_alpha ? "bg-green-500" : "bg-card"
                 }`}
               />
               <span>Adaptive Learning {metrics.adaptive_alpha ? "Active" : "Inactive"}</span>
@@ -133,7 +133,7 @@ export function RiskAdjustmentMetrics({
             <div className="flex items-center gap-2">
               <div
                 className={`w-3 h-3 rounded-full ${
-                  metrics.consecutive_drift_count >= 3 ? "bg-red-500" : "bg-gray-300"
+                  metrics.consecutive_drift_count >= 3 ? "bg-red-500" : "bg-card"
                 }`}
               />
               <span>
@@ -162,8 +162,8 @@ export function RiskAdjustmentMetrics({
             ].map((tier) => (
               <div key={tier.label} className="flex items-center justify-between text-sm">
                 <span className="font-medium">{tier.label}</span>
-                <span className="text-gray-600">{(tier.threshold * 100).toFixed(0)}%</span>
-                <span className="text-xs text-gray-500">→ {tier.action}</span>
+                <span className="text-muted-foreground">{(tier.threshold * 100).toFixed(0)}%</span>
+                <span className="text-xs text-muted-foreground">→ {tier.action}</span>
               </div>
             ))}
           </div>

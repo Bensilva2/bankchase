@@ -259,8 +259,8 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
       }}
     >
       <DrawerContent className="h-[90vh]">
-        <DrawerHeader className="bg-[#0a4fa6] text-white rounded-t-lg">
-          <DrawerTitle className="text-white">Pay Bills</DrawerTitle>
+        <DrawerHeader className="bg-[#0a4fa6] text-background rounded-t-lg">
+          <DrawerTitle className="text-background">Pay Bills</DrawerTitle>
         </DrawerHeader>
 
         <Tabs defaultValue="pay" className="px-4 flex-1 overflow-hidden">
@@ -274,7 +274,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
           <TabsContent value="pay" className="space-y-4 overflow-y-auto max-h-[60vh]">
             {step === "select" && (
               <>
-                <div className="bg-blue-50 p-3 rounded-lg text-sm text-[#0a4fa6]">Select a payee to pay your bill</div>
+                <div className="bg-background p-3 rounded-lg text-sm text-[#0a4fa6]">Select a payee to pay your bill</div>
 
                 <div className="space-y-2">
                   {allPayees.slice(0, 8).map((payee) => (
@@ -369,7 +369,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
             {step === "confirm" && (
               <div className="py-8 text-center">
                 <div className="w-16 h-16 bg-[#0a4fa6] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-3 border-border border-t-transparent rounded-full animate-spin" />
                 </div>
                 <h3 className="text-xl font-semibold">Processing Payment...</h3>
               </div>
@@ -378,7 +378,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
             {step === "success" && (
               <div className="py-8 text-center">
                 <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="h-8 w-8 text-white" />
+                  <CheckCircle2 className="h-8 w-8 text-background" />
                 </div>
                 <h3 className="text-xl font-semibold text-green-600">Payment Scheduled!</h3>
                 <p className="text-muted-foreground mt-2">Your bill payment has been scheduled</p>
@@ -439,7 +439,7 @@ export function PayBillsDrawer({ open, onOpenChange, onReceiptOpen }: PayBillsDr
           </TabsContent>
 
           <TabsContent value="add" className="space-y-4">
-            <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-800 mb-4">
+            <div className="bg-background p-3 rounded-md text-sm text-blue-800 mb-4">
               Add a new company or person to pay bills to.
             </div>
 

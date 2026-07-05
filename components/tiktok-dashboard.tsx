@@ -117,7 +117,7 @@ export function TikTokDashboard() {
       value: `${stats.averageROI?.toFixed(1)}%`,
       icon: TrendingUp,
       color: 'text-blue-400',
-      bgColor: 'bg-blue-500/10',
+      bgColor: 'bg-primary/10',
     },
     {
       label: 'Active Leads',
@@ -324,7 +324,7 @@ export function TikTokDashboard() {
                               ? 'bg-green-500/20 text-green-400'
                               : campaign.status === 'PAUSED'
                                 ? 'bg-yellow-500/20 text-yellow-400'
-                                : 'bg-gray-500/20 text-gray-400'
+                                : 'bg-secondary/20 text-muted-foreground'
                           }`}
                         >
                           {campaign.status}
@@ -396,7 +396,7 @@ export function TikTokDashboard() {
                               lead.status === 'CONVERTED'
                                 ? 'bg-green-500/20 text-green-400'
                                 : lead.status === 'QUALIFIED'
-                                  ? 'bg-blue-500/20 text-blue-400'
+                                  ? 'bg-primary/20 text-blue-400'
                                   : lead.status === 'CONTACTED'
                                     ? 'bg-yellow-500/20 text-yellow-400'
                                     : 'bg-purple-500/20 text-purple-400'
@@ -431,7 +431,7 @@ export function TikTokDashboard() {
                           className={`${
                             catalog.status === 'ACTIVE'
                               ? 'bg-green-500/20 text-green-400'
-                              : 'bg-gray-500/20 text-gray-400'
+                              : 'bg-secondary/20 text-muted-foreground'
                           }`}
                         >
                           {catalog.status}

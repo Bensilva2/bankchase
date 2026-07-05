@@ -67,7 +67,7 @@ export function BulkDemoTransfer({ onTransferComplete }: BulkTransferProps) {
         <form onSubmit={handleBulkTransfer} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Amount per User ($)
               </label>
               <input
@@ -77,18 +77,18 @@ export function BulkDemoTransfer({ onTransferComplete }: BulkTransferProps) {
                 placeholder="0.00"
                 step="0.01"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-border rounded-md text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Refund After (days)
               </label>
               <select
                 value={days}
                 onChange={(e) => setDays(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-border rounded-md text-sm"
               >
                 <option value="7">7 days</option>
                 <option value="14">14 days</option>
@@ -96,7 +96,7 @@ export function BulkDemoTransfer({ onTransferComplete }: BulkTransferProps) {
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+          <div className="bg-background border border-blue-200 rounded-md p-3">
             <p className="text-sm text-blue-800">
               This will send demo money to all active users in your organization.
             </p>

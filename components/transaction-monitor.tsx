@@ -101,7 +101,7 @@ export default function TransactionMonitor({
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <div className="animate-spin h-8 w-8 border-4 border-blue-200 border-t-blue-600 rounded-full" />
-            <span className="text-sm text-gray-600">Loading transaction status...</span>
+            <span className="text-sm text-muted-foreground">Loading transaction status...</span>
           </div>
         </CardContent>
       </Card>
@@ -131,7 +131,7 @@ export default function TransactionMonitor({
 
   const statusStyles: Record<string, { bg: string; text: string; icon: string }> = {
     pending: { bg: 'bg-yellow-50', text: 'text-yellow-800', icon: '⏳' },
-    processing: { bg: 'bg-blue-50', text: 'text-blue-800', icon: '⚙️' },
+    processing: { bg: 'bg-background', text: 'text-blue-800', icon: '⚙️' },
     completed: { bg: 'bg-green-50', text: 'text-green-800', icon: '✓' },
     failed: { bg: 'bg-red-50', text: 'text-red-800', icon: '✕' }
   }
@@ -168,13 +168,13 @@ export default function TransactionMonitor({
         {/* Progress Bar */}
         {transaction.status !== 'failed' && (
           <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-600">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>Progress</span>
               <span>{transaction.progress.percent}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-card rounded-full h-2">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-primary h-2 rounded-full transition-all duration-300"
                 style={{ width: `${transaction.progress.percent}%` }}
               />
             </div>
@@ -189,7 +189,7 @@ export default function TransactionMonitor({
         )}
 
         {/* Transaction ID and Elapsed Time */}
-        <div className="flex justify-between text-xs text-gray-600 pt-2 border-t">
+        <div className="flex justify-between text-xs text-muted-foreground pt-2 border-t">
           <span>ID: {transaction.id.slice(0, 8)}...</span>
           <span>{transaction.elapsedSeconds}s elapsed</span>
         </div>
