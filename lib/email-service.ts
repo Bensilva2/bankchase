@@ -1,9 +1,16 @@
 import sgMail from '@sendgrid/mail'
+import {
+  sendTransactionNotificationMailgun,
+  sendSenderConfirmationMailgun,
+} from '@/lib/mailgun-service'
 
 // Initialize SendGrid with API key
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 }
+
+// Determine which email service to use (default: sendgrid)
+const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'sendgrid'
 
 export interface EmailPayload {
   to: string
@@ -16,6 +23,7 @@ export interface TransactionEmailData {
   recipientName: string
   recipientEmail: string
   senderName: string
+  senderEmail: string
   amount: number
   currency: string
   description: string
@@ -25,6 +33,11 @@ export interface TransactionEmailData {
 
 export async function sendTransactionNotification(data: TransactionEmailData): Promise<boolean> {
   try {
+    // Route to appropriate email service
+    if (EMAIL_SERVICE === 'mailgun') {
+      return await sendTransactionNotificationMailgun(data)
+    }
+
     // If SendGrid is not configured, log the email and return success for development
     if (!process.env.SENDGRID_API_KEY) {
       console.log('[v0] SendGrid not configured. Email would be sent to:', data.recipientEmail)
@@ -161,6 +174,11 @@ Contact us at support@chasebank.app for assistance.
 
 export async function sendPaymentConfirmation(data: TransactionEmailData): Promise<boolean> {
   try {
+    // Route to appropriate email service
+    if (EMAIL_SERVICE === 'mailgun') {
+      return await sendSenderConfirmationMailgun(data)
+    }
+
     const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@chasebank.app'
 
     const htmlContent = `
