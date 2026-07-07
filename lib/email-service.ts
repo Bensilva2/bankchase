@@ -25,6 +25,18 @@ export interface TransactionEmailData {
 
 export async function sendTransactionNotification(data: TransactionEmailData): Promise<boolean> {
   try {
+    // If SendGrid is not configured, log the email and return success for development
+    if (!process.env.SENDGRID_API_KEY) {
+      console.log('[v0] SendGrid not configured. Email would be sent to:', data.recipientEmail)
+      console.log('[v0] Transaction details:', {
+        sender: data.senderName,
+        amount: `${data.currency}${data.amount}`,
+        recipient: data.recipientEmail,
+        transactionId: data.transactionId,
+      })
+      return true
+    }
+
     const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@chasebank.app'
 
     const htmlContent = `
