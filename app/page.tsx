@@ -137,20 +137,19 @@ export default function BankingDashboard() {
 
   if (loading || !mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a4fa6]">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 dark:from-primary/10 dark:to-accent/10">
         <div className="flex flex-col items-center gap-4">
           <Image src="/images/chase-logo.png" alt="Chase" width={80} height={80} className="rounded-xl shadow-lg" priority loading="eager" />
-          <span className="text-background text-2xl font-bold tracking-wide">CHASE</span>
-          <div className="w-8 h-8 border-3 border-border border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-2xl font-bold tracking-wide text-foreground">CHASE</span>
+          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     )
   }
 
   if (!user) {
-    // User not authenticated, show login
-    console.log('[v0] User not authenticated, showing login')
-    return <LoginPage onLogin={() => {}} />
+    // User not authenticated, show login page
+    return <LoginPage onLogin={() => setMounted(false)} />
   }
 
   const renderView = () => {

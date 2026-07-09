@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ApiClient from '@/lib/api-client';
+import { useAuth } from '@/lib/auth-context';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,66 +10,39 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const { user, loading } = useAuth();
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    const verifyAuth = async () => {
-      try {
-        const token = localStorage.getItem('access_token');
-
-        if (!token) {
-          router.push('/login');
-          return;
-        }
-
-        // Set token in API client
-        ApiClient.setToken(token);
-
-        // Verify token with backend
-        const response = await ApiClient.verifyToken();
-
-        if (response.valid) {
-          setUserRole(response.role);
-
-          // Check if user has required role
-          if (requiredRole && !requiredRole.includes(response.role)) {
-            router.push('/accounts');
-            return;
-          }
-
-          setIsAuthenticated(true);
-        } else {
-          // Token invalid
-          localStorage.removeItem('access_token');
-          router.push('/login');
-        }
-      } catch (error) {
-        console.error('[v0] Auth verification failed:', error);
-        localStorage.removeItem('access_token');
+    if (!loading) {
+      if (!user) {
         router.push('/login');
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
 
-    verifyAuth();
-  }, [router, requiredRole]);
+      // Check if user has required role if specified
+      if (requiredRole && user.role && !requiredRole.includes(user.role)) {
+        router.push('/accounts');
+        return;
+      }
 
-  if (isLoading) {
+      setIsAuthorized(true);
+    }
+  }, [user, loading, requiredRole, router]);
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-muted border-t-primary rounded-full animate-spin" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthorized || !user) {
     return null;
   }
 

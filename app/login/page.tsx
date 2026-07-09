@@ -45,19 +45,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-card dark:from-background dark:via-background dark:to-card">
       <div className="w-full max-w-md">
-        <div className="bg-background rounded-lg shadow-lg p-8">
+        <div className="bg-card rounded-lg shadow-lg p-8 border border-border">
           {/* Logo/Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-blue-600">Chase</h1>
+            <h1 className="text-3xl font-bold text-primary">Chase</h1>
           </div>
 
           {/* Error Message */}
           {error && (
             <div 
               role="alert"
-              className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded"
+              className="mb-4 p-3 bg-destructive/10 border border-destructive/50 text-destructive rounded-lg"
             >
               {error}
             </div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary hover:bg-primary disabled:bg-blue-400 text-background font-semibold py-2 rounded-lg transition"
+              className="w-full bg-primary hover:bg-primary/90 disabled:bg-muted text-primary-foreground font-semibold py-2 rounded-lg transition"
               aria-busy={loading}
             >
               {loading ? 'Signing in...' : 'Sign In'}
@@ -131,15 +131,15 @@ export default function LoginPage() {
           {/* Signup Link */}
           <p className="text-center text-muted-foreground mt-6">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-blue-600 hover:underline font-semibold">
+            <Link href="/signup" className="text-primary hover:underline font-semibold">
               Sign up
             </Link>
           </p>
 
           {/* Demo Credentials */}
-          <div className="mt-8 p-4 bg-background rounded-lg border border-border">
+          <div className="mt-8 p-4 bg-muted/20 dark:bg-muted/10 rounded-lg border border-border">
             <p className="text-xs text-muted-foreground font-semibold mb-2">DEMO CREDENTIALS</p>
-            <code className="text-xs text-foreground block">
+            <code className="text-xs text-foreground block font-mono">
               Username: Lin Huang<br />
               Password: Lin1122
             </code>
