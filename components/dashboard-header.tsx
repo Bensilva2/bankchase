@@ -117,18 +117,18 @@ export function DashboardHeader() {
 
           <div className="flex items-center gap-2">
             <Image src="/images/chase-logo.png" alt="Chase" width={36} height={36} className="rounded" />
-            <span className="text-background text-xl font-bold tracking-wide">CHASE</span>
+            <span className="text-primary-foreground text-xl font-bold tracking-wide">CHASE</span>
           </div>
 
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-full p-0 h-10 w-10 overflow-hidden hover:ring-2 hover:ring-white/50"
+            className="rounded-full p-0 h-10 w-10 overflow-hidden hover:ring-2 hover:ring-primary/50"
             onClick={() => setProfileOpen(true)}
           >
             <Avatar className="h-10 w-10">
               <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={user?.firstName || user?.username || ""} />
-              <AvatarFallback className="bg-background text-[#0a4fa6] font-semibold">
+              <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                 {((user?.firstName || "") + " " + (user?.lastName || ""))
                   .trim()
                   .split(" ")
@@ -157,7 +157,7 @@ export function DashboardHeader() {
         <SheetContent side="left" className="w-full sm:max-w-md">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-[#0a4fa6]" />
+              <MessageSquare className="h-5 w-5 text-primary" />
               Messages
               {unreadMessages > 0 && <Badge variant="destructive">{unreadMessages} new</Badge>}
             </SheetTitle>
@@ -168,7 +168,7 @@ export function DashboardHeader() {
                 <div
                   key={msg.id}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${
-                    msg.read ? "bg-muted/50" : "bg-[#0a4fa6]/5 border-l-4 border-[#0a4fa6]"
+                    msg.read ? "bg-muted/50" : "bg-primary/5 dark:bg-primary/10 border-l-4 border-primary"
                   }`}
                   onClick={() => markMessageRead(msg.id)}
                 >
@@ -209,7 +209,7 @@ export function DashboardHeader() {
           <SheetHeader>
             <SheetTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-[#0a4fa6]" />
+                <Bell className="h-5 w-5 text-primary" />
                 Notifications
                 {unreadNotificationCount > 0 && <Badge variant="destructive">{unreadNotificationCount} new</Badge>}
               </div>
@@ -217,7 +217,7 @@ export function DashboardHeader() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-xs text-[#0a4fa6]"
+                  className="text-xs text-primary"
                   onClick={() => {
                     markAllNotificationsRead()
                     toast({ title: "All notifications marked as read" })
@@ -233,7 +233,7 @@ export function DashboardHeader() {
               <div
                 key={notif.id}
                 className={`p-4 rounded-xl cursor-pointer transition-all ${
-                  notif.read ? "bg-muted/50" : "bg-[#0a4fa6]/5 border-l-4 border-[#0a4fa6]"
+                  notif.read ? "bg-muted/50" : "bg-primary/5 dark:bg-primary/10 border-l-4 border-primary"
                 }`}
                 onClick={() => markNotificationRead(notif.id)}
               >
@@ -265,9 +265,9 @@ export function DashboardHeader() {
           <div className="mt-6 space-y-6">
             <div className="flex flex-col items-center">
               <div className="relative">
-                <Avatar className="h-24 w-24 border-4 border-[#0a4fa6]">
+                <Avatar className="h-24 w-24 border-4 border-primary">
                   <AvatarImage src={userProfile.profilePicture || "/placeholder.svg"} alt={user?.firstName || user?.username || ""} />
-                  <AvatarFallback className="bg-[#0a4fa6] text-background text-2xl font-bold">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
                     {((user?.firstName || "") + " " + (user?.lastName || ""))
                       .trim()
                       .split(" ")
@@ -277,7 +277,7 @@ export function DashboardHeader() {
                 </Avatar>
                 <Button
                   size="icon"
-                  className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-[#0a4fa6] hover:bg-[#003087]"
+                  className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Camera className="h-4 w-4" />
@@ -294,7 +294,7 @@ export function DashboardHeader() {
                 {user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : userProfile.name}
               </h3>
               <p className="text-sm text-muted-foreground">{user?.email || userProfile.email}</p>
-              <Badge className="mt-2 bg-[#0a4fa6]">{userProfile.tier}</Badge>
+              <Badge className="mt-2 bg-primary text-primary-foreground">{userProfile.tier}</Badge>
             </div>
 
             {/* Account Info */}
@@ -328,7 +328,7 @@ export function DashboardHeader() {
               </div>
               <p className="text-3xl font-bold">{userProfile.ultimateRewardsPoints?.toLocaleString() || "287,450"}</p>
               <p className="text-sm opacity-80">points available</p>
-              <Button variant="secondary" size="sm" className="mt-3 w-full bg-background text-[#0a4fa6] hover:bg-background/90">
+              <Button variant="secondary" size="sm" className="mt-3 w-full bg-background text-primary hover:bg-background/90">
                 Redeem Points
               </Button>
             </div>

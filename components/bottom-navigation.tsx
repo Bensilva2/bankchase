@@ -32,8 +32,8 @@ export function BottomNavigation({ activeView, onViewChange }: BottomNavigationP
               className={cn(
                 "flex flex-col items-center gap-0.5 h-auto py-2 px-3 min-w-[64px] rounded-xl transition-all",
                 isActive
-                  ? "text-[#0a4fa6] bg-[#0a4fa6]/5"
-                  : "text-muted-foreground hover:text-[#0a4fa6] hover:bg-[#0a4fa6]/5",
+                  ? "text-primary bg-primary/5 dark:bg-primary/10"
+                  : "text-muted-foreground hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10",
               )}
               onClick={() => onViewChange(item.id)}
             >
