@@ -148,9 +148,8 @@ export default function BankingDashboard() {
   }
 
   if (!user) {
-    // User not authenticated, show login
-    console.log('[v0] User not authenticated, showing login')
-    return <LoginPage onLogin={() => {}} />
+    // User not authenticated, show login page
+    return <LoginPage onLogin={() => setMounted(false)} />
   }
 
   const renderView = () => {
