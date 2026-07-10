@@ -11,6 +11,7 @@ import { Auth0Provider } from "@/lib/auth0-context"
 import { AuthProvider } from "@/lib/auth-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LoadingProgressBar } from "@/components/loading-progress-bar"
 import StatsigWrapper from "./statsig-provider"
 import "./globals.css"
 
@@ -48,6 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
+        <LoadingProgressBar />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <StatsigWrapper>
             <ClerkProvider>
