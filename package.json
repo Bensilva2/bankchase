@@ -7,6 +7,14 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:all": "pnpm test && pnpm test:e2e",
     "qstash:dev": "npx @upstash/qstash-cli@latest dev",
     "backend:dev": "cd backend && source .venv/bin/activate && python -m uvicorn main:app --reload",
     "qstash:health": "curl http://localhost:8000/api/qstash/health"
@@ -99,6 +107,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22",
