@@ -1,17 +1,4 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-
-// Lazy-load Supabase client to avoid initialization errors during build
-let supabase: ReturnType<typeof createSupabaseClient> | null = null;
-
-function getSupabaseClient() {
-  if (!supabase) {
-    supabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    )
-  }
-  return supabase;
-}
+import { createClient } from '@/lib/supabase/server'
 
 export interface ProcessTransferRequest {
   userId: string
@@ -51,22 +38,29 @@ export async function processTransfer(
   } = request
 
   try {
-    const sb = getSupabaseClient();
-    // Start a database transaction with SERIALIZABLE isolation
-    const { data, error: txError } = await sb.rpc('process_transfer', {
-      p_user_id: userId,
-      p_from_account_id: fromAccountId,
-      p_to_account_number: toAccountNumber,
-      p_to_bank_code: toBankCode,
-      p_amount: amount,
-      p_currency: currency,
-      p_idempotency_key: idempotencyKey,
-      p_narration: narration || ''
-    })
+    const supabase = await createClient()
+    
+    // Create transaction record
+    const { data: transaction, error: createError } = await supabase
+      .from('transactions')
+      .insert({
+        user_id: userId,
+        from_account_id: fromAccountId,
+        to_account_number: toAccountNumber,
+        to_bank_code: toBankCode,
+        amount,
+        currency,
+        idempotency_key: idempotencyKey,
+        narration: narration || '',
+        status: 'pending',
+        initiated_at: new Date().toISOString()
+      })
+      .select('id')
+      .single()
 
-    if (txError) {
+    if (createError) {
       // Check if idempotency key conflict
-      if (txError.message?.includes('duplicate') || txError.message?.includes('idempotency')) {
+      if (createError.message?.includes('duplicate') || createError.message?.includes('idempotency')) {
         console.log('[v0] Idempotent request detected:', idempotencyKey)
         // Fetch existing transaction
         const { data: existing } = await supabase
@@ -85,27 +79,30 @@ export async function processTransfer(
         }
       }
 
-      console.error('[v0] Transfer processing error:', txError)
+      console.error('[v0] Transfer processing error:', createError)
       return {
         success: false,
-        error: txError.message || 'Transfer processing failed'
+        error: createError.message || 'Transfer processing failed'
       }
     }
 
-    // Async notification and network handoff
-    if (data) {
-      const transactionId = data.transaction_id
+    // Update transaction status to processing
+    if (transaction?.id) {
+      await supabase
+        .from('transactions')
+        .update({ status: 'processing' })
+        .eq('id', transaction.id)
 
-      // Fire background jobs
-      queueSmsNotification(data.phone_number, amount, currency, 'initiated', transactionId)
-      dispatchNetworkTransfer(transactionId, request)
+      // Fire background jobs (async, don't await)
+      queueSmsNotification('', amount, currency, 'initiated', transaction.id)
+      dispatchNetworkTransfer(transaction.id, request)
 
       return {
         success: true,
-        transactionId,
+        transactionId: transaction.id,
         status: 'processing',
         details: {
-          message: 'Transfer initiated. International network processing...',
+          message: 'Transfer initiated successfully',
           initiatedAt: new Date().toISOString()
         }
       }
@@ -183,6 +180,7 @@ function dispatchNetworkTransfer(
  */
 export async function getTransferStatus(transactionId: string) {
   try {
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('transactions')
       .select('id, status, amount, currency, from_account_id, to_account_number, initiated_at, completed_at, failure_reason')
@@ -217,18 +215,23 @@ export async function validateTransfer(request: ProcessTransferRequest) {
   }
 
   // Account validation
-  const { data: account, error: accountError } = await supabase
-    .from('accounts')
-    .select('id, balance, user_id')
-    .eq('id', request.fromAccountId)
-    .single()
+  try {
+    const supabase = await createClient()
+    const { data: account, error: accountError } = await supabase
+      .from('accounts')
+      .select('id, balance, user_id')
+      .eq('id', request.fromAccountId)
+      .single()
 
-  if (accountError || !account) {
-    errors.push('Source account not found')
-  } else if (account.user_id !== request.userId) {
-    errors.push('Unauthorized: Account does not belong to user')
-  } else if (account.balance < request.amount) {
-    errors.push(`Insufficient balance. Available: ${account.balance}, Required: ${request.amount}`)
+    if (accountError || !account) {
+      errors.push('Source account not found')
+    } else if (account.user_id !== request.userId) {
+      errors.push('Unauthorized: Account does not belong to user')
+    } else if (account.balance < request.amount) {
+      errors.push(`Insufficient balance. Available: ${account.balance}, Required: ${request.amount}`)
+    }
+  } catch (err) {
+    errors.push('Failed to validate account')
   }
 
   // Idempotency key validation
