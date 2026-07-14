@@ -1,35 +1,59 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DNSRecordsTable } from '@/components/dns-records-table'
 import { DNSRecordDrawer } from '@/components/dns-record-drawer'
-import { useDNS } from '@/lib/hooks/use-cloudflare'
+import { useCloudflareDNS } from '@/lib/hooks/use-cloudflare'
 import { Plus, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 export default function DNSManagementPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [editingRecord, setEditingRecord] = useState(null)
   const [selectedZone, setSelectedZone] = useState('')
+  const [zones, setZones] = useState<any[]>([])
+  const [records, setRecords] = useState<any[]>([])
   
   const {
-    zones,
-    records,
     loading,
     error,
-    fetchZones,
-    fetchRecords,
-    createRecord,
-    updateRecord,
-    deleteRecord,
-  } = useDNS()
+    listRecords,
+    createRecord: createDNSRecord,
+    updateRecord: updateDNSRecord,
+    deleteRecord: deleteDNSRecord,
+  } = useCloudflareDNS()
 
-  React.useEffect(() => {
+  // Fetch zones from API
+  const fetchZones = useCallback(async () => {
+    try {
+      const response = await fetch('/api/cloudflare/dns?action=zones')
+      const data = await response.json()
+      if (data.zones) {
+        setZones(data.zones)
+      }
+    } catch (err) {
+      console.error('Failed to fetch zones:', err)
+    }
+  }, [])
+
+  // Fetch records for selected zone
+  const fetchRecords = useCallback(async (zoneId: string) => {
+    if (!zoneId) return
+    try {
+      const records = await listRecords(zoneId)
+      setRecords(Array.isArray(records) ? records : [])
+    } catch (err) {
+      console.error('Failed to fetch records:', err)
+      setRecords([])
+    }
+  }, [listRecords])
+
+  useEffect(() => {
     fetchZones()
   }, [fetchZones])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedZone) {
       fetchRecords(selectedZone)
     }
@@ -45,12 +69,12 @@ export default function DNSManagementPage() {
     setEditingRecord(null)
   }
 
-  const handleSaveRecord = async (recordData) => {
+  const handleSaveRecord = async (recordData: any) => {
     try {
       if (editingRecord) {
-        await updateRecord(selectedZone, editingRecord.id, recordData)
+        await updateDNSRecord(selectedZone, editingRecord.id, recordData)
       } else {
-        await createRecord(selectedZone, recordData)
+        await createDNSRecord(selectedZone, recordData)
       }
       handleCloseDrawer()
       await fetchRecords(selectedZone)
@@ -59,10 +83,10 @@ export default function DNSManagementPage() {
     }
   }
 
-  const handleDeleteRecord = async (recordId) => {
+  const handleDeleteRecord = async (recordId: string) => {
     if (window.confirm('Are you sure you want to delete this DNS record?')) {
       try {
-        await deleteRecord(selectedZone, recordId)
+        await deleteDNSRecord(selectedZone, recordId)
         await fetchRecords(selectedZone)
       } catch (err) {
         console.error('Failed to delete record:', err)
