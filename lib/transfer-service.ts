@@ -86,10 +86,11 @@ export async function sendTransfer(request: TransferRequest): Promise<TransferRe
 
 /**
  * Send a demo transfer (no auth required)
+ * Uses mock endpoint for testing without database
  */
 export async function sendDemoTransfer(request: Partial<TransferRequest> = {}): Promise<TransferResponse> {
   try {
-    const response = await fetch('/api/transfers/demo', {
+    const response = await fetch('/api/transfers/mock', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -97,7 +98,7 @@ export async function sendDemoTransfer(request: Partial<TransferRequest> = {}): 
       body: JSON.stringify({
         fromAccountId: request.fromAccountId || 'demo-account-1',
         toAccountNumber: request.toAccountNumber || '1234567890',
-        toBankCode: request.toBankCode || 'DEMO',
+        toBankCode: request.toBankCode || 'MOCK',
         amount: request.amount || 100,
         currency: request.currency || 'USD',
         narration: request.narration || 'Demo transfer'
