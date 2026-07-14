@@ -109,25 +109,33 @@ export async function triggerTransactionWorkflow(
       `[v0] Triggering transaction workflow for ${payload.transactionId}`
     );
 
-    const response = await fetch("/api/workflows/transaction", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const { workflowRunId } = await workflowClient.trigger({
+      url: `${BASE_URL}/api/workflows/transaction`,
+      body: {
+        transactionId: payload.transactionId,
+        userId: payload.userId,
+        type: payload.type,
+        amount: payload.amount,
+        fromAccount: payload.fromAccount,
+        toAccount: payload.toAccount,
+        description: payload.description,
+        userEmail: payload.userEmail,
+        userName: payload.userName,
+        timestamp: new Date().toISOString(),
       },
-      body: JSON.stringify(payload),
+      retries: 3,
+      timeout: 3600,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to trigger transaction workflow");
-    }
-
-    const result = await response.json();
     console.log(
-      `[v0] Transaction workflow started: ${result.workflowRunId}`
+      `[v0] Transaction workflow started: ${workflowRunId}`
     );
 
-    return result;
+    return {
+      success: true,
+      workflowRunId,
+      message: "Transaction workflow triggered successfully",
+    };
   } catch (error) {
     console.error("[v0] Transaction workflow error:", error);
     return {
@@ -175,23 +183,25 @@ export async function triggerSignupWorkflow(
   try {
     console.log(`[v0] Triggering signup workflow for ${payload.userId}`);
 
-    const response = await fetch("/api/workflows/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const { workflowRunId } = await workflowClient.trigger({
+      url: `${BASE_URL}/api/workflows/signup`,
+      body: {
+        userId: payload.userId,
+        email: payload.email,
+        name: payload.name,
+        createdAt: new Date().toISOString(),
       },
-      body: JSON.stringify(payload),
+      retries: 3,
+      timeout: 3600,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to trigger signup workflow");
-    }
+    console.log(`[v0] Signup workflow started: ${workflowRunId}`);
 
-    const result = await response.json();
-    console.log(`[v0] Signup workflow started: ${result.workflowRunId}`);
-
-    return result;
+    return {
+      success: true,
+      workflowRunId,
+      message: "Signup workflow triggered successfully",
+    };
   } catch (error) {
     console.error("[v0] Signup workflow error:", error);
     return {
@@ -237,25 +247,31 @@ export async function triggerNotificationWorkflow(
       `[v0] Triggering ${payload.type} notification workflow for user ${payload.userId}`
     );
 
-    const response = await fetch("/api/workflows/notification", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const { workflowRunId } = await workflowClient.trigger({
+      url: `${BASE_URL}/api/workflows/notification`,
+      body: {
+        userId: payload.userId,
+        type: payload.type,
+        title: payload.title,
+        message: payload.message,
+        email: payload.email,
+        sms: payload.sms,
+        priority: payload.priority || "medium",
+        createdAt: new Date().toISOString(),
       },
-      body: JSON.stringify(payload),
+      retries: 3,
+      timeout: 3600,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to trigger notification workflow");
-    }
-
-    const result = await response.json();
     console.log(
-      `[v0] Notification workflow started: ${result.workflowRunId}`
+      `[v0] Notification workflow started: ${workflowRunId}`
     );
 
-    return result;
+    return {
+      success: true,
+      workflowRunId,
+      message: "Notification workflow triggered successfully",
+    };
   } catch (error) {
     console.error("[v0] Notification workflow error:", error);
     return {

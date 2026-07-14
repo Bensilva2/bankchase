@@ -1,116 +1,88 @@
-import { Client } from "@upstash/workflow";
-import { NextRequest, NextResponse } from "next/server";
+import { serve } from "@upstash/workflow/nextjs";
 
-const client = new Client({
-  baseUrl: process.env.QSTASH_URL,
-  token: process.env.QSTASH_TOKEN,
-});
+export const { POST } = serve(async (context) => {
+  const { userId, type, title, message, email, sms, priority = "medium", createdAt } =
+    context.requestPayload;
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    const { userId, type, title, message, email, sms, priority = "medium" } =
-      body;
-
-    // Validate required fields
+  // Step 1: Validate notification data
+  const validationResult = await context.run("validate-notification", async () => {
     if (!userId || !type || !title || !message) {
-      return NextResponse.json(
-        { error: "Missing required fields (userId, type, title, message)" },
-        { status: 400 }
-      );
+      throw new Error("Missing required fields (userId, type, title, message)");
     }
 
-    // Validate notification type
     const validTypes = ["alert", "promotion", "security", "reminder"];
     if (!validTypes.includes(type)) {
-      return NextResponse.json(
-        {
-          error: `Invalid notification type. Must be one of: ${validTypes.join(", ")}`,
-        },
-        { status: 400 }
-      );
+      throw new Error(`Invalid notification type. Must be one of: ${validTypes.join(", ")}`);
     }
 
-    // Validate priority
     const validPriorities = ["low", "medium", "high"];
     if (!validPriorities.includes(priority)) {
-      return NextResponse.json(
-        {
-          error: `Invalid priority. Must be one of: ${validPriorities.join(", ")}`,
-        },
-        { status: 400 }
-      );
+      throw new Error(`Invalid priority. Must be one of: ${validPriorities.join(", ")}`);
     }
 
     console.log(
-      `[v0] Triggering ${priority} priority ${type} notification for user ${userId}`
+      `[Workflow] Validating ${priority} priority ${type} notification for user ${userId}`
     );
+    return {
+      validated: true,
+      type,
+      priority,
+    };
+  });
 
-    // Trigger the workflow
-    const workflowRunId = await client.publish({
-      url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/workflows/notification`,
-      body: {
-        userId,
-        type,
-        title,
-        message,
-        email,
-        sms,
-        priority,
-        createdAt: new Date().toISOString(),
-      },
+  // Step 2: Create notification record
+  await context.run("create-notification", async () => {
+    console.log(`[Workflow] Creating notification record for user ${userId}`);
+    return {
+      created: true,
+      timestamp: new Date().toISOString(),
+    };
+  });
+
+  // Step 3: Send email if provided
+  if (email) {
+    await context.run("send-email", async () => {
+      console.log(`[Workflow] Sending ${type} notification email to ${email}`);
+      return {
+        emailSent: true,
+        recipient: email,
+      };
     });
-
-    console.log(
-      `[v0] Notification workflow triggered with ID: ${workflowRunId}`
-    );
-
-    return NextResponse.json(
-      {
-        success: true,
-        workflowRunId,
-        userId,
-        message: "Notification workflow started",
-      },
-      { status: 202 }
-    );
-  } catch (error) {
-    console.error("[v0] Notification workflow error:", error);
-    return NextResponse.json(
-      { error: "Failed to start notification workflow" },
-      { status: 500 }
-    );
   }
-}
 
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID required" },
-        { status: 400 }
-      );
-    }
-
-    console.log(`[v0] Fetching notification status for user ${userId}`);
-
-    return NextResponse.json(
-      {
-        userId,
-        status: "sent",
-        message: "Notification has been sent",
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("[v0] Error fetching notification status:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch notification status" },
-      { status: 500 }
-    );
+  // Step 4: Send SMS if provided
+  if (sms) {
+    await context.run("send-sms", async () => {
+      console.log(`[Workflow] Sending ${type} notification SMS to ${sms}`);
+      return {
+        smsSent: true,
+        recipient: sms,
+      };
+    });
   }
-}
+
+  // Step 5: Store in user notification center
+  await context.run("store-notification", async () => {
+    console.log(`[Workflow] Storing notification in user ${userId} notification center`);
+    return {
+      stored: true,
+    };
+  });
+
+  // Step 6: Log notification delivery
+  await context.run("log-delivery", async () => {
+    console.log(`[Workflow] Logging notification delivery for user ${userId}`);
+    return {
+      logged: true,
+    };
+  });
+
+  return {
+    success: true,
+    message: "Notification workflow completed successfully",
+    userId,
+    type,
+    priority,
+    completedAt: new Date().toISOString(),
+  };
+});

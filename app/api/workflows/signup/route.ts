@@ -1,87 +1,62 @@
-import { Client } from "@upstash/workflow";
-import { NextRequest, NextResponse } from "next/server";
+import { serve } from "@upstash/workflow/nextjs";
 
-const client = new Client({
-  baseUrl: process.env.QSTASH_URL,
-  token: process.env.QSTASH_TOKEN,
-});
+export const { POST } = serve(async (context) => {
+  const { userId, email, name, createdAt } = context.requestPayload;
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    const { userId, email, name } = body;
-
-    // Validate required fields
+  // Step 1: Validate signup data
+  const validationResult = await context.run("validate-signup", async () => {
     if (!userId || !email || !name) {
-      return NextResponse.json(
-        { error: "Missing required fields (userId, email, name)" },
-        { status: 400 }
-      );
+      throw new Error("Missing required fields (userId, email, name)");
     }
+    
+    console.log(`[Workflow] Validating signup for user ${userId} (${email})`);
+    return { 
+      validated: true, 
+      userId,
+      email,
+      timestamp: new Date().toISOString() 
+    };
+  });
 
-    console.log(
-      `[v0] Triggering signup workflow for user ${userId} (${email})`
-    );
+  // Step 2: Create user account
+  await context.run("create-account", async () => {
+    console.log(`[Workflow] Creating account for user ${userId}`);
+    return { 
+      accountCreated: true,
+      userId
+    };
+  });
 
-    // Trigger the workflow
-    const workflowRunId = await client.publish({
-      url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/workflows/signup`,
-      body: {
-        userId,
-        email,
-        name,
-        createdAt: new Date().toISOString(),
-      },
-    });
+  // Step 3: Send welcome email
+  await context.run("send-welcome-email", async () => {
+    console.log(`[Workflow] Sending welcome email to ${email}`);
+    return { 
+      emailSent: true,
+      email
+    };
+  });
 
-    console.log(`[v0] Signup workflow triggered with ID: ${workflowRunId}`);
+  // Step 4: Setup user preferences
+  await context.run("setup-preferences", async () => {
+    console.log(`[Workflow] Setting up preferences for user ${userId}`);
+    return { 
+      preferencesSetup: true
+    };
+  });
 
-    return NextResponse.json(
-      {
-        success: true,
-        workflowRunId,
-        userId,
-        message: "User signup workflow started",
-      },
-      { status: 202 }
-    );
-  } catch (error) {
-    console.error("[v0] Signup workflow error:", error);
-    return NextResponse.json(
-      { error: "Failed to start signup workflow" },
-      { status: 500 }
-    );
-  }
-}
+  // Step 5: Complete onboarding
+  await context.run("complete-onboarding", async () => {
+    console.log(`[Workflow] Completing onboarding for user ${userId}`);
+    return { 
+      onboardingComplete: true
+    };
+  });
 
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID required" },
-        { status: 400 }
-      );
-    }
-
-    console.log(`[v0] Fetching signup status for user ${userId}`);
-
-    return NextResponse.json(
-      {
-        userId,
-        status: "processing",
-        message: "User signup is being processed",
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("[v0] Error fetching signup status:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch signup status" },
-      { status: 500 }
-    );
-  }
-}
+  return {
+    success: true,
+    message: "User signup workflow completed successfully",
+    userId,
+    email,
+    completedAt: new Date().toISOString(),
+  };
+});

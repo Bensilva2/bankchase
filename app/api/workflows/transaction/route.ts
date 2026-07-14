@@ -1,110 +1,85 @@
-import { Client } from "@upstash/workflow";
-import { NextRequest, NextResponse } from "next/server";
+import { serve } from "@upstash/workflow/nextjs";
 
-const client = new Client({
-  baseUrl: process.env.QSTASH_URL,
-  token: process.env.QSTASH_TOKEN,
-});
+export const { POST } = serve(async (context) => {
+  const {
+    transactionId,
+    userId,
+    type,
+    amount,
+    fromAccount,
+    toAccount,
+    description,
+    userEmail,
+    userName,
+    timestamp,
+  } = context.requestPayload;
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+  // Step 1: Validate transaction
+  const validationResult = await context.run("validate-transaction", async () => {
+    if (!transactionId || !userId || !type || !amount || !fromAccount || !toAccount) {
+      throw new Error("Missing required transaction fields");
+    }
 
-    const {
+    console.log(`[Workflow] Validating transaction ${transactionId} for user ${userId}`);
+    return {
+      validated: true,
       transactionId,
-      userId,
-      type,
       amount,
-      fromAccount,
-      toAccount,
-      description,
-      userEmail,
-      userName,
-    } = body;
+      type,
+    };
+  });
 
-    // Validate required fields
-    if (
-      !transactionId ||
-      !userId ||
-      !type ||
-      !amount ||
-      !fromAccount ||
-      !toAccount
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+  // Step 2: Check balance
+  await context.run("check-balance", async () => {
+    console.log(`[Workflow] Checking balance for account ${fromAccount}`);
+    return {
+      balanceChecked: true,
+      sufficient: true,
+    };
+  });
+
+  // Step 3: Process transaction
+  await context.run("process-transaction", async () => {
+    console.log(`[Workflow] Processing ${type} transaction ${transactionId}`);
+    return {
+      processed: true,
+      status: "completed",
+    };
+  });
+
+  // Step 4: Update balances
+  await context.run("update-balances", async () => {
+    console.log(`[Workflow] Updating balances for accounts ${fromAccount} and ${toAccount}`);
+    return {
+      updated: true,
+    };
+  });
+
+  // Step 5: Send confirmation email
+  await context.run("send-confirmation", async () => {
+    if (userEmail) {
+      console.log(`[Workflow] Sending confirmation email to ${userEmail}`);
     }
+    return {
+      emailSent: !!userEmail,
+    };
+  });
 
-    console.log(`[v0] Triggering transaction workflow for ${transactionId}`);
+  // Step 6: Log transaction
+  await context.run("log-transaction", async () => {
+    console.log(`[Workflow] Logging transaction ${transactionId}`);
+    return {
+      logged: true,
+    };
+  });
 
-    // Trigger the workflow
-    const workflowRunId = await client.publish({
-      url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/workflows/transaction`,
-      body: {
-        transactionId,
-        userId,
-        type,
-        amount,
-        fromAccount,
-        toAccount,
-        description,
-        timestamp: new Date().toISOString(),
-        userEmail,
-        userName,
-      },
-    });
-
-    console.log(
-      `[v0] Transaction workflow triggered with ID: ${workflowRunId}`
-    );
-
-    return NextResponse.json(
-      {
-        success: true,
-        workflowRunId,
-        transactionId,
-        message: "Transaction workflow started",
-      },
-      { status: 202 }
-    );
-  } catch (error) {
-    console.error("[v0] Transaction workflow error:", error);
-    return NextResponse.json(
-      { error: "Failed to start transaction workflow" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const transactionId = searchParams.get("id");
-
-    if (!transactionId) {
-      return NextResponse.json(
-        { error: "Transaction ID required" },
-        { status: 400 }
-      );
-    }
-
-    console.log(`[v0] Fetching status for transaction ${transactionId}`);
-
-    return NextResponse.json(
-      {
-        transactionId,
-        status: "processing",
-        message: "Transaction is being processed",
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("[v0] Error fetching transaction status:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch transaction status" },
-      { status: 500 }
-    );
-  }
-}
+  return {
+    success: true,
+    message: "Transaction workflow completed successfully",
+    transactionId,
+    userId,
+    amount,
+    type,
+    completedAt: new Date().toISOString(),
+  };
+});
