@@ -13,6 +13,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LoadingProgressBar } from "@/components/loading-progress-bar"
 import StatsigWrapper from "./statsig-provider"
+import { NavigationProvider } from "./navigation-provider"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -60,43 +61,45 @@ export default function RootLayout({
       </head>
       <body className={`font-sans antialiased`}>
         <LoadingProgressBar />
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <StatsigWrapper>
-            <ClerkProvider>
-              <header className="border-b border-border px-4 py-3 flex items-center justify-between bg-background text-foreground">
-                <div>Banking App</div>
-                <div className="flex items-center gap-4">
-                  <ThemeToggle />
-                  <Show when="signed-out">
-                    <SignInButton mode="modal">
-                      <button className="text-sm font-medium text-foreground hover:text-primary">
-                        Sign In
-                      </button>
-                    </SignInButton>
-                    <SignUpButton mode="modal">
-                      <button className="text-sm font-medium text-primary-foreground bg-primary px-4 py-2 rounded-md hover:opacity-90">
-                        Sign Up
-                      </button>
-                    </SignUpButton>
-                  </Show>
-                  <Show when="signed-in">
-                    <UserButton />
-                  </Show>
-                </div>
-              </header>
-              <AuthProvider>
-                <Auth0Provider>
-                  <BankingProvider>
-                    {children}
-                    <Toaster />
-                    <Analytics />
-                    <SpeedInsights />
-                  </BankingProvider>
-                </Auth0Provider>
-              </AuthProvider>
-            </ClerkProvider>
-          </StatsigWrapper>
-        </ThemeProvider>
+        <NavigationProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <StatsigWrapper>
+              <ClerkProvider>
+                <header className="border-b border-border px-4 py-3 flex items-center justify-between bg-background text-foreground">
+                  <div>Banking App</div>
+                  <div className="flex items-center gap-4">
+                    <ThemeToggle />
+                    <Show when="signed-out">
+                      <SignInButton mode="modal">
+                        <button className="text-sm font-medium text-foreground hover:text-primary">
+                          Sign In
+                        </button>
+                      </SignInButton>
+                      <SignUpButton mode="modal">
+                        <button className="text-sm font-medium text-primary-foreground bg-primary px-4 py-2 rounded-md hover:opacity-90">
+                          Sign Up
+                        </button>
+                      </SignUpButton>
+                    </Show>
+                    <Show when="signed-in">
+                      <UserButton />
+                    </Show>
+                  </div>
+                </header>
+                <AuthProvider>
+                  <Auth0Provider>
+                    <BankingProvider>
+                      {children}
+                      <Toaster />
+                      <Analytics />
+                      <SpeedInsights />
+                    </BankingProvider>
+                  </Auth0Provider>
+                </AuthProvider>
+              </ClerkProvider>
+            </StatsigWrapper>
+          </ThemeProvider>
+        </NavigationProvider>
         <Script id="chatbase-widget" strategy="lazyOnload">
           {`(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="${process.env.NEXT_PUBLIC_CHATBOT_ID}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();`}
         </Script>
