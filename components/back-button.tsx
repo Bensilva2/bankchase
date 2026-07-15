@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
+import { useNavigationHistory } from '@/hooks/use-navigation-history'
 
 interface BackButtonProps {
   className?: string
@@ -10,13 +10,13 @@ interface BackButtonProps {
 }
 
 export function BackButton({ className = '', showLabel = false, onBack }: BackButtonProps) {
-  const router = useRouter()
+  const { goBack } = useNavigationHistory()
 
   const handleClick = () => {
     if (onBack) {
       onBack()
     } else {
-      router.back()
+      goBack()
     }
   }
 
@@ -24,7 +24,7 @@ export function BackButton({ className = '', showLabel = false, onBack }: BackBu
     <button
       onClick={handleClick}
       className={`flex items-center gap-2 p-2 hover:bg-background rounded-lg transition ${className}`}
-      aria-label="Go back"
+      aria-label="Go back to previous page"
       title="Go back to previous page"
     >
       <ArrowLeft className="w-5 h-5 text-foreground" />
