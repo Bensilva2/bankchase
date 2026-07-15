@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { useBanking } from '@/lib/banking-context'
-import { CreditCard, Lock, Unlock, Eye, EyeOff, Plus, Settings } from 'lucide-react'
+import { CreditCard, Lock, Unlock, Eye, EyeOff, Plus, Settings, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { BackButton } from '@/components/back-button'
@@ -12,7 +12,7 @@ import { BackButton } from '@/components/back-button'
 export default function CardsPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
-  const { creditCards = [], toggleCardLock } = useBanking()
+  const { creditCards = [], toggleCardLock, updateCardSettings } = useBanking()
   const [showCardNumbers, setShowCardNumbers] = useState<Record<string, boolean>>({})
   const [selectedCard, setSelectedCard] = useState<any>(null)
 
@@ -36,11 +36,16 @@ export default function CardsPage() {
     }))
   }
 
-  const maskCardNumber = (cardNumber: string) => {
-    if (showCardNumbers[cardNumber]) {
-      return cardNumber
-    }
-    return '•••• •••• •••• ' + cardNumber.slice(-4)
+  const maskCardNumber = (lastFour: string) => {
+    return '•••• •••• •••• ' + lastFour
+  }
+
+  const handleAddCard = () => {
+    router.push('/cards/add')
+  }
+
+  const handleCardSettings = (cardId: string) => {
+    router.push(`/cards/${cardId}/settings`)
   }
 
   return (
@@ -55,7 +60,10 @@ export default function CardsPage() {
               <p className="text-muted-foreground">Manage your credit and debit cards</p>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-6 py-3 bg-primary text-background rounded-lg hover:bg-primary transition">
+          <button
+            onClick={handleAddCard}
+            className="flex items-center gap-2 px-6 py-3 bg-primary text-background rounded-lg hover:bg-primary/90 transition"
+          >
             <Plus className="w-5 h-5" />
             Add Card
           </button>
@@ -65,7 +73,7 @@ export default function CardsPage() {
           // Card Detail View
           <Card className="p-8 max-w-2xl">
             <div className="flex justify-between items-start mb-6">
-              <h2 className="text-2xl font-bold text-foreground">Card Details</h2>
+              <h2 className="text-2xl font-bold text-foreground">{selectedCard.name}</h2>
               <button
                 onClick={() => setSelectedCard(null)}
                 className="text-muted-foreground hover:text-foreground text-2xl"
@@ -75,42 +83,69 @@ export default function CardsPage() {
             </div>
 
             {/* Card Display */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 mb-8 text-background h-56 flex flex-col justify-between">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 mb-8 text-background h-56 flex flex-col justify-between shadow-lg">
               <div>
                 <p className="text-blue-100 text-sm mb-2">Card Number</p>
                 <p className="text-2xl font-mono tracking-widest">
-                  {maskCardNumber(selectedCard.cardNumber)}
+                  {maskCardNumber(selectedCard.lastFour)}
                 </p>
               </div>
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-blue-100 text-xs mb-1">Card Holder</p>
-                  <p className="font-semibold">{selectedCard.cardholderName}</p>
+                  <p className="text-blue-100 text-xs mb-1">Card Name</p>
+                  <p className="font-semibold">{selectedCard.name}</p>
                 </div>
-                <div>
+                <div className="text-right">
                   <p className="text-blue-100 text-xs mb-1">Expires</p>
                   <p className="font-semibold">{selectedCard.expiryDate}</p>
                 </div>
               </div>
             </div>
 
+            {/* Card Info Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-card rounded-lg">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Balance</p>
+                <p className="text-lg font-semibold text-foreground">${selectedCard.balance.toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Credit Limit</p>
+                <p className="text-lg font-semibold text-foreground">${selectedCard.creditLimit.toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Minimum Payment</p>
+                <p className="text-lg font-semibold text-foreground">${selectedCard.minimumPayment.toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Rewards Points</p>
+                <p className="text-lg font-semibold text-foreground">{selectedCard.rewards.toLocaleString()}</p>
+              </div>
+            </div>
+
             {/* Card Actions */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <button
-                onClick={() => toggleShowCard(selectedCard.cardNumber)}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-background text-foreground rounded-lg hover:bg-card transition"
+                onClick={() => toggleShowCard(selectedCard.id)}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-background text-foreground rounded-lg hover:bg-card transition border border-border"
               >
-                {showCardNumbers[selectedCard.cardNumber] ? (
+                {showCardNumbers[selectedCard.id] ? (
                   <EyeOff className="w-5 h-5" />
                 ) : (
                   <Eye className="w-5 h-5" />
                 )}
-                {showCardNumbers[selectedCard.cardNumber] ? 'Hide' : 'Show'} Card Number
+                {showCardNumbers[selectedCard.id] ? 'Hide' : 'Show'} Card Number
               </button>
 
               <button
-                onClick={() => toggleCardLock?.(selectedCard.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
+                onClick={() => {
+                  toggleCardLock?.(selectedCard.id)
+                  setSelectedCard(prev => ({ ...prev, locked: !prev.locked }))
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                  selectedCard.locked
+                    ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                    : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+                }`}
               >
                 {selectedCard.locked ? (
                   <Unlock className="w-5 h-5" />
@@ -120,14 +155,17 @@ export default function CardsPage() {
                 {selectedCard.locked ? 'Unlock' : 'Lock'} Card
               </button>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 bg-background text-foreground rounded-lg hover:bg-card transition">
+              <button
+                onClick={() => handleCardSettings(selectedCard.id)}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-background text-foreground rounded-lg hover:bg-card transition border border-border"
+              >
                 <Settings className="w-5 h-5" />
                 Card Settings
               </button>
 
               <button
                 onClick={() => setSelectedCard(null)}
-                className="w-full px-4 py-3 bg-primary text-background rounded-lg hover:bg-primary transition"
+                className="w-full px-4 py-3 bg-primary text-background rounded-lg hover:bg-primary/90 transition font-medium"
               >
                 Close
               </button>
@@ -143,7 +181,7 @@ export default function CardsPage() {
                   onClick={() => setSelectedCard(card)}
                   className="cursor-pointer transform hover:scale-105 transition"
                 >
-                  <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-background h-48 flex flex-col justify-between shadow-lg">
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-background h-56 flex flex-col justify-between shadow-lg">
                     <div className="flex justify-between items-start">
                       <CreditCard className="w-8 h-8" />
                       {card.locked && <Lock className="w-5 h-5 text-yellow-300" />}
@@ -151,12 +189,12 @@ export default function CardsPage() {
                     <div>
                       <p className="text-blue-100 text-xs mb-2">Card Number</p>
                       <p className="text-xl font-mono tracking-widest mb-4">
-                        •••• •••• •••• {card.cardNumber.slice(-4)}
+                        {maskCardNumber(card.lastFour)}
                       </p>
                       <div className="flex justify-between">
                         <div>
-                          <p className="text-blue-100 text-xs">Card Holder</p>
-                          <p className="font-semibold text-sm">{card.cardholderName}</p>
+                          <p className="text-blue-100 text-xs">Card Name</p>
+                          <p className="font-semibold text-sm">{card.name}</p>
                         </div>
                         <div className="text-right">
                           <p className="text-blue-100 text-xs">Expires</p>
@@ -165,13 +203,22 @@ export default function CardsPage() {
                       </div>
                     </div>
                   </div>
-                  <p className="text-foreground text-sm font-medium mt-2">{card.type}</p>
+                  <div className="mt-2 flex justify-between items-center">
+                    <p className="text-foreground text-sm font-medium">{card.name}</p>
+                    <span className="text-xs text-muted-foreground px-2 py-1 bg-card rounded">
+                      ${card.balance.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               ))
             ) : (
               <Card className="col-span-full p-8 text-center">
                 <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No cards to display</p>
+                <p className="text-muted-foreground mb-4">No cards to display</p>
+                <Button onClick={handleAddCard}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Your First Card
+                </Button>
               </Card>
             )}
           </div>
