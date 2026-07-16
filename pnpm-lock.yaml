@@ -119,6 +119,9 @@ importers:
       '@statsig/web-analytics':
         specifier: ^3.33.3
         version: 3.33.3
+      '@stripe/react-stripe-js':
+        specifier: ^6.8.0
+        version: 6.8.0(@stripe/stripe-js@9.10.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@supabase/ssr':
         specifier: ^0.12.0
         version: 0.12.0(@supabase/supabase-js@2.108.1)
@@ -2368,6 +2371,17 @@ packages:
 
   '@statsig/web-analytics@3.33.3':
     resolution: {integrity: sha512-raGSL9SnIH0x3RThOoroB9k+fiF9eSzoKXIgsfZMyfMFHiYzMxBra+oKiTtlyr2byHIHjMqHGvwKCiLANV3NCg==}
+
+  '@stripe/react-stripe-js@6.8.0':
+    resolution: {integrity: sha512-nRrPkos00CmUeqXHxtJkXmSbl9/6ybGI4jVebzsiA6QaE5A4iw9dn1C4hUx2tBmQQV2e6pm2aLkPYov4hdta2w==}
+    peerDependencies:
+      '@stripe/stripe-js': '>=9.5.0 <10.0.0'
+      react: '>=16.8.0 <20.0.0'
+      react-dom: '>=16.8.0 <20.0.0'
+
+  '@stripe/stripe-js@9.10.0':
+    resolution: {integrity: sha512-rxkKgWLAWtjvJhqEynPJ5zPXoKx5cK4eIUunnMGxwUJDRHKv3MlpA1mCCXdeiXzui5YZNWJKUJBTpe7m30jhOA==}
+    engines: {node: '>=12.16'}
 
   '@supabase/auth-js@2.108.1':
     resolution: {integrity: sha512-Lle5rKU8f9LF3K5dDd8Or8mkkG+ptzRZZWKPVMm9B9UuovH65Ss2+iFnQqRsCqaGouvJEcTWyl0cj2riNrrDLQ==}
@@ -6505,6 +6519,15 @@ snapshots:
       '@statsig/client-core': 3.33.3
       '@statsig/js-client': 3.33.3
       web-vitals: 5.0.3
+
+  '@stripe/react-stripe-js@6.8.0(@stripe/stripe-js@9.10.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      '@stripe/stripe-js': 9.10.0
+      prop-types: 15.8.1
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+
+  '@stripe/stripe-js@9.10.0': {}
 
   '@supabase/auth-js@2.108.1':
     dependencies:
