@@ -26,14 +26,15 @@ import { TransactionsDrawer } from "@/components/transactions-drawer"
 import { LoginPage } from "@/components/login-page"
 import { DisputeTransactionDrawer } from "@/components/dispute-transaction-drawer"
 import { useBanking } from "@/lib/banking-context"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth as useClerkAuth } from "@clerk/nextjs"
 import Image from "next/image"
 import { AccountOpeningModal } from "@/components/account-opening-modal"
 
 export default function BankingDashboard() {
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useClerkAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const user = userId ? { id: userId } : null
   
   useEffect(() => {
     setMounted(true)
@@ -100,7 +101,7 @@ export default function BankingDashboard() {
     }
   }, [user, addActivity, addLoginHistory, toast, getUserFirstName])
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (addActivity) {
       addActivity({
         action: "Signed out",
@@ -108,14 +109,13 @@ export default function BankingDashboard() {
         location: "Current Session",
       })
     }
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("auth_user")
     setActiveView("accounts")
     toast({
       title: "Signed out successfully",
       description: "You have been securely signed out.",
     })
-    router.push("/")
+    // Note: Clerk logout is handled via UserButton in header
+    // This function is kept for activity logging
   }
 
   const handleOpenReceipt = (transactionId: string) => {
@@ -135,7 +135,7 @@ export default function BankingDashboard() {
     return "Good evening"
   }
 
-  if (loading || !mounted) {
+  if (!isLoaded || !mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 dark:from-primary/10 dark:to-accent/10">
         <div className="flex flex-col items-center gap-4">
@@ -147,9 +147,10 @@ export default function BankingDashboard() {
     )
   }
 
-  if (!user) {
-    // User not authenticated, show login page
-    return <LoginPage onLogin={() => setMounted(false)} />
+  if (!userId) {
+    // User not authenticated, redirect to login
+    router.push('/login')
+    return null
   }
 
   const renderView = () => {
