@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
-import { processTransfer, validateTransfer } from '@/lib/transfer-processor'
 import { createClient } from '@/lib/supabase/server'
 
 /**
  * POST /api/transfers/send
  * 
- * Legacy endpoint that delegates to /api/transfers/process
- * Kept for backward compatibility with existing clients
+ * Real-time transfer endpoint with immediate balance updates
+ * Delegates to /api/transfers/realtime for actual processing
  */
 export async function POST(request: NextRequest) {
   try {
@@ -19,12 +18,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { fromAccountId, toAccountNumber, toBankCode, amount, narration } = body
+    const { fromAccountId, toAccountNumber, toBankCode, amount, narration, recipientName } = body
 
     // Validate required fields
-    if (!fromAccountId || !toAccountNumber || !toBankCode || !amount) {
+    if (!fromAccountId || !toAccountNumber || !toBankCode || !amount || !recipientName) {
+      console.error('[v0] Missing required transfer fields:', { fromAccountId, toAccountNumber, toBankCode, amount, recipientName })
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: fromAccountId, toAccountNumber, toBankCode, amount, recipientName' },
         { status: 400 }
       )
     }
@@ -33,58 +33,62 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Amount must be greater than 0' }, { status: 400 })
     }
 
-    // Generate idempotency key
-    const idempotencyKey = request.headers.get('idempotency-key') || uuidv4()
+    console.log('[v0] Transfer send request:', { userId: user.id, fromAccountId, amount, recipientName })
 
-    // Create transfer request
-    const transferRequest = {
-      userId: user.id,
-      fromAccountId,
-      toAccountNumber,
-      toBankCode,
-      amount: parseFloat(amount.toString()),
-      currency: 'USD',
-      idempotencyKey,
-      narration
-    }
+    // Call the real-time transfer endpoint
+    const realtimeResponse = await fetch(
+      new URL('/api/transfers/realtime', request.url),
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${request.headers.get('authorization') || ''}`
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          fromAccountId,
+          toAccountNumber,
+          toBankCode,
+          amount: parseFloat(amount.toString()),
+          recipientName,
+          narration
+        })
+      }
+    )
 
-    // Validate transfer
-    const validation = await validateTransfer(transferRequest)
-    if (!validation.valid) {
+    const realtimeData = await realtimeResponse.json()
+
+    if (!realtimeResponse.ok) {
+      console.error('[v0] Realtime transfer failed:', realtimeData)
       return NextResponse.json(
-        { error: validation.errors[0] },
-        { status: 400 }
+        { error: realtimeData.error || 'Transfer processing failed', transaction: realtimeData.transaction },
+        { status: realtimeResponse.status }
       )
     }
 
-    // Process the transfer (async)
-    const result = await processTransfer(transferRequest)
+    console.log('[v0] Transfer send successful:', realtimeData.transaction)
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: result.error || 'Transfer processing failed' },
-        { status: 400 }
-      )
-    }
-
-    // Return 202 Accepted for async processing
+    // Return 200 with transfer completion status
     return NextResponse.json(
       {
         success: true,
-        status: 'processing',
-        transaction: {
-          id: result.transactionId,
-          status: result.status,
-          createdAt: new Date().toISOString()
-        },
+        status: realtimeData.status,
+        transaction: realtimeData.transaction,
         _links: {
-          status: `/api/transfers/status/${result.transactionId}`
+          status: `/api/transfers/realtime-status?transactionId=${realtimeData.transaction?.transactionId}`
         }
       },
-      { status: 202 }
+      { status: 200 }
     )
   } catch (error: any) {
     console.error('[v0] Transfer send error:', error.message)
-    return NextResponse.json({ error: 'Failed to create transfer' }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to create transfer',
+        details: error.message
+      },
+      { status: 500 }
+    )
   }
 }
