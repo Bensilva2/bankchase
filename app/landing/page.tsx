@@ -3,6 +3,9 @@
 import { Navigation } from '@/components/Navigation'
 import { LandingFeatures } from '@/components/landing-features'
 import { BankingFeatures } from '@/components/features-section'
+import { FeaturesGrid } from '@/components/features-grid'
+import { FeaturesWithImage } from '@/components/features-with-image'
+import { FeaturesAlternating } from '@/components/features-alternating'
 import Link from 'next/link'
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
@@ -54,6 +57,15 @@ export default function LandingPage() {
 
       {/* Features Grid */}
       <LandingFeatures />
+
+      {/* Features Grid with Icons */}
+      <FeaturesGrid />
+
+      {/* Two Column Features with Image */}
+      <FeaturesWithImage />
+
+      {/* Alternating Features */}
+      <FeaturesAlternating />
 
       {/* Advanced Features Section */}
       <BankingFeatures />
