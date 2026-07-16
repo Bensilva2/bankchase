@@ -148,8 +148,8 @@ export default function BankingDashboard() {
   }
 
   if (!userId) {
-    // User not authenticated, redirect to login
-    router.push('/login')
+    // User not authenticated, redirect to landing page
+    router.push('/landing')
     return null
   }
 
