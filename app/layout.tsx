@@ -4,7 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { ClerkProvider, Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
+import { ClerkProvider, Show, SignUpButton, UserButton } from "@clerk/nextjs"
+import Link from "next/link"
 import { Toaster } from "@/components/ui/toaster"
 import { BankingProvider } from "@/lib/banking-context"
 import { Auth0Provider } from "@/lib/auth0-context"
@@ -70,11 +71,9 @@ export default function RootLayout({
                   <div className="flex items-center gap-4">
                     <ThemeToggle />
                     <Show when="signed-out">
-                      <SignInButton mode="modal">
-                        <button className="text-sm font-medium text-foreground hover:text-primary">
-                          Sign In
-                        </button>
-                      </SignInButton>
+                      <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary">
+                        Sign In
+                      </Link>
                       <SignUpButton mode="modal">
                         <button className="text-sm font-medium text-primary-foreground bg-primary px-4 py-2 rounded-md hover:opacity-90">
                           Sign Up
