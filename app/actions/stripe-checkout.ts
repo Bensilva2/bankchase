@@ -35,7 +35,7 @@ export async function createCheckoutSession(
       },
     ],
     mode: mode,
-    payment_method_types: ['card', 'us_bank_account'],
+    payment_method_types: ['card'],
     metadata: {
       productId: product.id,
       productType: product.type,
