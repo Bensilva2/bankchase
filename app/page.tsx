@@ -39,6 +39,13 @@ export default function BankingDashboard() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Redirect unauthenticated users to landing page
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.push('/landing')
+    }
+  }, [isLoaded, userId, router])
   
   const [activeView, setActiveView] = useState("accounts")
   const [sendMoneyOpen, setSendMoneyOpen] = useState(false)
@@ -147,9 +154,8 @@ export default function BankingDashboard() {
     )
   }
 
+  // Redirect happens in useEffect above, returning early here
   if (!userId) {
-    // User not authenticated, redirect to landing page
-    router.push('/landing')
     return null
   }
 
