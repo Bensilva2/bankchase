@@ -4,14 +4,10 @@ import { Geist, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { ClerkProvider, Show, SignUpButton, UserButton } from "@clerk/nextjs"
-import Link from "next/link"
+import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "@/components/ui/toaster"
 import { BankingProvider } from "@/lib/banking-context"
-import { Auth0Provider } from "@/lib/auth0-context"
-import { AuthProvider } from "@/lib/auth-context"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { LoadingProgressBar } from "@/components/loading-progress-bar"
 import StatsigWrapper from "./statsig-provider"
 import { NavigationProvider } from "./navigation-provider"
@@ -66,35 +62,12 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <StatsigWrapper>
               <ClerkProvider>
-                <header className="border-b border-border px-4 py-3 flex items-center justify-between bg-background text-foreground">
-                  <div>Banking App</div>
-                  <div className="flex items-center gap-4">
-                    <ThemeToggle />
-                    <Show when="signed-out">
-                      <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary">
-                        Sign In
-                      </Link>
-                      <SignUpButton mode="modal">
-                        <button className="text-sm font-medium text-primary-foreground bg-primary px-4 py-2 rounded-md hover:opacity-90">
-                          Sign Up
-                        </button>
-                      </SignUpButton>
-                    </Show>
-                    <Show when="signed-in">
-                      <UserButton />
-                    </Show>
-                  </div>
-                </header>
-                <AuthProvider>
-                  <Auth0Provider>
-                    <BankingProvider>
-                      {children}
-                      <Toaster />
-                      <Analytics />
-                      <SpeedInsights />
-                    </BankingProvider>
-                  </Auth0Provider>
-                </AuthProvider>
+                <BankingProvider>
+                  {children}
+                  <Toaster />
+                  <Analytics />
+                  <SpeedInsights />
+                </BankingProvider>
               </ClerkProvider>
             </StatsigWrapper>
           </ThemeProvider>

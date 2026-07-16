@@ -1,62 +1,73 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
-import { useBanking } from '@/lib/banking-context'
+import { useAuth } from '@clerk/nextjs'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 import { ArrowLeft, User, Mail, Phone, MapPin, Edit, Save, X } from 'lucide-react'
-import { Card } from '@/components/ui/card'
 
-export default function AccountManagementPage() {
+function AccountManagementContent() {
   const router = useRouter()
-  const { user, loading } = useAuth()
-  const { userProfile, updateUserProfile } = useBanking()
+  const { userId, isLoaded } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState({
-    firstName: userProfile?.firstName || user?.firstName || '',
-    lastName: userProfile?.lastName || user?.lastName || '',
-    email: userProfile?.email || user?.email || '',
-    phone: userProfile?.phone || '',
-    address: userProfile?.address || '',
-    city: userProfile?.city || '',
-    state: userProfile?.state || '',
-    zipCode: userProfile?.zipCode || '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
   })
 
-  if (loading) {
+  useEffect(() => {
+    if (isLoaded) {
+      setLoading(false)
+    }
+  }, [isLoaded])
+
+  if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <main className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-muted border-t-primary rounded-full animate-spin" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </main>
     )
   }
 
-  if (!user) {
-    router.push('/login')
+  if (!userId) {
     return null
   }
 
-  const handleSave = () => {
-    updateUserProfile?.(formData)
-    setIsEditing(false)
+  const handleSave = async () => {
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, ...formData }),
+      })
+      if (response.ok) {
+        setIsEditing(false)
+      }
+    } catch (error) {
+      console.error('[v0] Failed to save profile:', error)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-card pb-8">
-      <div className="max-w-4xl mx-auto p-6">
+    <main className="min-h-screen bg-background pb-24 md:pb-8">
+      <Navigation />
+      <div className="max-w-4xl mx-auto p-4 md:p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.back()}
-              className="p-2 hover:bg-background rounded-lg transition"
-            >
-              <ArrowLeft className="w-6 h-6 text-foreground" />
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Account Management</h1>
-              <p className="text-muted-foreground">Manage your account settings and information</p>
-            </div>
+          <div>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Account Management</h1>
+            <p className="text-muted-foreground">Manage your account settings and information</p>
           </div>
           <button
             onClick={() => setIsEditing(!isEditing)}
@@ -245,6 +256,14 @@ export default function AccountManagementPage() {
           </div>
         </Card>
       </div>
-    </div>
+    </main>
+  )
+}
+
+export default function AccountManagementPage() {
+  return (
+    <ProtectedRoute>
+      <AccountManagementContent />
+    </ProtectedRoute>
   )
 }

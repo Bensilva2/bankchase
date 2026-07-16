@@ -1,6 +1,8 @@
 'use client'
 
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@clerk/nextjs'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
@@ -25,7 +27,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function PrivacySecurityPage() {
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useAuth()
   const router = useRouter()
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [biometricsEnabled, setBiometricsEnabled] = useState(false)
@@ -34,7 +36,7 @@ export default function PrivacySecurityPage() {
   const [httpsOnly, setHttpsOnly] = useState(true)
   const [showPasswords, setShowPasswords] = useState(false)
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a4fa6] to-[#003087]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border"></div>
@@ -42,7 +44,7 @@ export default function PrivacySecurityPage() {
     )
   }
 
-  if (!user) {
+  if (!userId) {
     router.push('/')
     return null
   }

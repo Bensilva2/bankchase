@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@clerk/nextjs'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 import { useBanking } from '@/lib/banking-context'
 import { Bell, Trash2, CheckCircle, AlertCircle, Info, Zap, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -12,13 +14,13 @@ import { WebhookConnectors } from '@/components/webhook-connectors'
 
 export default function NotificationsPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useAuth()
   const { notifications = [], markNotificationRead, deleteNotification, clearAllNotifications } = useBanking()
   const [filterType, setFilterType] = useState<'all' | 'unread'>('all')
   const [activeTab, setActiveTab] = useState<'notifications' | 'webhooks' | 'preferences'>('notifications')
   const [isGeneratingEvent, setIsGeneratingEvent] = useState(false)
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -26,7 +28,7 @@ export default function NotificationsPage() {
     )
   }
 
-  if (!user) {
+  if (!userId) {
     router.push('/login')
     return null
   }
