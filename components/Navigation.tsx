@@ -3,32 +3,36 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import ApiClient from '@/lib/api-client';
+import { useClerk, useAuth } from '@clerk/nextjs';
+import { Menu, X, LogOut, LayoutDashboard, Wallet, Send, User } from 'lucide-react';
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const { signOut } = useClerk();
+  const { userId } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await ApiClient.logout();
+      await signOut();
       router.push('/login');
     } catch (error) {
       console.error('Logout failed:', error);
-      localStorage.removeItem('access_token');
       router.push('/login');
     }
   };
 
   const navItems = [
-    { label: 'Accounts', href: '/accounts' },
-    { label: 'Transfers', href: '/pay-transfer' },
-    { label: 'Voice Agent', href: '/voice-agent' },
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Profile', href: '/profile' },
-    { label: 'Privacy & Security', href: '/privacy-security' },
-    { label: 'WiFi Security', href: '/wifi-security' },
+    { label: 'Accounts', href: '/accounts', icon: Wallet },
+    { label: 'Cards', href: '/cards', icon: Wallet },
+    { label: 'Transfers', href: '/transfers', icon: Send },
+    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { label: 'Settings', href: '/settings', icon: User },
   ];
+
+  if (!userId) {
+    return null;
+  }
 
   return (
     <nav className="bg-background shadow">
@@ -44,20 +48,25 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="px-3 py-2 rounded-md text-sm font-medium text-foreground hover:text-blue-600 hover:bg-background transition"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-foreground hover:text-primary hover:bg-muted/50 transition"
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden lg:inline">{item.label}</span>
+                </Link>
+              );
+            })}
             <button
               onClick={handleLogout}
-              className="ml-4 px-4 py-2 rounded-lg text-sm font-medium text-background bg-primary hover:bg-primary transition"
+              className="ml-4 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-muted/50 transition"
             >
-              Logout
+              <LogOut className="w-4 h-4" />
+              <span className="hidden lg:inline">Logout</span>
             </button>
           </div>
 
@@ -65,18 +74,10 @@ export function Navigation() {
           <div className="flex md:hidden items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-blue-600 hover:bg-background"
+              className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary hover:bg-muted/50"
             >
               <span className="sr-only">Open main menu</span>
-              {isOpen ? (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
@@ -84,25 +85,30 @@ export function Navigation() {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden">
+        <div className="md:hidden bg-card border-t border-border">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-blue-600 hover:bg-background"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium text-foreground hover:text-primary hover:bg-muted/50 transition"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Icon className="w-5 h-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
             <button
               onClick={() => {
                 handleLogout();
                 setIsOpen(false);
               }}
-              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-background bg-primary hover:bg-primary mt-4"
+              className="flex items-center gap-3 w-full mt-3 px-3 py-2 rounded-lg text-base font-medium text-foreground hover:bg-muted/50 transition"
             >
+              <LogOut className="w-5 h-5" />
               Logout
             </button>
           </div>
