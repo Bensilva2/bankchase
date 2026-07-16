@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Search, ChevronDown, FileText } from 'lucide-react'
+import { ArrowLeft, Search, ChevronDown, FileText, Check } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 interface Section {
@@ -194,8 +194,10 @@ const sections: Section[] = [
 export default function TermsOfServicePage() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
-  const [expandedSections, setExpandedSections] = useState<string[]>(['1'])
+  const [expandedSections, setExpandedSections] = useState<string[]>([])
   const [expandedSubsections, setExpandedSubsections] = useState<string[]>([])
+  const [accepted, setAccepted] = useState(false)
+  const [showNotification, setShowNotification] = useState(false)
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) =>
@@ -227,6 +229,13 @@ export default function TermsOfServicePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-card pb-8">
+      {/* Notification Toast */}
+      {showNotification && (
+        <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+          <Check className="w-5 h-5" />
+          <span className="font-medium">Terms and Conditions accepted successfully!</span>
+        </div>
+      )}
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -367,10 +376,19 @@ export default function TermsOfServicePage() {
               Decline
             </button>
             <button
-              onClick={() => router.back()}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"
+              onClick={() => {
+                setAccepted(true)
+                setShowNotification(true)
+                setTimeout(() => setShowNotification(false), 3000)
+              }}
+              className={`px-6 py-2 rounded-lg transition font-medium text-sm flex items-center gap-2 ${
+                accepted
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
             >
-              I Accept
+              {accepted && <Check className="w-4 h-4" />}
+              {accepted ? 'Terms Accepted' : 'I Accept'}
             </button>
           </div>
         </Card>
