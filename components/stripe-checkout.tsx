@@ -85,6 +85,20 @@ export function StripeCheckout({
         stripe={stripePromise}
         options={{
           clientSecret,
+          appearance: {
+            theme: 'stripe',
+            variables: {
+              colorPrimary: '#0066cc',
+              colorText: '#424770',
+              colorTextSecondary: '#737373',
+              colorBorder: '#e0e0e0',
+              colorBackground: '#ffffff',
+              colorDanger: '#df1b41',
+              fontFamily: 'system-ui, sans-serif',
+              spacingUnit: '4px',
+              borderRadius: '8px',
+            },
+          },
         }}
       >
         <EmbeddedCheckout onComplete={onSuccess} />
