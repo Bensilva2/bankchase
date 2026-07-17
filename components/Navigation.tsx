@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import posthog from 'posthog-js';
 import { useClerk, useAuth } from '@clerk/nextjs';
 import { Menu, X, LogOut, LayoutDashboard, Wallet, Send, User } from 'lucide-react';
 
@@ -14,6 +15,8 @@ export function Navigation() {
 
   const handleLogout = async () => {
     try {
+      posthog.capture('user_signed_out')
+      posthog.reset()
       await signOut();
       router.push('/login');
     } catch (error) {

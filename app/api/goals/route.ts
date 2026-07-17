@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/client'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export async function GET(request: NextRequest) {
   const token = request.headers.get('authorization')?.replace('Bearer ', '')
@@ -76,6 +77,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: insertError.message }, { status: 400 })
     }
 
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId: user.id,
+      event: 'savings_goal_created',
+      properties: {
+        goal_id: goal.id,
+        category: category || 'Savings',
+        target_amount: targetAmount,
+      },
+    })
+    await posthog.shutdown()
+
     return NextResponse.json({ goal }, { status: 201 })
   } catch (error: any) {
     console.error('[v0] Error creating goal:', error.message)
@@ -115,6 +128,17 @@ export async function PUT(request: NextRequest) {
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 400 })
     }
+
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId: user.id,
+      event: 'savings_goal_updated',
+      properties: {
+        goal_id: id,
+        current_amount: currentAmount,
+      },
+    })
+    await posthog.shutdown()
 
     return NextResponse.json({ goal }, { status: 200 })
   } catch (error: any) {

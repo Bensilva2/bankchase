@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,6 +66,18 @@ export async function POST(request: NextRequest) {
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
+
+    const posthog = getPostHogClient()
+    posthog.identify({
+      distinctId: user.id,
+      properties: { role: user.role, createdAt: user.createdAt },
+    })
+    posthog.capture({
+      distinctId: user.id,
+      event: 'user_registered',
+      properties: { role: user.role, source: 'api' },
+    })
+    await posthog.shutdown()
 
     return NextResponse.json(
       {

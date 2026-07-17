@@ -9,6 +9,7 @@ import {
   SUPPORTED_CURRENCIES,
 } from "@/lib/cross-border-service"
 import { sendInternationalTransferUpdate } from "@/lib/sms-service"
+import { getPostHogClient } from "@/lib/posthog-server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -108,6 +109,22 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId: senderAccountId,
+      event: 'international_transfer_initiated',
+      properties: {
+        amount,
+        source_currency: sourceCurrency,
+        target_currency: targetCurrency || sourceCurrency,
+        recipient_country: recipientCountry || '',
+        transaction_id: result.transactionId,
+        swift_reference: result.swiftReference,
+        exchange_rate: result.exchangeRate,
+      },
+    })
+    await posthog.shutdown()
 
     return NextResponse.json({
       success: true,
