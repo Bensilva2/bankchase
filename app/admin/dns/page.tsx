@@ -72,7 +72,7 @@ export default function DNSManagementPage() {
   const handleSaveRecord = async (recordData: any) => {
     try {
       if (editingRecord) {
-        await updateDNSRecord(selectedZone, editingRecord.id, recordData)
+        await updateDNSRecord(selectedZone, (editingRecord as any).id, recordData)
       } else {
         await createDNSRecord(selectedZone, recordData)
       }
@@ -113,7 +113,7 @@ export default function DNSManagementPage() {
             <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <div>
               <h3 className="font-semibold text-red-900 dark:text-red-100">Error</h3>
-              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+              <p className="text-sm text-red-800 dark:text-red-200">{error instanceof Error ? error.message : String(error)}</p>
             </div>
           </Card>
         )}

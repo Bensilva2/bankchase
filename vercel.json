@@ -1,12 +1,5 @@
 {
-  "experimentalServices": {
-    "frontend": {
-      "entrypoint": ".",
-      "routePrefix": "/"
-    },
-    "backend": {
-      "entrypoint": "backend/main.py",
-      "routePrefix": "/api/v2"
-    }
-  }
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install"
 }

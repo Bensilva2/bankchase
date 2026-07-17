@@ -13,14 +13,15 @@ export default function AccountManagementPage() {
   const { userProfile, updateUserProfile } = useBanking()
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
-    firstName: userProfile?.firstName || user?.firstName || '',
-    lastName: userProfile?.lastName || user?.lastName || '',
+    firstName: userProfile?.name?.split(' ')[0] || user?.firstName || '',
+    lastName: userProfile?.name?.split(' ')[1] || user?.lastName || '',
     email: userProfile?.email || user?.email || '',
-    phone: userProfile?.phone || '',
-    address: userProfile?.address || '',
-    city: userProfile?.city || '',
-    state: userProfile?.state || '',
-    zipCode: userProfile?.zipCode || '',
+    phone: userProfile?.phone || user?.phone || '',
+    address: userProfile?.address || user?.address || '',
+    city: user?.city || '',
+    state: user?.state || '',
+    zipCode: user?.zipCode || '',
+    dateOfBirth: userProfile?.dateOfBirth || user?.dateOfBirth || '',
   })
 
   if (loading) {
