@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PlaidService } from '@/lib/plaid-service';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,6 +62,17 @@ export async function POST(request: NextRequest) {
     );
 
     console.log(`[v0] Retrieved ${transactionsResult.transactions.length} transactions`);
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: userId,
+      event: 'bank_account_linked',
+      properties: {
+        account_count: accountsResult.accounts.length,
+        institution: metadata?.institutionName || 'Bank',
+      },
+    });
+    await posthog.flush();
 
     return NextResponse.json({
       success: true,

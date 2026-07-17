@@ -8,6 +8,7 @@ import { Navigation } from '@/components/Navigation'
 import { P2PPayment } from '@/components/p2p-payment'
 import { BackButton } from '@/components/back-button'
 import { Send } from 'lucide-react'
+import posthog from 'posthog-js'
 
 export default function SendMoneyPage() {
   const router = useRouter()
@@ -19,6 +20,12 @@ export default function SendMoneyPage() {
       router.push('/login')
     }
   }, [user, loading, router])
+
+  useEffect(() => {
+    if (isLoaded) {
+      posthog.capture('send_money_viewed')
+    }
+  }, [isLoaded])
 
   if (!isLoaded) {
     return (

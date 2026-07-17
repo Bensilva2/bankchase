@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { LoadingProgressBar } from "@/components/loading-progress-bar"
 import StatsigWrapper from "./statsig-provider"
 import { NavigationProvider } from "./navigation-provider"
+import { PostHogIdentify } from "@/components/posthog-identify"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -62,6 +63,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <StatsigWrapper>
               <ClerkProvider>
+                <PostHogIdentify />
                 <BankingProvider>
                   {children}
                   <Toaster />

@@ -5,6 +5,7 @@ import {
   generateTransactionSteps,
   type InstantPaymentRequest,
 } from '@/lib/instant-payments-service'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,6 +70,19 @@ export async function POST(request: NextRequest) {
 
     // Generate tracking steps
     const trackingSteps = generateTransactionSteps(paymentRail)
+
+    const distinctId = request.headers.get('x-posthog-distinct-id') ?? (senderId || 'anonymous')
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId,
+      event: 'instant_payment_sent',
+      properties: {
+        payment_rail: paymentRail,
+        amount,
+        currency,
+      },
+    })
+    await posthog.flush()
 
     return NextResponse.json({
       success: true,

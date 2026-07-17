@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 // Demo user credentials - matches the main login route
 const DEMO_USER = {
@@ -71,6 +72,23 @@ export async function POST(request: NextRequest) {
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
+
+    const posthog = getPostHogClient()
+    posthog.identify({
+      distinctId: DEMO_USER.id,
+      properties: {
+        role: DEMO_USER.role,
+      },
+    })
+    posthog.capture({
+      distinctId: DEMO_USER.id,
+      event: 'user_signed_in',
+      properties: {
+        role: DEMO_USER.role,
+        login_method: username ? 'username' : 'email',
+      },
+    })
+    await posthog.flush()
 
     return NextResponse.json(
       {

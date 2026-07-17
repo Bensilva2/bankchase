@@ -10,6 +10,7 @@ import { Target, Plus, Trash2, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { BackButton } from '@/components/back-button'
+import posthog from 'posthog-js'
 
 export default function SavingsGoalsPage() {
   const router = useRouter()
@@ -50,14 +51,24 @@ export default function SavingsGoalsPage() {
       deadline: formData.deadline,
       category: formData.category,
     })
+    posthog.capture('savings_goal_created', {
+      target_amount: parseFloat(formData.targetAmount),
+      category: formData.category,
+      has_deadline: !!formData.deadline,
+    })
     setFormData({ name: '', targetAmount: '', currentAmount: '', deadline: '', category: 'General' })
     setShowAddGoal(false)
   }
 
   const handleUpdateGoal = () => {
     if (editingGoal) {
+      const newAmount = parseFloat(formData.currentAmount) || editingGoal.currentAmount
       updateSavingsGoal?.(editingGoal.id, {
-        currentAmount: parseFloat(formData.currentAmount) || editingGoal.currentAmount,
+        currentAmount: newAmount,
+      })
+      posthog.capture('savings_goal_updated', {
+        category: editingGoal.category,
+        progress_pct: Math.round((newAmount / editingGoal.targetAmount) * 100),
       })
       setEditingGoal(null)
       setFormData({ name: '', targetAmount: '', currentAmount: '', deadline: '', category: 'General' })
