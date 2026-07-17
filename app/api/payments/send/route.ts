@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createPaymentIntent } from '@/lib/payment-service'
 import { sendTransactionNotification, sendPaymentConfirmation } from '@/lib/email-service'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,6 +87,20 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[v0] Payment processed successfully:', transactionId)
+
+    const distinctId = request.headers.get('x-posthog-distinct-id') ?? 'anonymous'
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId,
+      event: 'payment_sent',
+      properties: {
+        transaction_id: transactionId,
+        amount: parsedAmount,
+        currency,
+        status: paymentResult.status,
+      },
+    })
+    await posthog.flush()
 
     return NextResponse.json({
       success: true,

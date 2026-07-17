@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { toast } from 'sonner'
@@ -87,6 +88,12 @@ export function OnboardingCard() {
   const [selectedStep, setSelectedStep] = useState<string | null>(onboardingSteps[0].id)
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set())
   const [isWorkflowRunning, setIsWorkflowRunning] = useState(false)
+
+  useEffect(() => {
+    posthog.capture('onboarding_started', {
+      total_steps: onboardingSteps.length,
+    })
+  }, [])
   const [workflowRunId, setWorkflowRunId] = useState<string | null>(null)
 
   const currentStep = onboardingSteps.find(step => step.id === selectedStep)

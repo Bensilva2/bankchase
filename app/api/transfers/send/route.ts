@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '@/lib/supabase/server'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 /**
  * POST /api/transfers/send
@@ -67,6 +68,19 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[v0] Transfer send successful:', realtimeData.transaction)
+
+    const distinctId = request.headers.get('x-posthog-distinct-id') ?? user.id
+    const posthog = getPostHogClient()
+    posthog.capture({
+      distinctId,
+      event: 'transfer_sent',
+      properties: {
+        amount: parseFloat(amount.toString()),
+        bank_code: toBankCode,
+        status: realtimeData.status,
+      },
+    })
+    await posthog.flush()
 
     // Return 200 with transfer completion status
     return NextResponse.json(
