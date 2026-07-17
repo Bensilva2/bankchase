@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { publishTransactionEvent } from '@/lib/event-emitter';
 import { createTransactionState, updateTransactionStatus } from '@/lib/transaction-tracker';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 /**
  * POST /api/transfers/internal
@@ -103,6 +104,18 @@ export async function POST(request: NextRequest) {
 
     // Step 6: Return immediately to client (non-blocking)
     console.log(`[TransferAPI] Returning success response for transaction: ${transactionId}`);
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: senderId,
+      event: 'internal_transfer_initiated',
+      properties: {
+        amount,
+        currency,
+        transaction_id: transactionId,
+      },
+    });
+    await posthog.shutdown();
 
     return NextResponse.json(
       {

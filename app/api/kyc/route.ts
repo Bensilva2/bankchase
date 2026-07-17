@@ -9,6 +9,7 @@ import {
   getKYCStats,
   type DocumentType
 } from '@/lib/kyc-service'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 // POST - Initialize or update KYC profile
 export async function POST(request: NextRequest) {
@@ -44,6 +45,13 @@ export async function POST(request: NextRequest) {
             { status: 404 }
           )
         }
+        const posthogUpload = getPostHogClient()
+        posthogUpload.capture({
+          distinctId: userId,
+          event: 'kyc_document_uploaded',
+          properties: { document_type: documentType },
+        })
+        await posthogUpload.shutdown()
         return NextResponse.json({ success: true, document })
       }
 
@@ -62,8 +70,15 @@ export async function POST(request: NextRequest) {
             { status: 404 }
           )
         }
-        const profile = getKYCProfile(userId)
-        return NextResponse.json({ success: true, profile })
+        const profileAfterVerify = getKYCProfile(userId)
+        const posthogVerify = getPostHogClient()
+        posthogVerify.capture({
+          distinctId: userId,
+          event: 'kyc_document_verified',
+          properties: { approved, document_id: documentId },
+        })
+        await posthogVerify.shutdown()
+        return NextResponse.json({ success: true, profile: profileAfterVerify })
       }
 
       case 'calculate_risk': {

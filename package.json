@@ -86,6 +86,8 @@
     "next-themes": "latest",
     "pg": "^8.21.0",
     "plaid": "^42.2.0",
+    "posthog-js": "^1.402.3",
+    "posthog-node": "^5.44.0",
     "qrcode": "^1.5.4",
     "react": "^19",
     "react-day-picker": "9.8.0",
