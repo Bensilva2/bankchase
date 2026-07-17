@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe-client'
+import { updateBalanceOnCharge, recordTransaction, createBalanceAlert } from '@/lib/balance-service'
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,7 +49,22 @@ export async function POST(req: NextRequest) {
           currency: charge.currency,
           account: charge.on_behalf_of,
         })
-        // Update charge status in database
+        
+        // Update balance if charge is for a connected account
+        if (charge.on_behalf_of) {
+          const amountInDollars = charge.amount / 100
+          try {
+            await updateBalanceOnCharge(
+              charge.on_behalf_of,
+              charge.id,
+              amountInDollars,
+              'completed'
+            )
+            console.log('[v0] Balance updated for charge:', charge.id)
+          } catch (error) {
+            console.error('[v0] Error updating balance for charge:', error)
+          }
+        }
         break
       }
 
@@ -58,7 +74,19 @@ export async function POST(req: NextRequest) {
           chargeId: charge.id,
           reason: charge.failure_reason,
         })
-        // Update charge status in database
+        
+        // Create alert for failed charge
+        if (charge.on_behalf_of) {
+          try {
+            await createBalanceAlert(
+              charge.on_behalf_of,
+              'unusual_activity',
+              `Charge failed: ${charge.id} (${charge.failure_reason})`
+            )
+          } catch (error) {
+            console.error('[v0] Error creating alert for failed charge:', error)
+          }
+        }
         break
       }
 
@@ -79,7 +107,25 @@ export async function POST(req: NextRequest) {
           payoutId: payout.id,
           arrivalDate: payout.arrival_date,
         })
-        // Update payout status to paid
+        
+        // Update balance for payout received
+        if (event.account) {
+          const amountInDollars = payout.amount / 100
+          try {
+            await recordTransaction({
+              accountId: event.account,
+              type: 'payout',
+              amount: amountInDollars,
+              balanceBefore: 0, // Would need to fetch actual balance
+              balanceAfter: 0,
+              description: `Payout received: ${payout.id}`,
+              relatedId: payout.id,
+              status: 'completed',
+            })
+          } catch (error) {
+            console.error('[v0] Error recording payout transaction:', error)
+          }
+        }
         break
       }
 
