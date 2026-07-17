@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@clerk/nextjs'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 import { P2PPayment } from '@/components/p2p-payment'
 import { BackButton } from '@/components/back-button'
 import { Send } from 'lucide-react'
 
 export default function SendMoneyPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useAuth()
   const [recentTransactions, setRecentTransactions] = useState<any[]>([])
 
   useEffect(() => {
@@ -18,7 +20,7 @@ export default function SendMoneyPage() {
     }
   }, [user, loading, router])
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

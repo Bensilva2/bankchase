@@ -1,6 +1,8 @@
 'use client'
 
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@clerk/nextjs'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 import { canAccessAdminDashboard } from '@/lib/rbac'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
@@ -10,10 +12,10 @@ import { Lock, ArrowLeft, Shield, Activity, AlertTriangle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function SecurityDashboard() {
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useAuth()
   const router = useRouter()
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a4fa6] to-[#003087]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-border"></div>

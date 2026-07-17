@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useAuth as useClerkAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
+import { useEffect, useState } from 'react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,28 +10,24 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { userId, isLoaded } = useClerkAuth();
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/login');
+    if (isLoaded) {
+      if (!userId) {
+        // User is not authenticated, redirect to signin
+        router.push('/?signin_redirect_url=' + encodeURIComponent(window.location.pathname));
         return;
       }
 
-      // Check if user has required role if specified
-      if (requiredRole && user.role && !requiredRole.includes(user.role)) {
-        router.push('/accounts');
-        return;
-      }
-
+      // User is authenticated
       setIsAuthorized(true);
     }
-  }, [user, loading, requiredRole, router]);
+  }, [userId, isLoaded, router]);
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -42,7 +38,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  if (!isAuthorized || !user) {
+  if (!isAuthorized) {
     return null;
   }
 

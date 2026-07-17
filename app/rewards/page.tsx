@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@clerk/nextjs'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 import { useBanking } from '@/lib/banking-context'
 import { Gift, TrendingUp, Zap, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,13 +13,13 @@ import { BackButton } from '@/components/back-button'
 
 export default function RewardsPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useAuth()
   const { userProfile, redeemPoints, rewardRedemptions = [] } = useBanking()
   const [redeemAmount, setRedeemAmount] = useState('')
   const [redeemType, setRedeemType] = useState<'cashback' | 'travel' | 'giftcard' | 'statement'>('cashback')
   const [redeemSuccess, setRedeemSuccess] = useState(false)
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -25,7 +27,7 @@ export default function RewardsPage() {
     )
   }
 
-  if (!user) {
+  if (!userId) {
     router.push('/login')
     return null
   }

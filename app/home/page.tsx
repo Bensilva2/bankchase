@@ -1,13 +1,15 @@
 'use client'
 
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@clerk/nextjs'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function HomePage() {
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useAuth()
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">

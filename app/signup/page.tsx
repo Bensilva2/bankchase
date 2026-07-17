@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ApiClient from '@/lib/api-client';
 import Link from 'next/link';
 
 export default function SignupPage() {
@@ -66,10 +65,28 @@ export default function SignupPage() {
     }
 
     try {
-      const response = await ApiClient.signup(email, password, firstName, lastName);
+      const response = await fetch('/api/auth/sign-up', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Signup failed');
+      }
+
+      const data = await response.json();
       
-      // Store token and redirect
-      if (response.access_token) {
+      // Store user info locally and redirect to accounts
+      if (data.user) {
+        localStorage.setItem('auth_token', JSON.stringify(data.user));
+        localStorage.setItem('auth_user', JSON.stringify(data.user));
         router.push('/accounts');
       }
     } catch (err: any) {

@@ -2,14 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth as useClerkAuth } from '@clerk/nextjs'
 import { useBanking } from '@/lib/banking-context'
 import { ArrowLeft, HelpCircle, MessageCircle, Phone, Mail, Search, ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 export default function HelpPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useClerkAuth()
   const { faqs = [], supportTickets = [] } = useBanking()
   const [currentView, setCurrentView] = useState<'main' | 'faqs' | 'chat' | 'tickets'>('main')
   const [searchTerm, setSearchTerm] = useState('')
@@ -19,7 +19,7 @@ export default function HelpPage() {
   ])
   const [chatInput, setChatInput] = useState('')
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -27,10 +27,7 @@ export default function HelpPage() {
     )
   }
 
-  if (!user) {
-    router.push('/login')
-    return null
-  }
+  // Help page is public - no auth check needed
 
   const handleSendMessage = () => {
     if (!chatInput.trim()) return

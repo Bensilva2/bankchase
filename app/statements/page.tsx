@@ -2,16 +2,18 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@clerk/nextjs'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 import { ArrowLeft, Download, FileText, Calendar } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 export default function StatementsPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { userId, isLoaded } = useAuth()
   const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'csv'>('pdf')
 
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-card">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -19,7 +21,7 @@ export default function StatementsPage() {
     )
   }
 
-  if (!user) {
+  if (!userId) {
     router.push('/login')
     return null
   }
