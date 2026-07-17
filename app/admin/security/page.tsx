@@ -22,7 +22,7 @@ export default function SecurityDashboard() {
   }
 
   // Check if user has admin access
-  if (!user || !canAccessAdminDashboard(user)) {
+  if (!user || !canAccessAdminDashboard(user as any)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
         <Card className="p-8 max-w-md border-0 shadow-lg">

@@ -59,7 +59,7 @@ export default function DNSManagementPage() {
     }
   }, [selectedZone, fetchRecords])
 
-  const handleOpenDrawer = (record = null) => {
+  const handleOpenDrawer = (record: any = null) => {
     setEditingRecord(record)
     setIsDrawerOpen(true)
   }
