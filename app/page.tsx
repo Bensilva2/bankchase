@@ -60,14 +60,10 @@ export default function BankingDashboard() {
   const { userProfile, addNotification, addActivity, addLoginHistory } = useBanking()
 
   const getUserFirstName = useCallback(() => {
-    if (user?.firstName) return user.firstName
-    if (user?.username) return user.username
     return "User"
-  }, [user?.firstName, user?.username])
+  }, [])
 
   useEffect(() => {
-    if (!user) return
-
     const deviceInfo = navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Desktop Browser"
 
     if (addActivity) {
@@ -89,7 +85,7 @@ export default function BankingDashboard() {
 
     const welcomeTimer = setTimeout(() => {
       toast({
-        title: `Welcome back, ${getUserFirstName()}!`,
+        title: `Welcome back, User!`,
         description: "Your accounts are up to date.",
         duration: 3000,
       })
@@ -98,7 +94,7 @@ export default function BankingDashboard() {
     return () => {
       clearTimeout(welcomeTimer)
     }
-  }, [user, addActivity, addLoginHistory, toast, getUserFirstName])
+  }, [addActivity, addLoginHistory, toast])
 
   const handleLogout = async () => {
     if (addActivity) {

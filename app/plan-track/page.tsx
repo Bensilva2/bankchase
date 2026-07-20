@@ -26,8 +26,7 @@ export default function PlanTrackPage() {
   // Load goals on mount
   useEffect(() => {
     loadGoals()
-    }
-  }, [isAuthenticated, user])
+  }, [])
 
   const loadGoals = async () => {
     try {
