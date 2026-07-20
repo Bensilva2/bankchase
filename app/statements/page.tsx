@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { ArrowLeft, Download, FileText, Calendar } from 'lucide-react'
@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card'
 
 export default function StatementsPage() {
   const router = useRouter()
-  const { userId, isLoaded } = useAuth()
+  
   const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'csv'>('pdf')
 
   if (!isLoaded) {

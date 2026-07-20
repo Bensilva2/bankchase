@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 
 interface AppSettings {
   notifications: {
@@ -41,7 +40,7 @@ const settingsStore = new Map<string, AppSettings>()
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const userId = 'demo-user'
     const searchParams = request.nextUrl.searchParams
     const paramUserId = searchParams.get('userId')
 
@@ -101,7 +100,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const userId = 'demo-user'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -155,7 +154,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const userId = 'demo-user'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

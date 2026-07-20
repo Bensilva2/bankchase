@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { useBanking } from '@/lib/banking-context'
@@ -14,7 +14,7 @@ import { WebhookConnectors } from '@/components/webhook-connectors'
 
 export default function NotificationsPage() {
   const router = useRouter()
-  const { userId, isLoaded } = useAuth()
+  
   const { notifications = [], markNotificationRead, deleteNotification, clearAllNotifications } = useBanking()
   const [filterType, setFilterType] = useState<'all' | 'unread'>('all')
   const [activeTab, setActiveTab] = useState<'notifications' | 'webhooks' | 'preferences'>('notifications')

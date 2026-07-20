@@ -4,7 +4,6 @@ import { Geist, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "@/components/ui/toaster"
 import { BankingProvider } from "@/lib/banking-context"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -61,14 +60,12 @@ export default function RootLayout({
         <NavigationProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <StatsigWrapper>
-              <ClerkProvider>
-                <BankingProvider>
-                  {children}
-                  <Toaster />
-                  <Analytics />
-                  <SpeedInsights />
-                </BankingProvider>
-              </ClerkProvider>
+              <BankingProvider>
+                {children}
+                <Toaster />
+                <Analytics />
+                <SpeedInsights />
+              </BankingProvider>
             </StatsigWrapper>
           </ThemeProvider>
         </NavigationProvider>

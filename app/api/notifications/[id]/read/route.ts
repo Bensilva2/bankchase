@@ -3,13 +3,14 @@ import { NotificationService } from '@/lib/notification-service'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = 'user_demo'
-    await NotificationService.markAsRead(userId, params.id)
+    await NotificationService.markAsRead(userId, id)
 
-    console.log('[v0] Notification marked as read:', params.id)
+    console.log('[v0] Notification marked as read:', id)
 
     return NextResponse.json({
       success: true,

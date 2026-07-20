@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@clerk/nextjs';
+;
 import { useSearchParams } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Navigation } from '@/components/Navigation';
@@ -29,7 +29,7 @@ interface TransferStatus {
 }
 
 function TransferContent() {
-  const { userId, isLoaded } = useAuth();
+  ;
   const searchParams = useSearchParams();
   const cardId = searchParams.get('cardId');
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { useBanking } from '@/lib/banking-context'
@@ -13,7 +13,7 @@ import { BackButton } from '@/components/back-button'
 
 export default function RewardsPage() {
   const router = useRouter()
-  const { userId, isLoaded } = useAuth()
+  
   const { userProfile, redeemPoints, rewardRedemptions = [] } = useBanking()
   const [redeemAmount, setRedeemAmount] = useState('')
   const [redeemType, setRedeemType] = useState<'cashback' | 'travel' | 'giftcard' | 'statement'>('cashback')

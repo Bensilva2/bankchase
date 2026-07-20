@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { canAccessAdminDashboard } from '@/lib/rbac'
@@ -12,7 +12,7 @@ import { Lock, ArrowLeft, Shield, Activity, AlertTriangle } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function SecurityDashboard() {
-  const { userId, isLoaded } = useAuth()
+  
   const router = useRouter()
 
   if (!isLoaded) {

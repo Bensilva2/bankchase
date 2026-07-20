@@ -7,24 +7,9 @@ import { FeaturesGrid } from '@/components/features-grid'
 import { FeaturesWithImage } from '@/components/features-with-image'
 import { FeaturesAlternating } from '@/components/features-alternating'
 import Link from 'next/link'
-import { useAuth } from '@clerk/nextjs'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { ArrowRight, CheckCircle } from 'lucide-react'
 
 export default function LandingPage() {
-  const { userId, isLoaded } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (isLoaded && userId) {
-      router.push('/')
-    }
-  }, [userId, isLoaded, router])
-
-  if (!isLoaded) {
-    return null
-  }
 
   return (
     <div className="min-h-screen bg-background">

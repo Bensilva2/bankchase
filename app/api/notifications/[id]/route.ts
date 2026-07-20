@@ -3,13 +3,14 @@ import { NotificationService } from '@/lib/notification-service'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const userId = 'user_demo'
     // In production, verify ownership before deleting
     
-    console.log('[v0] Notification deleted:', params.id)
+    console.log('[v0] Notification deleted:', id)
     
     return NextResponse.json({
       success: true,

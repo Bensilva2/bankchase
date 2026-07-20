@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth, useUser } from '@clerk/nextjs'
+
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
@@ -8,7 +8,7 @@ import { Navigation } from '@/components/Navigation'
 import { Mail } from 'lucide-react'
 
 function ProfileContent() {
-  const { userId, isLoaded } = useAuth()
+  
   const { user, isLoaded: userLoaded } = useUser()
   const router = useRouter()
 
