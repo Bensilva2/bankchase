@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { useBanking } from '@/lib/banking-context'
@@ -13,7 +13,7 @@ import { BackButton } from '@/components/back-button'
 
 export default function SavingsGoalsPage() {
   const router = useRouter()
-  const { userId, isLoaded } = useAuth()
+  
   const { savingsGoals = [], updateSavingsGoal, deleteSavingsGoal, addSavingsGoal } = useBanking()
   const [showAddGoal, setShowAddGoal] = useState(false)
   const [editingGoal, setEditingGoal] = useState<any>(null)

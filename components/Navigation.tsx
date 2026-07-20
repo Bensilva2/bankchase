@@ -3,22 +3,18 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useClerk, useAuth } from '@clerk/nextjs';
 import { Menu, X, LogOut, LayoutDashboard, Wallet, Send, User } from 'lucide-react';
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-  const { signOut } = useClerk();
-  const { userId } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await signOut();
-      router.push('/login');
+      router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
-      router.push('/login');
+      router.push('/');
     }
   };
 
@@ -29,10 +25,6 @@ export function Navigation() {
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Settings', href: '/settings', icon: User },
   ];
-
-  if (!userId) {
-    return null;
-  }
 
   return (
     <nav className="bg-background shadow">

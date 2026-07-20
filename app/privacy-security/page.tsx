@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { useRouter } from 'next/navigation'
@@ -27,7 +27,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function PrivacySecurityPage() {
-  const { userId, isLoaded } = useAuth()
+  
   const router = useRouter()
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [biometricsEnabled, setBiometricsEnabled] = useState(false)

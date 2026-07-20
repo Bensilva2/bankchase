@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { useBanking } from '@/lib/banking-context'
@@ -12,7 +12,7 @@ import { BackButton } from '@/components/back-button'
 
 export default function SpendingAnalysisPage() {
   const router = useRouter()
-  const { userId, isLoaded } = useAuth()
+  
   const { getSpendingByCategory } = useBanking()
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth())
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())

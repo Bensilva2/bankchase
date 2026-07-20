@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@clerk/nextjs';
+;
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Navigation } from '@/components/Navigation';
 import { CheckCircle, Clock, AlertCircle, TrendingDown, Download, Filter, Search, Loader } from 'lucide-react';
@@ -41,7 +41,7 @@ interface Account {
 }
 
 function TransfersContent() {
-  const { userId, isLoaded } = useAuth();
+  ;
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);

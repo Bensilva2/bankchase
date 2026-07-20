@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useBanking } from "@/lib/banking-context"
-import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 
 export function DashboardHeader() {
@@ -21,7 +20,7 @@ export function DashboardHeader() {
   const [searchQuery, setSearchQuery] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
-  const { user } = useAuth()
+  const user = { firstName: "User", username: "Demo User" } // Default user for demo
 
   const {
     userProfile,

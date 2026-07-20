@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 
@@ -17,7 +17,6 @@ interface Goal {
 }
 
 export default function PlanTrackPage() {
-  const { user, isAuthenticated } = useAuth()
   const [goals, setGoals] = useState<Goal[]>([])
   const [loading, setLoading] = useState(true)
   const [showNewGoalForm, setShowNewGoalForm] = useState(false)
@@ -26,8 +25,7 @@ export default function PlanTrackPage() {
 
   // Load goals on mount
   useEffect(() => {
-    if (isAuthenticated && user) {
-      loadGoals()
+    loadGoals()
     }
   }, [isAuthenticated, user])
 

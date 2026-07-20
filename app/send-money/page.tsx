@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { P2PPayment } from '@/components/p2p-payment'
@@ -11,7 +11,7 @@ import { Send } from 'lucide-react'
 
 export default function SendMoneyPage() {
   const router = useRouter()
-  const { userId, isLoaded } = useAuth()
+  
   const [recentTransactions, setRecentTransactions] = useState<any[]>([])
 
   useEffect(() => {

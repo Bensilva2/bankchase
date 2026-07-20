@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 
 // In-memory account store
 const accountsStore = new Map<string, any[]>()
@@ -40,7 +39,7 @@ function generateDemoAccounts(userId: string): any[] {
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const userId = 'demo-user'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -63,7 +62,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const userId = 'demo-user'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

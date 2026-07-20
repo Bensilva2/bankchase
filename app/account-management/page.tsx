@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { ArrowLeft, User, Mail, Phone, MapPin, Edit, Save, X } from 'lucide-react'
 
 function AccountManagementContent() {
   const router = useRouter()
-  const { userId, isLoaded } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -22,27 +21,6 @@ function AccountManagementContent() {
     state: '',
     zipCode: '',
   })
-
-  useEffect(() => {
-    if (isLoaded) {
-      setLoading(false)
-    }
-  }, [isLoaded])
-
-  if (!isLoaded || loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-muted border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </main>
-    )
-  }
-
-  if (!userId) {
-    return null
-  }
 
   const handleSave = async () => {
     try {

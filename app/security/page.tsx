@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { useBanking } from '@/lib/banking-context'
@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card'
 
 export default function SecurityPage() {
   const router = useRouter()
-  const { userId, isLoaded } = useAuth()
+  
   const { linkedDevices = [], removeDevice } = useBanking()
   const [currentTab, setCurrentTab] = useState<'password' | 'twofa' | 'privacy' | 'devices'>('password')
   const [passwordForm, setPasswordForm] = useState({

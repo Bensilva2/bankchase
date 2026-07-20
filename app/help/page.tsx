@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth as useClerkAuth } from '@clerk/nextjs'
+
 import { useBanking } from '@/lib/banking-context'
 import { ArrowLeft, HelpCircle, MessageCircle, Phone, Mail, Search, ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/card'

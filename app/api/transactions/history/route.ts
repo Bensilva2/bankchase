@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 
 // In-memory transaction store
 const transactionsStore = new Map<string, any[]>()
@@ -72,7 +71,7 @@ function generateDemoTransactions(userId: string, accountId?: number): any[] {
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const userId = 'demo-user'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

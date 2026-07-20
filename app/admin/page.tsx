@@ -1,13 +1,13 @@
 'use client'
 
-import { useAuth } from '@clerk/nextjs'
+
 import { useRouter } from 'next/navigation'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { AlertCircle, Lock } from 'lucide-react'
 
 function AdminDashboardContent() {
-  const { userId, isLoaded } = useAuth()
+  
   const router = useRouter()
 
   if (!isLoaded) {

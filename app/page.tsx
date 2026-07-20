@@ -26,26 +26,18 @@ import { TransactionsDrawer } from "@/components/transactions-drawer"
 import { LoginPage } from "@/components/login-page"
 import { DisputeTransactionDrawer } from "@/components/dispute-transaction-drawer"
 import { useBanking } from "@/lib/banking-context"
-import { useAuth as useClerkAuth } from "@clerk/nextjs"
 import Image from "next/image"
 import { AccountOpeningModal } from "@/components/account-opening-modal"
 
 export default function BankingDashboard() {
-  const { userId, isLoaded } = useClerkAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
-  const user = userId ? { id: userId } : null
+  const user = { id: "demo-user" } // Default user for demo
   
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Redirect unauthenticated users to landing page
-  useEffect(() => {
-    if (isLoaded && !userId) {
-      router.push('/landing')
-    }
-  }, [isLoaded, userId, router])
   
   const [activeView, setActiveView] = useState("accounts")
   const [sendMoneyOpen, setSendMoneyOpen] = useState(false)
@@ -142,7 +134,7 @@ export default function BankingDashboard() {
     return "Good evening"
   }
 
-  if (!isLoaded || !mounted) {
+  if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 dark:from-primary/10 dark:to-accent/10">
         <div className="flex flex-col items-center gap-4">
@@ -152,11 +144,6 @@ export default function BankingDashboard() {
         </div>
       </div>
     )
-  }
-
-  // Redirect happens in useEffect above, returning early here
-  if (!userId) {
-    return null
   }
 
   const renderView = () => {

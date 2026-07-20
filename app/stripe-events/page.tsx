@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@clerk/nextjs'
+
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Navigation } from '@/components/Navigation'
 import { EventList } from '@/components/stripe-events/event-list'
@@ -10,7 +10,7 @@ import { StoredStripeEvent } from '@/lib/types/stripe-events'
 import { RefreshCw, Filter } from 'lucide-react'
 
 function EventsDashboardContent() {
-  const { userId, isLoaded } = useAuth()
+  
   const [events, setEvents] = useState<StoredStripeEvent[]>([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)

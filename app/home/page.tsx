@@ -1,23 +1,9 @@
 'use client'
 
-import { useAuth } from '@clerk/nextjs'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
-import { Navigation } from '@/components/Navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function HomePage() {
-  const { userId, isLoaded } = useAuth()
-
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Loading...</h1>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,10 +17,10 @@ export default function HomePage() {
           </p>
         </div>
 
-        {user ? (
+        {true ? (
           <div className="text-center space-y-6">
             <h2 className="text-3xl font-bold text-foreground">
-              Welcome back, {user.firstName || user.username}!
+              Welcome to Chase Banking Platform!
             </h2>
             <div className="space-x-4">
               <Link href="/dashboard">
