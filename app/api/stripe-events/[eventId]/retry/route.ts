@@ -7,16 +7,15 @@ import { StripeEventService } from '@/lib/services/stripe-event-service'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
+    const { eventId } = await params
     const userId = 'demo-user'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const eventId = params.eventId
 
     // Get the event first to verify it exists and user owns it
     const event = await StripeEventService.getEvent(eventId)

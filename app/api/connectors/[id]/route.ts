@@ -3,12 +3,13 @@ import { NotificationService } from '@/lib/notification-service'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await NotificationService.deleteConnector(params.id)
+    const { id } = await params
+    await NotificationService.deleteConnector(id)
 
-    console.log('[v0] Connector deleted:', params.id)
+    console.log('[v0] Connector deleted:', id)
 
     return NextResponse.json({
       success: true,
