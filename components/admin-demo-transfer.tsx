@@ -153,7 +153,7 @@ export function AdminDemoTransfer({ adminUserId }: AdminDemoTransferProps) {
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
       case 'refunded':
-        return <Badge className="bg-gray-100 text-gray-800">Refunded</Badge>;
+        return <Badge className="bg-background text-foreground">Refunded</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -291,7 +291,7 @@ export function AdminDemoTransfer({ adminUserId }: AdminDemoTransferProps) {
         {/* Bulk Transfer */}
         <TabsContent value="bulk" className="mt-6">
           <Card className="p-6 space-y-6">
-            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 flex items-center gap-3">
+            <div className="rounded-lg bg-background border border-blue-200 p-4 flex items-center gap-3">
               <Users className="h-5 w-5 text-blue-600" />
               <p className="text-sm text-blue-800">Send demo money to ALL registered users at once</p>
             </div>

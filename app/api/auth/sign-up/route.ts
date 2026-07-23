@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, name } = body
+    const { email, password, firstName, lastName } = body
 
     // Validate input
     if (!email || !password) {
@@ -29,18 +29,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create user object
+    // Create user object with complete profile
     const userId = 'user_' + Math.random().toString(36).substr(2, 9)
     const user = {
       id: userId,
+      username: firstName ? `${firstName} ${lastName}`.trim() : email.split('@')[0],
       email,
-      name: name || email.split('@')[0],
+      firstName: firstName || '',
+      lastName: lastName || '',
+      role: 'customer',
+      emailVerified: false,
       createdAt: new Date().toISOString(),
     }
 
-    // Set auth cookie
+    // Create token (base64 encoded for compatibility)
+    const token = Buffer.from(JSON.stringify({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      iat: Math.floor(Date.now() / 1000),
+    })).toString('base64')
+
+    // Set auth cookies
     const cookieStore = await cookies()
-    cookieStore.set('auth_token', JSON.stringify(user), {
+    cookieStore.set('auth_user', JSON.stringify(user), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    })
+
+    cookieStore.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

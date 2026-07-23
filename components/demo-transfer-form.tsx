@@ -73,7 +73,7 @@ export function DemoTransferForm({ onTransferComplete }: TransferFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               To Account Number
             </label>
             <Input
@@ -86,7 +86,7 @@ export function DemoTransferForm({ onTransferComplete }: TransferFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Amount ($)
               </label>
               <Input
@@ -100,13 +100,13 @@ export function DemoTransferForm({ onTransferComplete }: TransferFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Refund After (days)
               </label>
               <select
                 value={days}
                 onChange={(e) => setDays(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="w-full px-3 py-2 border border-border rounded-md text-sm"
               >
                 <option value="7">7 days</option>
                 <option value="14">14 days</option>
@@ -115,7 +115,7 @@ export function DemoTransferForm({ onTransferComplete }: TransferFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Notes (optional)
             </label>
             <Input

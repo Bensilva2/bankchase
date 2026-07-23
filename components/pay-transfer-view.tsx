@@ -45,11 +45,11 @@ export function PayTransferView({ onSendMoney, onPayBills, onTransfer, onWire, o
       case "failed":
         return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
       case "scheduled":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+        return "bg-card text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
       case "cancelled":
-        return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+        return "bg-background text-foreground dark:bg-gray-900/30 dark:text-muted-foreground"
       default:
-        return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+        return "bg-background text-foreground dark:bg-gray-900/30 dark:text-muted-foreground"
     }
   }
 

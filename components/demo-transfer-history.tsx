@@ -25,11 +25,11 @@ interface Transfer {
 const statusColors = {
   completed: 'bg-green-100 text-green-800',
   pending: 'bg-yellow-100 text-yellow-800',
-  refunded: 'bg-gray-100 text-gray-800',
+  refunded: 'bg-background text-foreground',
 }
 
 const typeColors = {
-  internal: 'bg-blue-50',
+  internal: 'bg-background',
   external: 'bg-purple-50',
 }
 
@@ -90,7 +90,7 @@ export function DemoTransferHistory() {
         <button
           onClick={fetchHistory}
           disabled={loading}
-          className="p-2 hover:bg-gray-100 rounded-lg transition"
+          className="p-2 hover:bg-background rounded-lg transition"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -105,8 +105,8 @@ export function DemoTransferHistory() {
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-md text-sm font-medium transition ${
                 filter === f
-                  ? 'bg-[#0a4fa6] text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-[#0a4fa6] text-background'
+                  : 'bg-background text-foreground hover:bg-card'
               }`}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -118,44 +118,44 @@ export function DemoTransferHistory() {
         <div className="overflow-x-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : transfers.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">No transfers found</p>
+              <p className="text-muted-foreground">No transfers found</p>
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="border-b border-gray-200">
+              <thead className="border-b border-border">
                 <tr>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Transfer ID</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">To Account</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-700">Amount</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Type</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Created</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Refund In</th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">Transfer ID</th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">To Account</th>
+                  <th className="text-right py-3 px-4 font-semibold text-foreground">Amount</th>
+                  <th className="text-center py-3 px-4 font-semibold text-foreground">Type</th>
+                  <th className="text-center py-3 px-4 font-semibold text-foreground">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">Created</th>
+                  <th className="text-center py-3 px-4 font-semibold text-foreground">Refund In</th>
                 </tr>
               </thead>
               <tbody>
                 {transfers.map((transfer) => (
                   <tr
                     key={transfer.id}
-                    className={`border-b border-gray-100 hover:bg-gray-50 transition ${typeColors[transfer.transfer_type]}`}
+                    className={`border-b border-border hover:bg-background transition ${typeColors[transfer.transfer_type]}`}
                   >
                     <td className="py-3 px-4">
-                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      <code className="text-xs bg-background px-2 py-1 rounded">
                         {transfer.transfer_id.substring(0, 8)}...
                       </code>
                     </td>
-                    <td className="py-3 px-4 font-medium text-gray-900">{transfer.to_account_number}</td>
-                    <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                    <td className="py-3 px-4 font-medium text-foreground">{transfer.to_account_number}</td>
+                    <td className="py-3 px-4 text-right font-semibold text-foreground">
                       ${transfer.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <Badge
                         variant="outline"
-                        className={transfer.transfer_type === 'internal' ? 'bg-blue-50' : 'bg-purple-50'}
+                        className={transfer.transfer_type === 'internal' ? 'bg-background' : 'bg-purple-50'}
                       >
                         {transfer.transfer_type}
                       </Badge>
@@ -165,7 +165,7 @@ export function DemoTransferHistory() {
                         {transfer.status}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4 text-xs text-gray-600">
+                    <td className="py-3 px-4 text-xs text-muted-foreground">
                       {formatDate(transfer.created_at)}
                     </td>
                     <td className="py-3 px-4 text-center text-xs">

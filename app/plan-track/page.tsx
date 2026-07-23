@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAuth } from '@/lib/auth-context'
+
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Navigation } from '@/components/Navigation'
 
 interface Goal {
   id: string
@@ -15,7 +17,6 @@ interface Goal {
 }
 
 export default function PlanTrackPage() {
-  const { user, isAuthenticated } = useAuth()
   const [goals, setGoals] = useState<Goal[]>([])
   const [loading, setLoading] = useState(true)
   const [showNewGoalForm, setShowNewGoalForm] = useState(false)
@@ -24,10 +25,8 @@ export default function PlanTrackPage() {
 
   // Load goals on mount
   useEffect(() => {
-    if (isAuthenticated && user) {
-      loadGoals()
-    }
-  }, [isAuthenticated, user])
+    loadGoals()
+  }, [])
 
   const loadGoals = async () => {
     try {
@@ -121,7 +120,7 @@ export default function PlanTrackPage() {
   if (!isAuthenticated) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Please log in to view your goals</p>
+        <p className="text-muted-foreground">Please log in to view your goals</p>
       </div>
     )
   }
@@ -131,24 +130,24 @@ export default function PlanTrackPage() {
       <div className="flex justify-between items-center mb-10">
         <div>
           <h1 className="text-4xl font-bold">Plan & Track</h1>
-          <p className="text-gray-600 mt-2">Your financial goals and progress</p>
+          <p className="text-muted-foreground mt-2">Your financial goals and progress</p>
         </div>
         <button
           onClick={() => setShowNewGoalForm(!showNewGoalForm)}
-          className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-medium hover:bg-blue-700"
+          className="bg-primary text-background px-6 py-3 rounded-2xl font-medium hover:bg-primary"
         >
           + New Goal
         </button>
       </div>
 
       {showNewGoalForm && (
-        <form onSubmit={handleAddGoal} className="bg-white p-8 rounded-3xl shadow mb-8 space-y-4">
+        <form onSubmit={handleAddGoal} className="bg-background p-8 rounded-3xl shadow mb-8 space-y-4">
           <input
             type="text"
             placeholder="Goal title"
             value={newGoal.title}
             onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
-            className="w-full border border-gray-300 rounded-2xl p-3"
+            className="w-full border border-border rounded-2xl p-3"
             required
           />
           <input
@@ -156,13 +155,13 @@ export default function PlanTrackPage() {
             placeholder="Target amount"
             value={newGoal.targetAmount}
             onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })}
-            className="w-full border border-gray-300 rounded-2xl p-3"
+            className="w-full border border-border rounded-2xl p-3"
             required
           />
           <select
             value={newGoal.category}
             onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value })}
-            className="w-full border border-gray-300 rounded-2xl p-3"
+            className="w-full border border-border rounded-2xl p-3"
           >
             <option>Savings</option>
             <option>Vehicle</option>
@@ -175,17 +174,17 @@ export default function PlanTrackPage() {
             type="date"
             value={newGoal.deadline}
             onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
-            className="w-full border border-gray-300 rounded-2xl p-3"
+            className="w-full border border-border rounded-2xl p-3"
             required
           />
           <div className="flex gap-2">
-            <button type="submit" disabled={submitting} className="flex-1 bg-blue-600 text-white py-3 rounded-2xl font-semibold hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="flex-1 bg-primary text-background py-3 rounded-2xl font-semibold hover:bg-primary disabled:opacity-50">
               {submitting ? 'Adding...' : 'Add Goal'}
             </button>
             <button
               type="button"
               onClick={() => setShowNewGoalForm(false)}
-              className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-2xl font-semibold hover:bg-gray-300"
+              className="flex-1 bg-card text-foreground py-3 rounded-2xl font-semibold hover:bg-card"
             >
               Cancel
             </button>
@@ -195,23 +194,23 @@ export default function PlanTrackPage() {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-white p-8 rounded-3xl shadow">
-          <p className="text-gray-500 text-sm">Total Saved</p>
+        <div className="bg-background p-8 rounded-3xl shadow">
+          <p className="text-muted-foreground text-sm">Total Saved</p>
           <p className="text-4xl font-bold mt-3">${totalSaved.toLocaleString()}</p>
           <p className="text-green-600 text-sm mt-2">↑ 12% this month</p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow">
-          <p className="text-gray-500 text-sm">Goals on Track</p>
+        <div className="bg-background p-8 rounded-3xl shadow">
+          <p className="text-muted-foreground text-sm">Goals on Track</p>
           <p className="text-4xl font-bold mt-3">{goals.filter((g) => (g.current_amount / g.target_amount) >= 0.5).length} of {goals.length}</p>
           <p className="text-amber-600 text-sm mt-2">{goals.length - goals.filter((g) => (g.current_amount / g.target_amount) >= 0.5).length} needs attention</p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow">
-          <p className="text-gray-500 text-sm">Overall Progress</p>
+        <div className="bg-background p-8 rounded-3xl shadow">
+          <p className="text-muted-foreground text-sm">Overall Progress</p>
           <p className="text-4xl font-bold mt-3">{overallProgress}%</p>
-          <div className="h-2 bg-gray-100 rounded-full mt-4">
-            <div className="h-2 bg-blue-600 rounded-full" style={{ width: `${overallProgress}%` }}></div>
+          <div className="h-2 bg-background rounded-full mt-4">
+            <div className="h-2 bg-primary rounded-full" style={{ width: `${overallProgress}%` }}></div>
           </div>
         </div>
       </div>
@@ -220,12 +219,12 @@ export default function PlanTrackPage() {
       <h2 className="text-2xl font-semibold mb-6">Your Goals</h2>
 
       {loading ? (
-        <div className="text-center py-8 bg-white rounded-lg">
-          <p className="text-gray-500">Loading your goals...</p>
+        <div className="text-center py-8 bg-background rounded-lg">
+          <p className="text-muted-foreground">Loading your goals...</p>
         </div>
       ) : goals.length === 0 ? (
-        <div className="text-center py-8 bg-white rounded-lg">
-          <p className="text-gray-500">No goals yet. Create one to get started!</p>
+        <div className="text-center py-8 bg-background rounded-lg">
+          <p className="text-muted-foreground">No goals yet. Create one to get started!</p>
         </div>
       ) : (
         <div className="grid gap-6">
@@ -233,29 +232,29 @@ export default function PlanTrackPage() {
             const progress = Math.round((goal.current_amount / goal.target_amount) * 100)
             const daysLeft = Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
             return (
-              <div key={goal.id} className="bg-white p-8 rounded-3xl shadow hover:shadow-lg transition-all">
+              <div key={goal.id} className="bg-background p-8 rounded-3xl shadow hover:shadow-lg transition-all">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold">{goal.title}</h3>
-                    <p className="text-gray-500 mt-1">{goal.category}</p>
+                    <p className="text-muted-foreground mt-1">{goal.category}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold">${goal.current_amount.toLocaleString()}</p>
-                    <p className="text-sm text-gray-500">of ${goal.target_amount.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">of ${goal.target_amount.toLocaleString()}</p>
                   </div>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="mt-6 h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="mt-6 h-3 bg-background rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all"
+                    className="h-full bg-gradient-to-r from-primary to-primary rounded-full transition-all"
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   ></div>
                 </div>
 
                 <div className="flex justify-between text-sm mt-2 mb-4">
                   <span className="font-medium">{progress}% Complete</span>
-                  <span className={`${daysLeft < 30 ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+                  <span className={`${daysLeft < 30 ? 'text-red-600 font-semibold' : 'text-muted-foreground'}`}>
                     {daysLeft} days left
                   </span>
                 </div>
@@ -273,16 +272,16 @@ export default function PlanTrackPage() {
       )}
 
       {/* Spending Insights */}
-      <div className="mt-12 bg-white p-8 rounded-3xl shadow">
+      <div className="mt-12 bg-background p-8 rounded-3xl shadow">
         <h3 className="text-xl font-semibold mb-6">Spending Insights</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <p className="text-green-600 font-medium">You&apos;re spending 18% less than last month</p>
-            <p className="text-sm text-gray-500 mt-2">Great job staying within budget!</p>
+            <p className="text-sm text-muted-foreground mt-2">Great job staying within budget!</p>
           </div>
           <div>
             <p className="text-amber-600 font-medium">Dining out is your highest category this month</p>
-            <p className="text-sm text-gray-500 mt-2">Consider setting a limit</p>
+            <p className="text-sm text-muted-foreground mt-2">Consider setting a limit</p>
           </div>
         </div>
       </div>

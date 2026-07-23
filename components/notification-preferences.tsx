@@ -39,12 +39,12 @@ export function NotificationPreferences() {
       {/* Transaction Alerts */}
       <div className="border rounded-lg p-6 space-y-4">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
+          <div className="p-2 bg-card rounded-lg">
             <Bell className="w-5 h-5 text-blue-600" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">Transaction Alerts</h3>
-            <p className="text-sm text-gray-600 mt-1">Get notified about large transactions</p>
+            <h3 className="font-semibold text-foreground">Transaction Alerts</h3>
+            <p className="text-sm text-muted-foreground mt-1">Get notified about large transactions</p>
           </div>
         </div>
 
@@ -64,7 +64,7 @@ export function NotificationPreferences() {
             <div className="space-y-2 ml-6">
               <Label className="text-sm">Alert for transactions over:</Label>
               <div className="flex items-center gap-4">
-                <DollarSign className="w-4 h-4 text-gray-400" />
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
                 <Input
                   type="number"
                   placeholder="500"
@@ -73,7 +73,7 @@ export function NotificationPreferences() {
                   className="w-32"
                 />
               </div>
-              <p className="text-xs text-gray-500">You'll be notified for transactions exceeding this amount</p>
+              <p className="text-xs text-muted-foreground">You'll be notified for transactions exceeding this amount</p>
             </div>
           )}
         </div>
@@ -86,8 +86,8 @@ export function NotificationPreferences() {
             <AlertCircle className="w-5 h-5 text-amber-600" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">Balance Alerts</h3>
-            <p className="text-sm text-gray-600 mt-1">Get notified when your balance is low</p>
+            <h3 className="font-semibold text-foreground">Balance Alerts</h3>
+            <p className="text-sm text-muted-foreground mt-1">Get notified when your balance is low</p>
           </div>
         </div>
 
@@ -107,7 +107,7 @@ export function NotificationPreferences() {
             <div className="space-y-2 ml-6">
               <Label className="text-sm">Alert when balance drops below:</Label>
               <div className="flex items-center gap-4">
-                <DollarSign className="w-4 h-4 text-gray-400" />
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
                 <Input
                   type="number"
                   placeholder="500"
@@ -128,8 +128,8 @@ export function NotificationPreferences() {
             <AlertCircle className="w-5 h-5 text-red-600" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">Bill Reminders</h3>
-            <p className="text-sm text-gray-600 mt-1">Get reminded before bills are due</p>
+            <h3 className="font-semibold text-foreground">Bill Reminders</h3>
+            <p className="text-sm text-muted-foreground mt-1">Get reminded before bills are due</p>
           </div>
         </div>
 
@@ -171,8 +171,8 @@ export function NotificationPreferences() {
             <AlertCircle className="w-5 h-5 text-purple-600" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">Security Alerts</h3>
-            <p className="text-sm text-gray-600 mt-1">Get notified about account security events</p>
+            <h3 className="font-semibold text-foreground">Security Alerts</h3>
+            <p className="text-sm text-muted-foreground mt-1">Get notified about account security events</p>
           </div>
         </div>
 
@@ -208,8 +208,8 @@ export function NotificationPreferences() {
             <TrendingUp className="w-5 h-5 text-emerald-600" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">Rewards Alerts</h3>
-            <p className="text-sm text-gray-600 mt-1">Get notified about earning rewards and offers</p>
+            <h3 className="font-semibold text-foreground">Rewards Alerts</h3>
+            <p className="text-sm text-muted-foreground mt-1">Get notified about earning rewards and offers</p>
           </div>
         </div>
 
@@ -240,7 +240,7 @@ export function NotificationPreferences() {
 
       {/* Notification Delivery */}
       <div className="border rounded-lg p-6 space-y-4">
-        <h3 className="font-semibold text-gray-900">Notification Delivery</h3>
+        <h3 className="font-semibold text-foreground">Notification Delivery</h3>
 
         <div className="space-y-3">
           <div className="flex items-center gap-3">

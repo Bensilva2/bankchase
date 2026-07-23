@@ -78,9 +78,9 @@ export function DemoTransferHub({ userId }: DemoTransferHubProps) {
       case 'pending':
         return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       case 'refunded':
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return 'bg-background text-foreground border-border';
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return 'bg-background text-foreground border-border';
     }
   };
 
@@ -91,7 +91,7 @@ export function DemoTransferHub({ userId }: DemoTransferHubProps) {
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
       case 'refunded':
-        return <Badge className="bg-gray-100 text-gray-800">Refunded</Badge>;
+        return <Badge className="bg-background text-foreground">Refunded</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -104,9 +104,9 @@ export function DemoTransferHub({ userId }: DemoTransferHubProps) {
       case 'pending':
         return <Clock className="h-5 w-5 text-yellow-600" />;
       case 'refunded':
-        return <AlertCircle className="h-5 w-5 text-gray-600" />;
+        return <AlertCircle className="h-5 w-5 text-muted-foreground" />;
       default:
-        return <Wallet className="h-5 w-5 text-gray-600" />;
+        return <Wallet className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -195,7 +195,7 @@ export function DemoTransferHub({ userId }: DemoTransferHubProps) {
                 <Card key={transfer.id} className={`p-4 border ${getStatusColor(transfer.status)}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="p-2 bg-white rounded-full">
+                      <div className="p-2 bg-background rounded-full">
                         {getStatusIcon(transfer.status)}
                       </div>
                       <div>
@@ -293,7 +293,7 @@ export function DemoTransferHub({ userId }: DemoTransferHubProps) {
       </Tabs>
 
       {/* Info Banner */}
-      <Card className="p-4 bg-blue-50 border-blue-200">
+      <Card className="p-4 bg-background border-blue-200">
         <div className="flex gap-3">
           <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-blue-700">

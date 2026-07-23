@@ -131,8 +131,8 @@ export function BillManagement() {
       {/* Header with Add Bill Button */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Bill Management</h2>
-          <p className="text-sm text-gray-600 mt-1">Manage and schedule your bills and payments</p>
+          <h2 className="text-2xl font-bold text-foreground">Bill Management</h2>
+          <p className="text-sm text-muted-foreground mt-1">Manage and schedule your bills and payments</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)} className="gap-2">
           {showForm ? 'Cancel' : '+ Schedule Bill'}
@@ -141,8 +141,8 @@ export function BillManagement() {
 
       {/* Add Bill Form */}
       {showForm && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-4">
-          <h3 className="font-semibold text-gray-900">Schedule New Bill</h3>
+        <div className="bg-background border border-blue-200 rounded-lg p-6 space-y-4">
+          <h3 className="font-semibold text-foreground">Schedule New Bill</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -157,7 +157,7 @@ export function BillManagement() {
               <div className="space-y-2">
                 <Label>Amount *</Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <DollarSign className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input
                     type="number"
                     placeholder="0.00"
@@ -190,7 +190,7 @@ export function BillManagement() {
               <div className="space-y-2">
                 <Label>Due Date *</Label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Calendar className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input
                     type="date"
                     className="pl-10"
@@ -247,29 +247,29 @@ export function BillManagement() {
 
       {/* Upcoming Payments */}
       <div className="space-y-3">
-        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
           <Clock className="w-5 h-5" />
           Upcoming Payments ({upcomingPayments.length})
         </h3>
 
         {upcomingPayments.length === 0 ? (
-          <div className="text-center py-8 bg-gray-50 rounded-lg">
-            <p className="text-gray-600">No scheduled bills</p>
-            <p className="text-sm text-gray-500 mt-1">Create your first bill schedule to get started</p>
+          <div className="text-center py-8 bg-background rounded-lg">
+            <p className="text-muted-foreground">No scheduled bills</p>
+            <p className="text-sm text-muted-foreground mt-1">Create your first bill schedule to get started</p>
           </div>
         ) : (
           <div className="space-y-2">
             {upcomingPayments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-background transition"
               >
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900">{payment.payee}</div>
-                  <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                  <div className="font-medium text-foreground">{payment.payee}</div>
+                  <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
                     <span>Due: {getNextPaymentDate(payment)}</span>
                     <span>•</span>
-                    <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">
+                    <span className="px-2 py-0.5 bg-background rounded text-xs">
                       {formatFrequency(payment.frequency)}
                     </span>
                     {payment.memo && (
@@ -283,8 +283,8 @@ export function BillManagement() {
 
                 <div className="text-right flex items-center gap-4">
                   <div>
-                    <div className="font-semibold text-gray-900">${payment.amount.toFixed(2)}</div>
-                    <div className="text-xs text-gray-500">From {accounts.find((a) => a.id === payment.accountId)?.name}</div>
+                    <div className="font-semibold text-foreground">${payment.amount.toFixed(2)}</div>
+                    <div className="text-xs text-muted-foreground">From {accounts.find((a) => a.id === payment.accountId)?.name}</div>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -309,25 +309,25 @@ export function BillManagement() {
 
       {/* History */}
       <div className="space-y-3">
-        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
           <CheckCircle className="w-5 h-5" />
           Payment History
         </h3>
 
         {scheduledPayments.filter((p) => p.status === 'completed').length === 0 ? (
-          <p className="text-sm text-gray-600 py-4">No completed payments yet</p>
+          <p className="text-sm text-muted-foreground py-4">No completed payments yet</p>
         ) : (
           <div className="space-y-2">
             {scheduledPayments
               .filter((p) => p.status === 'completed')
               .slice(0, 5)
               .map((payment) => (
-                <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded text-sm">
+                <div key={payment.id} className="flex items-center justify-between p-3 bg-background rounded text-sm">
                   <div>
-                    <span className="font-medium text-gray-900">{payment.payee}</span>
-                    <span className="text-gray-600 ml-2">Completed on {new Date(payment.scheduledDate).toLocaleDateString()}</span>
+                    <span className="font-medium text-foreground">{payment.payee}</span>
+                    <span className="text-muted-foreground ml-2">Completed on {new Date(payment.scheduledDate).toLocaleDateString()}</span>
                   </div>
-                  <span className="font-medium text-gray-900">${payment.amount.toFixed(2)}</span>
+                  <span className="font-medium text-foreground">${payment.amount.toFixed(2)}</span>
                 </div>
               ))}
           </div>

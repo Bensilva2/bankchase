@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useRef } from "react"
+import NextLink from "next/link"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -159,7 +160,7 @@ const getActivityIcon = (action: string) => {
   if (lowerAction.includes("transfer")) return <ArrowRightLeft className="h-5 w-5 text-purple-600" />
   if (lowerAction.includes("bill") || lowerAction.includes("payment"))
     return <Receipt className="h-5 w-5 text-green-600" />
-  if (lowerAction.includes("settings")) return <Settings className="h-5 w-5 text-gray-600" />
+  if (lowerAction.includes("settings")) return <Settings className="h-5 w-5 text-muted-foreground" />
   if (lowerAction.includes("password") || lowerAction.includes("security"))
     return <Shield className="h-5 w-5 text-yellow-600" />
   if (lowerAction.includes("profile")) return <UserCog className="h-5 w-5 text-blue-600" />
@@ -175,10 +176,10 @@ const getActivityBgColor = (action: string) => {
   if (lowerAction.includes("card unlocked")) return "bg-green-100 dark:bg-green-900/30"
   if (lowerAction.includes("card locked")) return "bg-red-100 dark:bg-red-900/30"
   if (lowerAction.includes("signed out") || lowerAction.includes("logout")) return "bg-orange-100 dark:bg-orange-900/30"
-  if (lowerAction.includes("login") || lowerAction.includes("signed in")) return "bg-blue-100 dark:bg-blue-900/30"
+  if (lowerAction.includes("login") || lowerAction.includes("signed in")) return "bg-card dark:bg-blue-900/30"
   if (lowerAction.includes("transfer")) return "bg-purple-100 dark:bg-purple-900/30"
   if (lowerAction.includes("bill") || lowerAction.includes("payment")) return "bg-green-100 dark:bg-green-900/30"
-  if (lowerAction.includes("settings")) return "bg-gray-100 dark:bg-gray-900/30"
+  if (lowerAction.includes("settings")) return "bg-background dark:bg-gray-900/30"
   if (lowerAction.includes("password") || lowerAction.includes("security")) return "bg-yellow-100 dark:bg-yellow-900/30"
   return "bg-[#0a4fa6]/10"
 }
@@ -346,11 +347,11 @@ export function MoreView({ onLogout }: MoreViewProps) {
 
   const categoryColors: Record<string, string> = {
     "Food & Drink": "bg-orange-500",
-    "Bills & Utilities": "bg-blue-500",
+    "Bills & Utilities": "bg-primary",
     Shopping: "bg-purple-500",
     Entertainment: "bg-pink-500",
     Transportation: "bg-green-500",
-    Transfers: "bg-gray-500",
+    Transfers: "bg-secondary",
     Income: "bg-emerald-500",
     Savings: "bg-cyan-500",
   }
@@ -612,12 +613,13 @@ export function MoreView({ onLogout }: MoreViewProps) {
   }
 
   const menuItems = [
-    { label: "Profile", description: "View and edit your personal details", icon: User, view: "profile" as ViewType },
+    { label: "Profile", description: "View and edit your personal details", icon: User, view: "profile" as ViewType, href: "/profile" },
     {
       label: "Account Management",
       description: "Manage your account settings",
       icon: UserCog,
       view: "accountManagement" as ViewType,
+      href: "/account-management",
     },
     {
       label: "Notifications",
@@ -625,6 +627,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
       icon: Bell,
       view: "notificationCenter" as ViewType,
       badge: unreadNotificationCount > 0 ? unreadNotificationCount.toString() : undefined,
+      href: "/notifications",
     },
     {
       label: "Messages",
@@ -632,41 +635,47 @@ export function MoreView({ onLogout }: MoreViewProps) {
       icon: Mail,
       view: "messages" as ViewType,
       badge: unreadMessageCount > 0 ? unreadMessageCount.toString() : undefined,
+      href: "/messages",
     },
     {
       label: "Card Management",
       description: "Manage your credit and debit cards",
       icon: CreditCard,
       view: "cards" as ViewType,
+      href: "/cards",
     },
     {
       label: "Chase Ultimate Rewards",
       description: "View and redeem your reward points",
       icon: Award,
       view: "rewards" as ViewType,
+      href: "/rewards",
     },
-    { label: "Savings Goals", description: "Track your financial goals", icon: Target, view: "savings" as ViewType },
+    { label: "Savings Goals", description: "Track your financial goals", icon: Target, view: "savings" as ViewType, href: "/savings" },
     {
       label: "Spending Analysis",
       description: "See where your money is going",
       icon: PieChart,
       view: "spending" as ViewType,
+      href: "/spending",
     },
-    { label: "View Statements", description: "Download account statements", icon: FileText, view: "viewStatements" as ViewType },
+    { label: "View Statements", description: "Download account statements", icon: FileText, view: "viewStatements" as ViewType, href: "/statements" },
     { label: "External Accounts", description: "Link or manage external accounts", icon: Link, view: "linkExternal" as ViewType },
     { label: "Change Username", description: "Update your login username", icon: Edit, view: "changeUsername" as ViewType },
-    { label: "Settings", description: "Customize your app preferences", icon: Settings, view: "settings" as ViewType },
+    { label: "Settings", description: "Customize your app preferences", icon: Settings, view: "settings" as ViewType, href: "/settings" },
     {
       label: "Security & Privacy",
       description: "Manage your account security",
       icon: Shield,
       view: "security" as ViewType,
+      href: "/security",
     },
     {
       label: "Help & Support",
       description: "Get assistance and find answers",
       icon: HelpCircle,
       view: "help" as ViewType,
+      href: "/help",
     },
     { label: "Recent Activity", description: "View your activity log", icon: History, view: "activity" as ViewType },
     { label: "Linked Devices", description: "Manage logged-in devices", icon: Smartphone, view: "devices" as ViewType },
@@ -688,7 +697,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-white text-2xl font-bold">
+                  <span className="text-background text-2xl font-bold">
                     {(safeUserProfile.name || "U")
                       .split(" ")
                       .map((n) => n[0] || "")
@@ -698,9 +707,9 @@ export function MoreView({ onLogout }: MoreViewProps) {
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 h-6 w-6 bg-white rounded-full shadow-md flex items-center justify-center border"
+                className="absolute -bottom-1 -right-1 h-6 w-6 bg-background rounded-full shadow-md flex items-center justify-center border"
               >
-                <Camera className="h-3 w-3 text-gray-600" />
+                <Camera className="h-3 w-3 text-muted-foreground" />
               </button>
               <input
                 ref={fileInputRef}
@@ -722,12 +731,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
         </Card>
 
         <div className="space-y-2">
-          {menuItems.map((item) => (
-            <Card
-              key={item.label}
-              className="p-4 cursor-pointer hover:bg-accent transition-colors chase-card-shadow"
-              onClick={() => setCurrentView(item.view)}
-            >
+          {menuItems.map((item: any) => {
+            const menuItemContent = (
               <div className="flex items-center gap-4">
                 <div className="h-10 w-10 rounded-full bg-[#0a4fa6]/10 flex items-center justify-center">
                   <item.icon className="h-5 w-5 text-[#0a4fa6]" />
@@ -736,7 +741,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{item.label}</span>
                     {item.badge && (
-                      <Badge className="bg-red-500 text-white text-xs h-5 min-w-5 flex items-center justify-center">
+                      <Badge className="bg-red-500 text-background text-xs h-5 min-w-5 flex items-center justify-center">
                         {item.badge}
                       </Badge>
                     )}
@@ -745,8 +750,28 @@ export function MoreView({ onLogout }: MoreViewProps) {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-            </Card>
-          ))}
+            );
+
+            if (item.href) {
+              return (
+                <NextLink key={item.label} href={item.href}>
+                  <Card className="p-4 cursor-pointer hover:bg-accent transition-colors chase-card-shadow">
+                    {menuItemContent}
+                  </Card>
+                </NextLink>
+              );
+            }
+
+            return (
+              <Card
+                key={item.label}
+                className="p-4 cursor-pointer hover:bg-accent transition-colors chase-card-shadow"
+                onClick={() => setCurrentView(item.view)}
+              >
+                {menuItemContent}
+              </Card>
+            );
+          })}
 
           <Card
             className="p-4 cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors chase-card-shadow mt-4"
@@ -1086,7 +1111,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
               id="confirmClose"
               checked={closeAccountConfirm}
               onChange={(e) => setCloseAccountConfirm(e.target.checked)}
-              className="rounded border-gray-300"
+              className="rounded border-border"
             />
             <Label htmlFor="confirmClose" className="text-sm">
               I understand this action is permanent and irreversible
@@ -1127,8 +1152,8 @@ export function MoreView({ onLogout }: MoreViewProps) {
           {safeCreditCards.map((card) => (
             <Card key={card.id} className="p-4 space-y-4">
               {/* Card Visual */}
-              <div className="h-44 rounded-xl bg-gradient-to-br from-[#1a1a2e] to-[#16213e] p-4 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
+              <div className="h-44 rounded-xl bg-gradient-to-br from-[#1a1a2e] to-[#16213e] p-4 text-background relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-background/5 rounded-full -mr-16 -mt-16"></div>
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-xs opacity-70">CHASE</p>
@@ -1453,7 +1478,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                 onClick={() => fileInputRef.current?.click()}
                 className="absolute bottom-0 right-0 h-8 w-8 bg-[#0a4fa6] rounded-full flex items-center justify-center shadow-lg"
               >
-                <Camera className="h-4 w-4 text-white" />
+                <Camera className="h-4 w-4 text-background" />
               </button>
               <input
                 ref={fileInputRef}
@@ -1708,7 +1733,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
           <Card className="p-4 space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b">
               <div className="h-10 w-10 rounded-full bg-[#0a4fa6] flex items-center justify-center">
-                <Bot className="h-5 w-5 text-white" />
+                <Bot className="h-5 w-5 text-background" />
               </div>
               <div>
                 <p className="font-semibold">Chase Virtual Assistant</p>
@@ -1720,10 +1745,10 @@ export function MoreView({ onLogout }: MoreViewProps) {
               {chatMessages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg ${msg.from === "user" ? "bg-[#0a4fa6] text-white" : "bg-muted"}`}
+                    className={`max-w-[80%] p-3 rounded-lg ${msg.from === "user" ? "bg-[#0a4fa6] text-background" : "bg-muted"}`}
                   >
                     <p className="text-sm">{msg.content}</p>
-                    <p className={`text-xs mt-1 ${msg.from === "user" ? "text-white/70" : "text-muted-foreground"}`}>
+                    <p className={`text-xs mt-1 ${msg.from === "user" ? "text-background/70" : "text-muted-foreground"}`}>
                       {msg.time}
                     </p>
                   </div>
@@ -1856,10 +1881,10 @@ export function MoreView({ onLogout }: MoreViewProps) {
               {selectedTicket.messages.map((msg: any, idx: number) => (
                 <div key={idx} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg ${msg.from === "user" ? "bg-[#0a4fa6] text-white" : "bg-background border"}`}
+                    className={`max-w-[80%] p-3 rounded-lg ${msg.from === "user" ? "bg-[#0a4fa6] text-background" : "bg-background border"}`}
                   >
                     <p className="text-sm">{msg.content}</p>
-                    <p className={`text-xs mt-1 ${msg.from === "user" ? "text-white/70" : "text-muted-foreground"}`}>
+                    <p className={`text-xs mt-1 ${msg.from === "user" ? "text-background/70" : "text-muted-foreground"}`}>
                       {new Date(msg.timestamp).toLocaleString()}
                     </p>
                   </div>
@@ -2058,7 +2083,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
         {helpSubView === "topic-rewards" && (
           <Card className="p-4 space-y-4">
             <h3 className="font-semibold text-[#0a4fa6]">Rewards & Benefits</h3>
-            <div className="p-4 bg-gradient-to-r from-[#0a4fa6] to-[#117aca] rounded-lg text-white text-center mb-4">
+            <div className="p-4 bg-gradient-to-r from-[#0a4fa6] to-[#117aca] rounded-lg text-background text-center mb-4">
               <p className="text-sm opacity-80">Your Points Balance</p>
               <p className="text-3xl font-bold">{safeUserProfile.ultimateRewardsPoints.toLocaleString()}</p>
               <p className="text-sm opacity-80">
@@ -2217,11 +2242,11 @@ export function MoreView({ onLogout }: MoreViewProps) {
           <h2 className="text-2xl font-semibold">Chase Ultimate Rewards</h2>
         </div>
 
-        <Card className="p-6 bg-gradient-to-r from-[#0a4fa6] to-[#117aca] text-white">
+        <Card className="p-6 bg-gradient-to-r from-[#0a4fa6] to-[#117aca] text-background">
           <div className="text-center">
-            <p className="text-white/80">Points Available</p>
+            <p className="text-background/80">Points Available</p>
             <p className="text-4xl font-bold mt-2">{safeUserProfile.ultimateRewardsPoints.toLocaleString()}</p>
-            <p className="text-white/80 mt-1">
+            <p className="text-background/80 mt-1">
               Worth up to ${(safeUserProfile.ultimateRewardsPoints * 0.0125).toFixed(2)} in travel
             </p>
           </div>
@@ -2558,7 +2583,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                           }`}
                         >
                           <option.icon
-                            className={`h-5 w-5 ${twoFactorSetup.method === option.method ? "text-white" : "text-muted-foreground"}`}
+                            className={`h-5 w-5 ${twoFactorSetup.method === option.method ? "text-background" : "text-muted-foreground"}`}
                           />
                         </div>
                         <div className="flex-1">
@@ -2571,7 +2596,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
                   </div>
                 </Card>
 
-                <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-800">
+                <div className="bg-background p-3 rounded-md text-sm text-blue-800">
                   <div className="flex items-start gap-2">
                     <Shield className="h-4 w-4 mt-0.5" />
                     <div>
@@ -2963,7 +2988,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
           )}
         </Card>
 
-        <Card className="p-4 space-y-3 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+        <Card className="p-4 space-y-3 bg-background dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
           <h3 className="font-semibold text-blue-900 dark:text-blue-100 text-sm flex items-center gap-2">
             <ShieldCheck className="h-4 w-4" />
             Security Tip
@@ -2971,7 +2996,7 @@ export function MoreView({ onLogout }: MoreViewProps) {
           <p className="text-sm text-blue-800 dark:text-blue-200">
             Don't recognize a login? Change your password immediately and consider enabling two-factor authentication for added security.
           </p>
-          <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setCurrentView("security")}>
+          <Button className="w-full bg-primary hover:bg-primary" onClick={() => setCurrentView("security")}>
             Go to Security Settings
           </Button>
         </Card>

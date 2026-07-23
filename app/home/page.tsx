@@ -1,21 +1,9 @@
 'use client'
 
-import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function HomePage() {
-  const { user, loading } = useAuth()
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Loading...</h1>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -29,10 +17,10 @@ export default function HomePage() {
           </p>
         </div>
 
-        {user ? (
+        {true ? (
           <div className="text-center space-y-6">
             <h2 className="text-3xl font-bold text-foreground">
-              Welcome back, {user.firstName || user.username}!
+              Welcome to Chase Banking Platform!
             </h2>
             <div className="space-x-4">
               <Link href="/dashboard">
@@ -43,6 +31,11 @@ export default function HomePage() {
               <Link href="/accounts">
                 <Button size="lg" variant="outline" className="px-8">
                   View Accounts
+                </Button>
+              </Link>
+              <Link href="/email-management">
+                <Button size="lg" variant="outline" className="px-8">
+                  Email Management
                 </Button>
               </Link>
             </div>

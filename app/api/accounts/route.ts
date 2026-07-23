@@ -1,27 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/client'
-import { getUserAccounts } from '@/lib/supabase-queries'
+
+// In-memory account store
+const accountsStore = new Map<string, any[]>()
+
+// Generate demo accounts for a user
+function generateDemoAccounts(userId: string): any[] {
+  if (!accountsStore.has(userId)) {
+    const accounts = [
+      {
+        id: 1,
+        account_number: '****2341',
+        account_type: 'Checking',
+        balance: 5234.56,
+        is_demo_account: true,
+        last_updated: new Date().toISOString(),
+      },
+      {
+        id: 2,
+        account_number: '****7890',
+        account_type: 'Savings',
+        balance: 12450.00,
+        is_demo_account: true,
+        last_updated: new Date().toISOString(),
+      },
+      {
+        id: 3,
+        account_number: '****5678',
+        account_type: 'Money Market',
+        balance: 8900.75,
+        is_demo_account: true,
+        last_updated: new Date().toISOString(),
+      },
+    ]
+    accountsStore.set(userId, accounts)
+  }
+  return accountsStore.get(userId) || []
+}
 
 export async function GET(request: NextRequest) {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '')
-
-  if (!token) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
-    // Verify token and get user
-    const supabase = createClient()
-    const { data: { user }, error } = await supabase.auth.getUser(token)
+    const userId = 'demo-user'
 
-    if (error || !user) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's accounts
-    const accounts = await getUserAccounts(user.id)
+    // Get or create demo accounts
+    const accounts = generateDemoAccounts(userId)
+    const total_balance = accounts.reduce((sum: number, acc: any) => sum + acc.balance, 0)
 
-    return NextResponse.json({ accounts }, { status: 200 })
+    return NextResponse.json({
+      accounts,
+      total_balance,
+      message: 'Accounts retrieved successfully',
+    }, { status: 200 })
   } catch (error: any) {
     console.error('[v0] Error fetching accounts:', error.message)
     return NextResponse.json({ error: 'Failed to fetch accounts' }, { status: 500 })
@@ -29,38 +61,30 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '')
-
-  if (!token) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
-    const supabase = createClient()
-    const { data: { user }, error } = await supabase.auth.getUser(token)
+    const userId = 'demo-user'
 
-    if (error || !user) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { accountNumber, accountType } = await request.json()
 
-    const { data, error: insertError } = await supabase
-      .from('accounts')
-      .insert({
-        user_id: user.id,
-        account_number: accountNumber,
-        account_type: accountType || 'savings',
-        balance: 0,
-      })
-      .select()
-      .single()
-
-    if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 400 })
+    // For demo purposes, add account to store
+    const accounts = generateDemoAccounts(userId)
+    const newAccount = {
+      id: accounts.length + 1,
+      account_number: accountNumber || `****${Math.random().toString().slice(2, 6)}`,
+      account_type: accountType || 'savings',
+      balance: 0,
+      is_demo_account: true,
+      last_updated: new Date().toISOString(),
     }
 
-    return NextResponse.json({ account: data }, { status: 201 })
+    accounts.push(newAccount)
+    accountsStore.set(userId, accounts)
+
+    return NextResponse.json({ account: newAccount }, { status: 201 })
   } catch (error: any) {
     console.error('[v0] Error creating account:', error.message)
     return NextResponse.json({ error: 'Failed to create account' }, { status: 500 })

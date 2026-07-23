@@ -47,7 +47,7 @@ export function ActivityDrawer({ open, onOpenChange }: ActivityDrawerProps) {
     if (lowerAction.includes("transfer")) return <ArrowRightLeft className="h-5 w-5 text-purple-600" />
     if (lowerAction.includes("bill") || lowerAction.includes("payment"))
       return <Receipt className="h-5 w-5 text-green-600" />
-    if (lowerAction.includes("settings")) return <Settings className="h-5 w-5 text-gray-600" />
+    if (lowerAction.includes("settings")) return <Settings className="h-5 w-5 text-muted-foreground" />
     if (lowerAction.includes("password") || lowerAction.includes("security") || lowerAction.includes("2fa"))
       return <Shield className="h-5 w-5 text-yellow-600" />
     if (lowerAction.includes("profile")) return <UserCog className="h-5 w-5 text-blue-600" />
@@ -63,10 +63,10 @@ export function ActivityDrawer({ open, onOpenChange }: ActivityDrawerProps) {
     if (lowerAction.includes("card unlocked")) return "bg-green-100"
     if (lowerAction.includes("card locked")) return "bg-red-100"
     if (lowerAction.includes("signed out") || lowerAction.includes("logout")) return "bg-orange-100"
-    if (lowerAction.includes("login") || lowerAction.includes("signed in")) return "bg-blue-100"
+    if (lowerAction.includes("login") || lowerAction.includes("signed in")) return "bg-card"
     if (lowerAction.includes("transfer")) return "bg-purple-100"
     if (lowerAction.includes("bill") || lowerAction.includes("payment")) return "bg-green-100"
-    if (lowerAction.includes("settings")) return "bg-gray-100"
+    if (lowerAction.includes("settings")) return "bg-background"
     if (lowerAction.includes("password") || lowerAction.includes("security") || lowerAction.includes("2fa"))
       return "bg-yellow-100"
     return "bg-[#0a4fa6]/10"

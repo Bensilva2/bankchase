@@ -14,7 +14,7 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 md:hidden">
       <div className="flex items-center justify-around py-2 max-w-md mx-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href
@@ -23,7 +23,7 @@ export default function BottomNav() {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${
-                isActive ? 'text-blue-600' : 'text-gray-500'
+                isActive ? 'text-blue-600' : 'text-muted-foreground'
               }`}
             >
               <span className="text-3xl mb-1">{item.icon}</span>

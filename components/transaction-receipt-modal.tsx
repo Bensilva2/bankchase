@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label"
 import {
   Download,
   Share2,
-  X,
   Copy,
   Check,
   Mail,
@@ -352,11 +351,8 @@ ${transaction.routingNumber ? `Routing: ${transaction.routingNumber}` : ""}
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between">
+        <DialogHeader>
           <DialogTitle className="text-[#0a4fa6]">Transaction Receipt</DialogTitle>
-          <button onClick={() => onOpenChange(false)} className="rounded-sm opacity-70 hover:opacity-100">
-            <X className="h-4 w-4" />
-          </button>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -470,7 +466,7 @@ ${transaction.routingNumber ? `Routing: ${transaction.routingNumber}` : ""}
 
           {/* Email Form */}
           {showEmailForm && (
-            <div className="space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div className="space-y-3 p-3 bg-background rounded-lg">
               <Label className="text-sm">Send receipt to email:</Label>
               <Input
                 type="email"

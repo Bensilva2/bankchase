@@ -1,69 +1,54 @@
-import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!url || !key) {
-    throw new Error('Supabase environment variables not configured')
-  }
-
-  return createClient(url, key)
-}
 
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies()
-    const authCookie = cookieStore.get('auth_user')
+    const authUserCookie = cookieStore.get('auth_user')
+    const authTokenCookie = cookieStore.get('auth_token')
 
-    if (!authCookie?.value) {
+    // Check for authentication
+    if (!authUserCookie?.value && !authTokenCookie?.value) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       )
     }
 
-    const user = JSON.parse(authCookie.value)
+    let user = null
+    try {
+      if (authUserCookie?.value) {
+        user = JSON.parse(authUserCookie.value)
+      }
+    } catch (e) {
+      console.error('Error parsing auth_user cookie:', e)
+    }
 
-    // Get fresh user data from database
-    const supabase = getSupabase()
-    const { data: freshUser, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (error || !freshUser) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { error: 'Invalid authentication data' },
+        { status: 401 }
       )
     }
 
+    // Return verified user data
     return NextResponse.json(
       {
         success: true,
         user: {
-          id: freshUser.id,
-          username: freshUser.username,
-          email: freshUser.email,
-          firstName: freshUser.first_name,
-          lastName: freshUser.last_name,
-          phone: freshUser.phone,
-          ssn: freshUser.ssn,
-          dateOfBirth: freshUser.date_of_birth,
-          address: freshUser.address,
-          city: freshUser.city,
-          state: freshUser.state,
-          zipCode: freshUser.zip_code,
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          emailVerified: user.emailVerified,
         },
       },
       { status: 200 }
     )
   } catch (error) {
-    console.error('Verify error:', error)
+    console.error('[v0] Verify error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

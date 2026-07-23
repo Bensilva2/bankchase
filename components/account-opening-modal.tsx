@@ -27,7 +27,7 @@ export function AccountOpeningModal({ isOpen, onClose }: AccountOpeningModalProp
       name: 'Checking Account',
       description: 'Chase Total Checking - No monthly service fee with qualifying activity',
       icon: Building2,
-      color: 'bg-blue-100',
+      color: 'bg-card',
       iconColor: 'text-blue-600',
     },
     {
@@ -43,7 +43,7 @@ export function AccountOpeningModal({ isOpen, onClose }: AccountOpeningModalProp
       name: 'Credit Card',
       description: 'Choose from multiple Chase credit cards with rewards',
       icon: CreditCard,
-      color: 'bg-blue-100',
+      color: 'bg-card',
       iconColor: 'text-blue-600',
     },
     {
@@ -84,12 +84,12 @@ export function AccountOpeningModal({ isOpen, onClose }: AccountOpeningModalProp
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl mx-4">
+    <div className="fixed inset-0 bg-foreground bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-background rounded-xl shadow-lg w-full max-w-2xl mx-4">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-900">Open a New Account</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <h2 className="text-2xl font-bold text-foreground">Open a New Account</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-muted-foreground">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -98,7 +98,7 @@ export function AccountOpeningModal({ isOpen, onClose }: AccountOpeningModalProp
         <div className="p-6">
           {step === 'type' && (
             <div className="space-y-4">
-              <p className="text-gray-600 mb-6">Choose the type of account you'd like to open.</p>
+              <p className="text-muted-foreground mb-6">Choose the type of account you'd like to open.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {accountTypes.map((type) => {
                   const IconComponent = type.icon
@@ -111,15 +111,15 @@ export function AccountOpeningModal({ isOpen, onClose }: AccountOpeningModalProp
                       }}
                       className={`p-6 rounded-xl border-2 transition-all text-left ${
                         selectedType === type.id
-                          ? 'border-blue-600 bg-blue-50'
-                          : 'border-gray-200 hover:border-blue-400'
+                          ? 'border-blue-600 bg-background'
+                          : 'border-border hover:border-blue-400'
                       }`}
                     >
                       <div className={`w-12 h-12 ${type.color} rounded-full flex items-center justify-center mb-4`}>
                         <IconComponent className={`w-6 h-6 ${type.iconColor}`} />
                       </div>
-                      <p className="font-semibold text-gray-900">{type.name}</p>
-                      <p className="text-sm text-gray-500 mt-2">{type.description}</p>
+                      <p className="font-semibold text-foreground">{type.name}</p>
+                      <p className="text-sm text-muted-foreground mt-2">{type.description}</p>
                     </button>
                   )
                 })}
@@ -130,11 +130,11 @@ export function AccountOpeningModal({ isOpen, onClose }: AccountOpeningModalProp
           {step === 'details' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
                   {accountTypes.find(a => a.id === selectedType)?.name}
                 </h3>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-gray-700">
+                <div className="bg-background border border-blue-200 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-foreground">
                     {selectedType === 'checking' && (
                       <>
                         <strong>Requirements:</strong>
@@ -193,14 +193,14 @@ export function AccountOpeningModal({ isOpen, onClose }: AccountOpeningModalProp
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t bg-gray-50">
+        <div className="flex items-center justify-between p-6 border-t bg-background">
           <button
             onClick={() => {
               if (step === 'details') setStep('type')
               else if (step === 'confirm') setStep('details')
               else onClose()
             }}
-            className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+            className="px-6 py-2 text-foreground border border-border rounded-lg hover:bg-background transition-colors"
           >
             {step === 'type' ? 'Cancel' : 'Back'}
           </button>

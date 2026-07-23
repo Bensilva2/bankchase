@@ -26,18 +26,18 @@ import { TransactionsDrawer } from "@/components/transactions-drawer"
 import { LoginPage } from "@/components/login-page"
 import { DisputeTransactionDrawer } from "@/components/dispute-transaction-drawer"
 import { useBanking } from "@/lib/banking-context"
-import { useAuth } from "@/lib/auth-context"
 import Image from "next/image"
 import { AccountOpeningModal } from "@/components/account-opening-modal"
 
 export default function BankingDashboard() {
-  const { user, loading } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const user = { id: "demo-user" } // Default user for demo
   
   useEffect(() => {
     setMounted(true)
   }, [])
+
   
   const [activeView, setActiveView] = useState("accounts")
   const [sendMoneyOpen, setSendMoneyOpen] = useState(false)
@@ -60,14 +60,10 @@ export default function BankingDashboard() {
   const { userProfile, addNotification, addActivity, addLoginHistory } = useBanking()
 
   const getUserFirstName = useCallback(() => {
-    if (user?.firstName) return user.firstName
-    if (user?.username) return user.username
     return "User"
-  }, [user?.firstName, user?.username])
+  }, [])
 
   useEffect(() => {
-    if (!user) return
-
     const deviceInfo = navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Desktop Browser"
 
     if (addActivity) {
@@ -89,7 +85,7 @@ export default function BankingDashboard() {
 
     const welcomeTimer = setTimeout(() => {
       toast({
-        title: `Welcome back, ${getUserFirstName()}!`,
+        title: `Welcome back, User!`,
         description: "Your accounts are up to date.",
         duration: 3000,
       })
@@ -98,9 +94,9 @@ export default function BankingDashboard() {
     return () => {
       clearTimeout(welcomeTimer)
     }
-  }, [user, addActivity, addLoginHistory, toast, getUserFirstName])
+  }, [addActivity, addLoginHistory, toast])
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (addActivity) {
       addActivity({
         action: "Signed out",
@@ -108,14 +104,13 @@ export default function BankingDashboard() {
         location: "Current Session",
       })
     }
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("auth_user")
     setActiveView("accounts")
     toast({
       title: "Signed out successfully",
       description: "You have been securely signed out.",
     })
-    router.push("/")
+    // Note: Clerk logout is handled via UserButton in header
+    // This function is kept for activity logging
   }
 
   const handleOpenReceipt = (transactionId: string) => {
@@ -135,22 +130,16 @@ export default function BankingDashboard() {
     return "Good evening"
   }
 
-  if (loading || !mounted) {
+  if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a4fa6]">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 dark:from-primary/10 dark:to-accent/10">
         <div className="flex flex-col items-center gap-4">
           <Image src="/images/chase-logo.png" alt="Chase" width={80} height={80} className="rounded-xl shadow-lg" priority loading="eager" />
-          <span className="text-white text-2xl font-bold tracking-wide">CHASE</span>
-          <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-2xl font-bold tracking-wide text-foreground">CHASE</span>
+          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     )
-  }
-
-  if (!user) {
-    // User not authenticated, show login
-    console.log('[v0] User not authenticated, showing login')
-    return <LoginPage onLogin={() => {}} />
   }
 
   const renderView = () => {

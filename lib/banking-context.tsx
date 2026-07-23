@@ -162,6 +162,7 @@ export type CreditCard = {
   dueDate: string
   rewards: number
   locked: boolean
+  activated: boolean
   internationalEnabled: boolean
   contactlessEnabled: boolean
   spendingLimit: number
@@ -381,6 +382,10 @@ type BankingContextType = {
   creditCards: CreditCard[]
   toggleCardLock: (cardId: string) => void
   updateCardSettings: (cardId: string, settings: Partial<CreditCard>) => void
+  activateCard: (cardId: string) => void
+  deactivateCard: (cardId: string) => void
+  getActivatedCards: () => CreditCard[]
+  getInactiveCards: () => CreditCard[]
 
   // App Settings
   appSettings: AppSettings
@@ -457,7 +462,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: "1",
       name: "Total Checking",
       type: "checking",
-      balance: 15847.23,
+      balance: 1015847.23,
       accountNumber: "****0683",
       routingNumber: "021000021",
       interestRate: 0.01,
@@ -466,7 +471,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: "2",
       name: "Chase Savings",
       type: "savings",
-      balance: 52340.89,
+      balance: 1052340.89,
       accountNumber: "****4521",
       routingNumber: "021000021",
       interestRate: 4.0,
@@ -475,7 +480,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: "3",
       name: "Sapphire Reserve",
       type: "credit",
-      balance: 3247.56,
+      balance: 1003247.56,
       accountNumber: "****8901",
       routingNumber: "",
       interestRate: 21.99,
@@ -484,7 +489,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       id: "4",
       name: "Freedom Unlimited",
       type: "credit",
-      balance: 1520.33,
+      balance: 1001520.33,
       accountNumber: "****7823",
       routingNumber: "",
       interestRate: 19.99,
@@ -781,6 +786,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       dueDate: "2024-12-25",
       rewards: 45000,
       locked: false,
+      activated: true,
       internationalEnabled: true,
       contactlessEnabled: true,
       spendingLimit: 5000,
@@ -796,6 +802,7 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       dueDate: "2024-12-20",
       rewards: 12500,
       locked: false,
+      activated: true,
       internationalEnabled: false,
       contactlessEnabled: true,
       spendingLimit: 3000,
@@ -1638,6 +1645,38 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
   const updateCardSettings = useCallback((cardId: string, settings: Partial<CreditCard>) => {
     setCreditCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, ...settings } : c)))
   }, [])
+
+  const activateCard = useCallback((cardId: string) => {
+    setCreditCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, activated: true } : c))
+    )
+    addNotification({
+      title: "Card Activated",
+      message: "Your card has been activated successfully.",
+      type: "success",
+      category: "card",
+    })
+  }, [])
+
+  const deactivateCard = useCallback((cardId: string) => {
+    setCreditCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, activated: false } : c))
+    )
+    addNotification({
+      title: "Card Deactivated",
+      message: "Your card has been deactivated.",
+      type: "success",
+      category: "card",
+    })
+  }, [])
+
+  const getActivatedCards = useCallback(() => {
+    return creditCards.filter((c) => c.activated)
+  }, [creditCards])
+
+  const getInactiveCards = useCallback(() => {
+    return creditCards.filter((c) => !c.activated)
+  }, [creditCards])
 
   // App Settings
   const updateAppSettings = useCallback((settings: Partial<AppSettings>) => {
