@@ -66,11 +66,22 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
 
+    // Create a JWT-like token
+    const token = Buffer.from(JSON.stringify({
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      iat: Date.now(),
+    })).toString('base64')
+
     return NextResponse.json(
       {
         success: true,
         token,
         user,
+        data: {
+          user,
+        },
         message: 'Account created successfully',
       },
       { status: 201 }

@@ -1,242 +1,125 @@
-# Money Transfer API - Quick Start Guide
+# Transfer API - Quick Start
 
-## 🚀 Get Started in 2 Minutes
+## Demo Credentials
+- **Email**: linhuang011@gmail.com
+- **Password**: Lin1122
+- **PIN**: 1234
+- **Demo Account**: 1001001 (checking, $10,000 balance)
+- **Receiver Account**: 2002002 (for testing)
 
-### 1. Use in Your Component
-
-```typescript
-import { useTransfer } from '@/hooks/use-transfer'
-
-export function MyPage() {
-  const transfer = useTransfer()
-
-  const handleSend = async () => {
-    const success = await transfer.sendDemo({
-      amount: 100,
-      toAccountNumber: '1234567890'
-    })
-    
-    if (success) {
-      console.log('Transfer ID:', transfer.transactionId)
-    }
-  }
-
-  return (
-    <div>
-      <button onClick={handleSend} disabled={transfer.loading}>
-        {transfer.loading ? 'Processing...' : 'Send $100'}
-      </button>
-      {transfer.error && <p>Error: {transfer.error}</p>}
-      {transfer.progress && <p>Progress: {transfer.progress.percent}%</p>}
-    </div>
-  )
-}
-```
-
-### 2. Use the Pre-built Form
-
-```typescript
-import { TransferFormWorking } from '@/components/transfer-form-working'
-
-export function Page() {
-  return <TransferFormWorking />
-}
-```
-
-### 3. Direct API Call
-
+## Step 1: Start Services
 ```bash
-curl -X POST http://localhost:3000/api/transfers/mock \
-  -H 'Content-Type: application/json' \
-  -d '{"amount": 100, "toAccountNumber": "1234567890"}'
+# Terminal 1: Start Next.js frontend
+npm run dev
+
+# Terminal 2: Start Python backend
+cd backend && source .venv/bin/activate && python -m uvicorn main:app --reload --port 8000
 ```
 
-## 📊 Hook API Reference
-
-```typescript
-const transfer = useTransfer()
-
-// State
-transfer.loading       // boolean - true while processing
-transfer.error         // string | null - error message
-transfer.transactionId // string | null - transaction ID
-transfer.status        // string - 'pending' | 'processing' | 'completed' | 'failed'
-transfer.progress      // { percent, message } - progress info
-transfer.transactions  // array - transaction history
-
-// Methods
-await transfer.sendDemo(request)              // Send demo transfer
-await transfer.sendTransfer(request)          // Send authenticated transfer
-await transfer.checkStatus(transactionId)     // Check status
-await transfer.pollTransfer(transactionId)    // Poll until complete
-await transfer.loadHistory()                  // Load transactions
-transfer.reset()                              // Reset state
-transfer.calculateFees(amount, bankCode)      // Calculate fees
+## Step 2: Test Login
+```bash
+# Get auth token
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"linhuang011@gmail.com","password":"Lin1122"}'
 ```
 
-## 📝 Request Format
-
-```typescript
+Response:
+```json
 {
-  amount: number                // Required (must be > 0)
-  toAccountNumber?: string      // Default: '1234567890'
-  toBankCode?: string           // Default: 'MOCK' or 'DEMO'
-  currency?: string             // Default: 'USD'
-  fromAccountId?: string        // Default: 'demo-account-1'
-  narration?: string            // Optional description
+  "success": true,
+  "token": "...",
+  "user": {...}
 }
 ```
 
-## 📈 Response Format
+## Step 3: Test Transfer
+```bash
+# Send $500 transfer
+curl -X POST http://localhost:8000/api/pay-transfer/send \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -d '{
+    "from_account_number": "1001001",
+    "to_account_number": "2002002",
+    "to_bank_code": "INTERNAL",
+    "amount": 500,
+    "currency": "USD",
+    "country_code": "US",
+    "pin": "1234",
+    "narration": "Test transfer"
+  }'
+```
 
-```typescript
+Response:
+```json
 {
-  success: boolean
-  transactionId: string         // UUID for tracking
-  status: string                // 'pending' | 'processing' | 'completed' | 'failed'
-  error?: string                // Error message if failed
-  details?: {
-    message: string
-    initiatedAt: string
-  }
+  "success": true,
+  "transaction_id": "...",
+  "receipt": {...},
+  "message": "Transfer completed successfully"
 }
 ```
 
-## 🧪 Test Scenarios
+## Step 4: Verify Transfer
+Check that:
+- ✅ Sender's balance decreased by $500
+- ✅ Receiver's balance increased by $500
+- ✅ Debit transaction created on sender's account
+- ✅ Credit transaction created on receiver's account
+- ✅ Receipt generated with receipt number
+- ✅ Webhooks triggered (check logs)
+- ✅ SMS alert sent (if configured)
 
-### Send $100 Transfer
-```typescript
-const result = await transfer.sendDemo({ amount: 100 })
-```
+## Transfer API Endpoints
 
-### Send Large Amount
-```typescript
-const result = await transfer.sendDemo({ amount: 5000 })
-```
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/api/pay-transfer/banks` | Get list of supported banks |
+| POST | `/api/pay-transfer/send` | Send money transfer |
 
-### International Transfer
+## Error Codes
+
+| Error | Meaning | Solution |
+|-------|---------|----------|
+| 401 | Unauthorized | Login first and provide token |
+| 404 | Account not found | Verify account_number is correct |
+| 400 | Insufficient balance | Check account balance first |
+| 400 | PIN validation failed | Verify PIN (3 attempts max) |
+| 429 | Rate limited | Wait before sending more transfers |
+
+## Frontend Integration
+
+### Using Transfer Service
 ```typescript
-const result = await transfer.sendDemo({
-  amount: 100,
-  toBankCode: 'SWIFT123',  // International code
-  currency: 'EUR'
+import { executeTransferWorkflow } from '@/lib/transfer-integration'
+
+const result = await executeTransferWorkflow({
+  userId: 'user-id',
+  fromAccountId: 'account-id',
+  toAccountNumber: '2002002',
+  toBankCode: 'INTERNAL',
+  amount: 500,
+  currency: 'USD',
+  phoneNumber: '+1234567890',
+  narration: 'Payment'
 })
-```
 
-### Custom Recipient
-```typescript
-const result = await transfer.sendDemo({
-  amount: 250,
-  toAccountNumber: '9876543210',
-  toBankCode: 'CUSTBANK'
-})
-```
-
-## 💰 Fee Calculation
-
-```typescript
-const fees = transfer.calculateFees(100, 'MOCK', 'USD')
-// Returns: { baseFee: 0, percentageFee: 0.10, totalFee: 0.10, total: 100.10 }
-
-const intlFees = transfer.calculateFees(100, 'SWIFT', 'EUR')
-// Returns: { baseFee: 2.50, percentageFee: 0.50, totalFee: 3.00, total: 103.00 }
-```
-
-## 📊 Status Progression
-
-```
-pending → processing → completed
-                   ↓
-                  failed
-```
-
-## ✅ Common Use Cases
-
-### 1. Simple Transfer Button
-```typescript
-const handleTransfer = async () => {
-  const success = await transfer.sendDemo({ amount: 100 })
-  if (success) alert('Transfer sent!')
+if (result.success) {
+  console.log('Transfer ID:', result.transactionId)
+} else {
+  console.error('Transfer failed:', result.error)
 }
 ```
 
-### 2. Progress Tracking
-```typescript
-const handleTransfer = async () => {
-  const success = await transfer.sendDemo({ amount: 100 })
-  if (success && transfer.progress) {
-    console.log(`${transfer.progress.percent}% - ${transfer.progress.message}`)
-  }
-}
-```
+## Troubleshooting Checklist
 
-### 3. Error Handling
-```typescript
-const handleTransfer = async () => {
-  const success = await transfer.sendDemo({ amount: 100 })
-  if (!success && transfer.error) {
-    console.error('Transfer failed:', transfer.error)
-  }
-}
-```
-
-### 4. Transaction History
-```typescript
-const MyHistory = () => {
-  const transfer = useTransfer()
-  
-  useEffect(() => {
-    transfer.loadHistory()
-  }, [])
-  
-  return (
-    <div>
-      {transfer.transactions.map(tx => (
-        <div key={tx.id}>
-          ${tx.amount} to {tx.to_account_number} - {tx.status}
-        </div>
-      ))}
-    </div>
-  )
-}
-```
-
-## 🐛 Troubleshooting
-
-### Transfer Not Working?
-1. Check browser console for errors
-2. Verify network request in DevTools
-3. Try the mock endpoint: `/api/transfers/mock`
-
-### Always Getting Error?
-1. Check request format matches documentation
-2. Ensure amount is > 0
-3. Verify network connectivity
-
-### Need More Help?
-1. See `TRANSFER_API_GUIDE.md` for detailed docs
-2. Check `TRANSFER_API_IMPLEMENTATION.md` for architecture
-3. Review component examples in `components/`
-
-## 📚 Full Documentation
-
-- **API Reference**: See `TRANSFER_API_GUIDE.md`
-- **Implementation Details**: See `TRANSFER_API_IMPLEMENTATION.md`
-- **Component Example**: See `components/transfer-form-working.tsx`
-- **Hook Source**: See `hooks/use-transfer.ts`
-- **Service Source**: See `lib/transfer-service.ts`
-
-## 🚀 Ready to Use
-
-The transfer API is fully implemented and ready to use immediately!
-
-Just import and start transferring money:
-
-```typescript
-import { useTransfer } from '@/hooks/use-transfer'
-
-const transfer = useTransfer()
-const success = await transfer.sendDemo({ amount: 100 })
-```
-
-That's it! 🎉
+- [ ] Backend service running on port 8000
+- [ ] Frontend service running on port 3000
+- [ ] Valid auth token in Authorization header
+- [ ] PIN is correct (1234 for demo)
+- [ ] Sender account has sufficient balance
+- [ ] Receiver account exists or will be created
+- [ ] Bank code is valid (use "INTERNAL" for demo)
+- [ ] Amount is positive number
+- [ ] No more than 10 transfers per minute

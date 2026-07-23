@@ -148,11 +148,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Invalid authentication response from server')
       }
 
+      // Store token and user in localStorage
       localStorage.setItem('auth_token', data.token)
       localStorage.setItem('auth_user', JSON.stringify(data.user))
 
+      // Update state
       setToken(data.token)
       setUser(data.user)
+      setError(null)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.'
       setError(errorMessage)
@@ -180,11 +183,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json()
 
+      if (!data.token || !data.user) {
+        throw new Error('Invalid registration response from server')
+      }
+
+      // Store token and user in localStorage
       localStorage.setItem('auth_token', data.token)
       localStorage.setItem('auth_user', JSON.stringify(data.user))
 
+      // Update state
       setToken(data.token)
       setUser(data.user)
+      setError(null)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Registration failed'
       setError(errorMessage)

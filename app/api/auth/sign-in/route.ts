@@ -37,6 +37,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
+      // Create a JWT-like token
+      const token = Buffer.from(JSON.stringify({
+        sub: DEMO_USER.id,
+        email: DEMO_USER.email,
+        name: DEMO_USER.name,
+        iat: Date.now(),
+      })).toString('base64')
+
+      return NextResponse.json(
+        {
+          success: true,
+          token,
+          user: {
+            id: DEMO_USER.id,
+            email: DEMO_USER.email,
+            name: DEMO_USER.name,
+          },
+          data: {
+            user: {
+              id: DEMO_USER.id,
+              email: DEMO_USER.email,
+              name: DEMO_USER.name,
+            },
+          },
+          message: 'Signed in successfully',
+        },
+        { status: 200 }
       )
     }
 

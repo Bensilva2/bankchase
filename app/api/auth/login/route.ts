@@ -48,20 +48,32 @@ async function handler(request: NextRequest) {
     maxAge: 60 * 60 * 24 * 7, // 7 days
   })
 
-  // Create auth token
-  const token = Buffer.from(JSON.stringify({
-    id: DEMO_USER.id,
-    username: DEMO_USER.username,
-    email: DEMO_USER.email,
-    iat: Math.floor(Date.now() / 1000),
-  })).toString('base64')
+    // Normalize input (trim whitespace, case-insensitive for email)
+    const normalizedIdentifier = loginIdentifier.trim().toLowerCase()
+    const normalizedUsername = DEFAULT_USER.username.toLowerCase()
+    const normalizedEmail = DEFAULT_USER.email.toLowerCase()
 
-  cookieStore.set('auth_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  })
+    // Check default demo user first
+    if (
+      (normalizedIdentifier === normalizedUsername || normalizedIdentifier === normalizedEmail) &&
+      password === DEFAULT_USER.password
+    ) {
+      user = DEFAULT_USER
+    } else {
+      // In production, query database here for other users
+      // For now, only demo user is available
+      return NextResponse.json(
+        { error: 'Invalid email/username or password' },
+        { status: 401 }
+      )
+    }
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Invalid email/username or password' },
+        { status: 401 }
+      )
+    }
 
   // Trigger welcome notification event
   try {
@@ -72,6 +84,32 @@ async function handler(request: NextRequest) {
       message: `Welcome back, ${DEMO_USER.firstName}!`,
       channels: ['email', 'push'],
     })
+
+    // Create a simple JWT-like token (in production, use proper JWT library)
+    const token = Buffer.from(JSON.stringify({
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      iat: Date.now(),
+    })).toString('base64')
+
+    return NextResponse.json(
+      {
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          role: user.role,
+          emailVerified: user.email_verified,
+        },
+      },
+      { status: 200 }
+    )
   } catch (error) {
     console.error('[v0] Error triggering welcome notification:', error)
   }
