@@ -31,7 +31,9 @@ export async function GET() {
 
     return NextResponse.json({ user: userData.user, session: sessionData.session })
   } catch (error) {
-    console.error('[v0] Session fetch failed:', error)
-    return NextResponse.json({ error: 'Session fetch failed' }, { status: 500 })
+    // Missing preview configuration must behave like an anonymous session,
+    // not a server error that can trap the client in an auth redirect loop.
+    console.warn('[v0] Session fetch unavailable:', error)
+    return NextResponse.json({ user: null, session: null })
   }
 }

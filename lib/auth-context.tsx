@@ -57,34 +57,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Restore the server-managed Supabase session on every full page load.
+  // Restore the server-managed session on every full page load.
   useEffect(() => {
+    let active = true
+
     const initAuth = async () => {
       try {
         const response = await fetch('/api/auth/session', { cache: 'no-store' })
-        if (!response.ok) return
+        if (!response.ok) throw new Error('Session check failed')
         const data = await response.json()
+        if (!active) return
+
         if (data.user) {
-          const authUser: User = {
+          setUser({
             id: data.user.id,
             email: data.user.email ?? '',
             username: data.user.user_metadata?.username ?? data.user.email ?? '',
             firstName: data.user.user_metadata?.firstName ?? '',
             lastName: data.user.user_metadata?.lastName ?? '',
             role: data.user.app_metadata?.role ?? 'customer',
-          }
-          setUser(authUser)
+          })
           setToken(data.session?.access_token ?? null)
+        } else {
+          setUser(null)
+          setToken(null)
         }
       } catch (err) {
         console.error('[v0] Auth initialization error:', err)
-        setUser(null)
-        setToken(null)
+        if (active) {
+          setUser(null)
+          setToken(null)
+        }
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
+
     void initAuth()
+    return () => { active = false }
   }, [])
 
   const verifyTokenHelper = async (tokenToVerify: string) => {
@@ -145,11 +155,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.message || 'Your account needs email confirmation before you can sign in.')
       }
 
-      // Legacy demo sessions are cookie-backed and intentionally have no bearer token.
-      if (data.token) localStorage.setItem('auth_token', data.token)
-      localStorage.setItem('auth_user', JSON.stringify(data.user))
-
-      // Update state
+      // Demo sessions are cookie-backed; Supabase sessions are cookie-backed too.
+      // Keep React state aligned with the server response without duplicating auth in storage.
       setToken(data.token ?? null)
       setUser(data.user)
       setError(null)
@@ -180,17 +187,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json()
 
-      if (!data.token || !data.user) {
+      if (!data.user) {
         throw new Error('Invalid registration response from server')
       }
 
-      // Store token and user in localStorage
-      localStorage.setItem('auth_token', data.token)
-      localStorage.setItem('auth_user', JSON.stringify(data.user))
-
-      // Update state
-      setToken(data.token)
-      setUser(data.user)
+      // Email confirmation responses intentionally do not create an active session.
+      setToken(data.token ?? null)
+      setUser(data.token ? data.user : null)
       setError(null)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Registration failed'
@@ -202,6 +205,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = () => {
+    void fetch('/api/auth/logout', { method: 'POST' }).catch((err) => {
+      console.error('[v0] Logout request failed:', err)
+    })
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
     setUser(null)
