@@ -1,5 +1,3 @@
-import { AuthForm } from "@/components/auth-form"
+import SignInPage from '@/app/sign-in/page'
 
-export default function LoginRoute() {
-  return <AuthForm mode="sign-in" />
-}
+export default SignInPage
