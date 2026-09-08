@@ -63,7 +63,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
-        const response = await fetch('/api/auth/session', { cache: 'no-store' })
+        const response = await fetch('/api/auth/session', {
+          cache: 'no-store',
+          credentials: 'include',
+          headers: { 'Cache-Control': 'no-cache' },
+        })
         if (!response.ok) throw new Error('Session check failed')
         const data = await response.json()
         if (!active) return
@@ -116,8 +120,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(tokenToVerify)
     } catch (err) {
       console.error('Token verification error:', err)
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_user')
       setUser(null)
       setToken(null)
       throw err
@@ -208,8 +210,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void fetch('/api/auth/logout', { method: 'POST' }).catch((err) => {
       console.error('[v0] Logout request failed:', err)
     })
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_user')
     setUser(null)
     setToken(null)
     setError(null)

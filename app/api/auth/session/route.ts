@@ -29,7 +29,10 @@ export async function GET() {
       return NextResponse.json({ user: null, session: null })
     }
 
-    return NextResponse.json({ user: userData.user, session: sessionData.session })
+    return NextResponse.json(
+      { user: userData.user, session: sessionData.session },
+      { headers: { 'Cache-Control': 'no-store, max-age=0' } },
+    )
   } catch (error) {
     // Missing preview configuration must behave like an anonymous session,
     // not a server error that can trap the client in an auth redirect loop.
