@@ -28,6 +28,7 @@ import { AccountOpeningModal } from "@/components/account-opening-modal"
 import { useAuth } from "@/lib/auth-context"
 import { Settings2, Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Navigation } from "@/components/Navigation"
 
 export default function BankingDashboard() {
   const [activeView, setActiveView] = useState("accounts")
@@ -193,6 +194,7 @@ export default function BankingDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader />
+      <Navigation />
 
       <main className="px-4 pt-5">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
