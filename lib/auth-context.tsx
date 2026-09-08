@@ -30,7 +30,7 @@ interface AuthContextType {
   error: string | null
   login: (username: string, password: string, token?: string) => Promise<void>
   register: (userData: RegisterData) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   verifyToken: () => Promise<void>
 }
 
@@ -143,6 +143,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        cache: 'no-store',
         body: JSON.stringify({ username: username.trim(), password, token: token?.trim() || undefined }),
       })
 
@@ -206,13 +208,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const logout = () => {
-    void fetch('/api/auth/logout', { method: 'POST' }).catch((err) => {
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+      })
+    } catch (err) {
       console.error('[v0] Logout request failed:', err)
-    })
-    setUser(null)
-    setToken(null)
-    setError(null)
+    } finally {
+      setUser(null)
+      setToken(null)
+      setError(null)
+    }
   }
 
   const verifyToken = async () => {
