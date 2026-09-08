@@ -186,8 +186,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         localStorage.removeItem("chase_username")
       }
 
-      // Redirect to dashboard
-      router.push("/dashboard")
+      // Replace the sign-in route so the browser cannot return to it as the
+      // active page while the dashboard session is being restored.
+      router.replace("/dashboard")
     } catch (err) {
       setError("The username or password you entered is incorrect. Please try again.")
     } finally {

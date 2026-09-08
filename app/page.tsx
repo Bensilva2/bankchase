@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { QuickActions } from "@/components/quick-actions"
 import { AccountsSection } from "@/components/accounts-section"
@@ -24,7 +25,6 @@ import { TransactionsDrawer } from "@/components/transactions-drawer"
 import { DisputeTransactionDrawer } from "@/components/dispute-transaction-drawer"
 import { useBanking } from "@/lib/banking-context"
 import { AccountOpeningModal } from "@/components/account-opening-modal"
-import { AuthForm } from "@/components/auth-form"
 import { useAuth } from "@/lib/auth-context"
 import { Settings2, Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -71,6 +71,7 @@ export default function BankingDashboard() {
 
   const { userProfile, addNotification, addActivity, addLoginHistory } = useBanking()
   const { user, loading: authLoading, logout } = useAuth()
+  const router = useRouter()
 
   const getUserFirstName = useCallback(() => {
     return userProfile.name.split(" ")[0] || "User"
@@ -133,12 +134,18 @@ export default function BankingDashboard() {
     return "Good evening"
   }
 
-  if (authLoading) {
-    return null
-  }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/sign-in')
+    }
+  }, [authLoading, router, user])
 
-  if (!user) {
-    return <AuthForm mode="sign-in" />
+  if (authLoading || !user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-6">
+        <p className="text-sm text-muted-foreground" role="status">Opening your secure dashboard…</p>
+      </main>
+    )
   }
 
   const renderView = () => {
