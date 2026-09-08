@@ -43,7 +43,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         if (remember) window.localStorage.setItem("chase_username", username.trim())
         else window.localStorage.removeItem("chase_username")
       }
-      window.location.replace("/")
+      window.location.replace("/dashboard")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "We couldn't sign you in. Check your details and try again.")
     } finally {
