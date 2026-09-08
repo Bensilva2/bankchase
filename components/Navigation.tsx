@@ -76,9 +76,12 @@ export function Navigation() {
           <div className="flex md:hidden items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary hover:bg-muted/50"
+              className="inline-flex items-center justify-center rounded-md p-2 text-foreground hover:bg-muted/50 hover:text-primary"
+              aria-expanded={isOpen}
+              aria-controls="mobile-navigation"
+              aria-label={isOpen ? "Close main menu" : "Open main menu"}
             >
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">{isOpen ? "Close main menu" : "Open main menu"}</span>
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
@@ -87,7 +90,7 @@ export function Navigation() {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden bg-card border-t border-border">
+        <div id="mobile-navigation" className="md:hidden bg-card border-t border-border">
           <div className="px-2 pt-2 pb-3 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;

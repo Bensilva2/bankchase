@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { QuickActions } from "@/components/quick-actions"
@@ -73,13 +73,15 @@ export default function BankingDashboard() {
   const { userProfile, addNotification, addActivity, addLoginHistory } = useBanking()
   const { user, loading: authLoading, logout } = useAuth()
   const router = useRouter()
+  const sessionActivityRecorded = useRef(false)
 
   const getUserFirstName = useCallback(() => {
     return userProfile.name.split(" ")[0] || "User"
   }, [userProfile.name])
 
   useEffect(() => {
-    if (authLoading || !user) return
+    if (authLoading || !user || sessionActivityRecorded.current) return
+    sessionActivityRecorded.current = true
 
     const deviceInfo = navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Desktop Browser"
 
