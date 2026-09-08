@@ -4,18 +4,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, LogOut, LayoutDashboard, Wallet, Send, User, ReceiptText, Bell, Users, CreditCard, FileText, Landmark, ArrowRightLeft } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      router.push('/');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      router.push('/');
-    }
+    await logout();
+    router.replace('/sign-in');
   };
 
   const navItems = [
@@ -51,7 +49,7 @@ export function Navigation() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center gap-1 overflow-x-auto py-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (

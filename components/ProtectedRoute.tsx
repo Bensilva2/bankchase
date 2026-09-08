@@ -15,7 +15,15 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const router = useRouter();
-  const { data, error, isLoading } = useSWR<SessionResponse>('/api/auth/session');
+  const { data, error, isLoading } = useSWR<SessionResponse>('/api/auth/session', async (url) => {
+    const response = await fetch(url, {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    })
+    if (!response.ok) throw new Error('Session check failed')
+    return response.json()
+  }, { revalidateOnFocus: false, shouldRetryOnError: false });
   const role = typeof data?.user?.app_metadata?.role === 'string' ? data.user.app_metadata.role : undefined;
   const hasRequiredRole = !requiredRole?.length || (role ? requiredRole.includes(role) : false);
 
