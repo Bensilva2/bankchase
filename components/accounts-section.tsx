@@ -2,10 +2,8 @@
 
 import {
   ChevronRight,
-  CreditCard,
   Eye,
   EyeOff,
-  Landmark,
   TrendingDown,
   TrendingUp,
   Clock,
@@ -145,29 +143,6 @@ export function AccountsSection({
           })}
         </CardContent>
       </Card>
-
-      <section aria-labelledby="other-products-heading" className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h3 id="other-products-heading" className="text-lg font-bold text-primary">Other products</h3>
-          <button type="button" onClick={onViewAccount} className="text-xs font-medium text-primary hover:underline">View details</button>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[
-            { label: "Credit cards", detail: "Manage payments and rewards", icon: CreditCard },
-            { label: "Loans & mortgages", detail: "Payments and balances", icon: Landmark },
-            { label: "Investments", detail: "Portfolio and market updates", icon: TrendingUp },
-          ].map((item) => {
-            const Icon = item.icon
-            return (
-              <button key={item.label} type="button" onClick={onViewAccount} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/40 hover:bg-primary/5">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"><Icon className="size-5" aria-hidden="true" /></span>
-                <span><span className="block text-sm font-semibold">{item.label}</span><span className="mt-1 block text-xs text-muted-foreground">{item.detail}</span></span>
-                <ChevronRight className="ml-auto size-4 text-muted-foreground" aria-hidden="true" />
-              </button>
-            )
-          })}
-        </div>
-      </section>
 
       <Card className="dashboard-card-shadow border-0">
         <CardContent className="p-4">
