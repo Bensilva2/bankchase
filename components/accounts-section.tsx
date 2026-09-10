@@ -1,17 +1,13 @@
 "use client"
 
 import {
-  ArrowRightLeft,
   ChevronRight,
   CreditCard,
   Eye,
   EyeOff,
-  FileText,
   Landmark,
-  ShieldCheck,
   TrendingDown,
   TrendingUp,
-  WalletCards,
   Clock,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -149,36 +145,6 @@ export function AccountsSection({
           })}
         </CardContent>
       </Card>
-
-      <section aria-labelledby="quick-actions-heading" className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h3 id="quick-actions-heading" className="text-lg font-bold text-primary">Quick actions</h3>
-          <span className="text-xs text-muted-foreground">Move money and manage bills</span>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: "Pay & Transfer", icon: ArrowRightLeft, action: onLinkExternal },
-            { label: "Deposit checks", icon: WalletCards, action: onLinkExternal },
-            { label: "Pay bills", icon: FileText, action: onLinkExternal },
-            { label: "Card security", icon: ShieldCheck, action: onViewAccount },
-          ].map((item) => {
-            const Icon = item.icon
-            return (
-              <button
-                key={item.label}
-                type="button"
-                onClick={item.action}
-                className="flex min-h-24 flex-col items-start justify-between rounded-xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
-              >
-                <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Icon className="size-4" aria-hidden="true" />
-                </span>
-                <span className="text-sm font-semibold text-foreground">{item.label}</span>
-              </button>
-            )
-          })}
-        </div>
-      </section>
 
       <section aria-labelledby="other-products-heading" className="space-y-3">
         <div className="flex items-center justify-between px-1">
