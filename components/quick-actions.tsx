@@ -51,7 +51,7 @@ export function QuickActions({
         onClick={onDepositChecks}
       >
         <FileText className="h-4 w-4 text-primary" />
-        <span>Deposit</span>
+        <span>Deposit checks</span>
       </Button>
       <Button
         variant="outline"
