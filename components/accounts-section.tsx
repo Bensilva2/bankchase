@@ -1,6 +1,13 @@
 "use client"
 
-import { ChevronRight, Eye, EyeOff, TrendingUp, TrendingDown, Clock } from "lucide-react"
+import {
+  ChevronRight,
+  Eye,
+  EyeOff,
+  TrendingDown,
+  TrendingUp,
+  Clock,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useBanking } from "@/lib/banking-context"

@@ -478,24 +478,6 @@ export function BankingProvider({ children }: { children: React.ReactNode }) {
       routingNumber: "021000021",
       interestRate: 4.0,
     },
-    {
-      id: "3",
-      name: "Sapphire Reserve",
-      type: "credit",
-      balance: 1003247.56,
-      accountNumber: "****8901",
-      routingNumber: "",
-      interestRate: 21.99,
-    },
-    {
-      id: "4",
-      name: "Freedom Unlimited",
-      type: "credit",
-      balance: 1001520.33,
-      accountNumber: "****7823",
-      routingNumber: "",
-      interestRate: 19.99,
-    },
   ]
 
   const [accounts, setAccounts] = useState<Account[]>(defaultAccounts)

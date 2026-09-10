@@ -38,6 +38,8 @@ type VerificationStep = "form" | "review" | "otp" | "cot" | "tax" | "processing"
 
 export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProps) {
   const [recipientName, setRecipientName] = useState("")
+  const [recipientPhone, setRecipientPhone] = useState("")
+  const [recipientEmail, setRecipientEmail] = useState("")
   const [recipientBank, setRecipientBank] = useState("")
   const [routingNumber, setRoutingNumber] = useState("")
   const [accountNumber, setAccountNumber] = useState("")
@@ -45,6 +47,7 @@ export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProp
   const [amount, setAmount] = useState("")
   const [wireType, setWireType] = useState("domestic")
   const [purpose, setPurpose] = useState("")
+  const [transferMethod, setTransferMethod] = useState<"ach" | "zelle" | "domestic" | "international">("domestic")
   const [memo, setMemo] = useState("")
   const { toast } = useToast()
   const { addTransaction, accounts, userProfile, addNotification, addActivity, updateTransaction } = useBanking()
@@ -126,12 +129,15 @@ export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProp
 
   const resetForm = () => {
     setRecipientName("")
+    setRecipientPhone("")
+    setRecipientEmail("")
     setRecipientBank("")
     setRoutingNumber("")
     setAccountNumber("")
     setSwiftCode("")
     setAmount("")
     setWireType("domestic")
+    setTransferMethod("domestic")
     setPurpose("")
     setMemo("")
     setCurrentStep("form")
@@ -149,12 +155,18 @@ export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProp
     setIsLoading(false)
   }
 
-  const getFee = () => (wireType === "domestic" ? 30 : 45)
+  const getFee = () => {
+    if (transferMethod === "ach" || transferMethod === "zelle") return 0
+    return transferMethod === "domestic" ? 30 : 45
+  }
   const getTransferAmount = () => Number.parseFloat(amount) || 0
   const getTotalAmount = () => getTransferAmount() + getFee()
 
   const validateForm = () => {
-    if (!recipientName || !routingNumber || !accountNumber || !amount) {
+    const needsBankDetails = transferMethod === "ach" || transferMethod === "domestic" || transferMethod === "international"
+    const needsZelleContact = transferMethod === "zelle" && !recipientPhone && !recipientEmail
+
+    if (!recipientName || !amount || (needsBankDetails && (!routingNumber || !accountNumber)) || needsZelleContact) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
@@ -175,7 +187,7 @@ export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProp
       return false
     }
 
-    if (wireType === "domestic" && routingNumber.length !== 9) {
+    if (transferMethod !== "zelle" && wireType === "domestic" && routingNumber.length !== 9) {
       toast({
         title: "Invalid Routing Number",
         description: "Routing number must be exactly 9 digits",
@@ -193,7 +205,7 @@ export function WireDrawer({ open, onOpenChange, onReceiptOpen }: WireDrawerProp
       return false
     }
 
-    if (accountNumber.length < 8) {
+    if (transferMethod !== "zelle" && accountNumber.length < 8) {
       toast({
         title: "Invalid Account Number",
         description: "Account number must be at least 8 digits",
@@ -581,32 +593,32 @@ Thank you for using Chase.
       </div>
 
       <div>
-        <Label className="text-sm font-medium">Wire Type</Label>
+        <Label className="text-sm font-medium">Transfer Method</Label>
         <div className="grid grid-cols-2 gap-3 mt-1.5">
-          <Button
-            type="button"
-            variant={wireType === "domestic" ? "default" : "outline"}
-            onClick={() => setWireType("domestic")}
-            className={`h-auto py-3 ${wireType === "domestic" ? "bg-[#0a4fa6] hover:bg-[#083d80]" : "bg-transparent"}`}
-          >
-            <Building className="h-4 w-4 mr-2" />
-            <div className="text-left">
-              <div className="font-medium">Domestic</div>
-              <div className="text-xs opacity-80">$30 fee</div>
-            </div>
-          </Button>
-          <Button
-            type="button"
-            variant={wireType === "international" ? "default" : "outline"}
-            onClick={() => setWireType("international")}
-            className={`h-auto py-3 ${wireType === "international" ? "bg-[#0a4fa6] hover:bg-[#083d80]" : "bg-transparent"}`}
-          >
-            <Globe className="h-4 w-4 mr-2" />
-            <div className="text-left">
-              <div className="font-medium">International</div>
-              <div className="text-xs opacity-80">$45 fee</div>
-            </div>
-          </Button>
+          {[
+            { key: "ach", label: "ACH", detail: "$0 fee", icon: Building },
+            { key: "zelle", label: "Zelle", detail: "Instant", icon: Send },
+            { key: "domestic", label: "Domestic wire", detail: "$30 fee", icon: Building },
+            { key: "international", label: "International wire", detail: "$45 fee", icon: Globe },
+          ].map(({ key, label, detail, icon: Icon }) => (
+            <Button
+              key={key}
+              type="button"
+              variant={transferMethod === key ? "default" : "outline"}
+              onClick={() => {
+                setTransferMethod(key as typeof transferMethod)
+                if (key === "domestic" || key === "international") setWireType(key)
+                else setWireType("domestic")
+              }}
+              className={`h-auto py-3 ${transferMethod === key ? "bg-[#0a4fa6] hover:bg-[#083d80]" : "bg-transparent"}`}
+            >
+              <Icon className="h-4 w-4 mr-2" />
+              <div className="text-left">
+                <div className="font-medium">{label}</div>
+                <div className="text-xs opacity-80">{detail}</div>
+              </div>
+            </Button>
+          ))}
         </div>
       </div>
 
@@ -633,39 +645,66 @@ Thank you for using Chase.
           />
         </div>
 
-        {wireType === "domestic" ? (
-          <div>
-            <Label className="text-sm">Routing Number (ABA) *</Label>
-            <Input
-              placeholder="9-digit routing number"
-              value={routingNumber}
-              onChange={(e) => setRoutingNumber(e.target.value.replace(/\D/g, "").slice(0, 9))}
-              maxLength={9}
-              className="mt-1.5"
-            />
+        {transferMethod === "zelle" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-sm">Recipient phone</Label>
+              <Input
+                type="tel"
+                placeholder="(555) 555-5555"
+                value={recipientPhone}
+                onChange={(e) => setRecipientPhone(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <Label className="text-sm">Recipient email</Label>
+              <Input
+                type="email"
+                placeholder="name@example.com"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                className="mt-1.5"
+              />
+            </div>
           </div>
         ) : (
-          <div>
-            <Label className="text-sm">SWIFT/BIC Code *</Label>
-            <Input
-              placeholder="8-11 character SWIFT code"
-              value={swiftCode}
-              onChange={(e) => setSwiftCode(e.target.value.toUpperCase().slice(0, 11))}
-              maxLength={11}
-              className="mt-1.5"
-            />
-          </div>
-        )}
+          <>
+            {transferMethod === "international" ? (
+              <div>
+                <Label className="text-sm">SWIFT/BIC Code *</Label>
+                <Input
+                  placeholder="8-11 character SWIFT code"
+                  value={swiftCode}
+                  onChange={(e) => setSwiftCode(e.target.value.toUpperCase().slice(0, 11))}
+                  maxLength={11}
+                  className="mt-1.5"
+                />
+              </div>
+            ) : (
+              <div>
+                <Label className="text-sm">Routing Number (ABA) *</Label>
+                <Input
+                  placeholder="9-digit routing number"
+                  value={routingNumber}
+                  onChange={(e) => setRoutingNumber(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                  maxLength={9}
+                  className="mt-1.5"
+                />
+              </div>
+            )}
 
-        <div>
-          <Label className="text-sm">Account Number *</Label>
-          <Input
-            placeholder="Recipient account number"
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
-            className="mt-1.5"
-          />
-        </div>
+            <div>
+              <Label className="text-sm">Account Number *</Label>
+              <Input
+                placeholder="Recipient account number"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
+                className="mt-1.5"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="space-y-3">
