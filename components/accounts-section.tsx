@@ -1,6 +1,19 @@
 "use client"
 
-import { ChevronRight, Eye, EyeOff, TrendingUp, TrendingDown, Clock } from "lucide-react"
+import {
+  ArrowRightLeft,
+  ChevronRight,
+  CreditCard,
+  Eye,
+  EyeOff,
+  FileText,
+  Landmark,
+  ShieldCheck,
+  TrendingDown,
+  TrendingUp,
+  WalletCards,
+  Clock,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useBanking } from "@/lib/banking-context"
@@ -136,6 +149,59 @@ export function AccountsSection({
           })}
         </CardContent>
       </Card>
+
+      <section aria-labelledby="quick-actions-heading" className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h3 id="quick-actions-heading" className="text-lg font-bold text-primary">Quick actions</h3>
+          <span className="text-xs text-muted-foreground">Move money and manage bills</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { label: "Pay & Transfer", icon: ArrowRightLeft, action: onLinkExternal },
+            { label: "Deposit checks", icon: WalletCards, action: onLinkExternal },
+            { label: "Pay bills", icon: FileText, action: onLinkExternal },
+            { label: "Card security", icon: ShieldCheck, action: onViewAccount },
+          ].map((item) => {
+            const Icon = item.icon
+            return (
+              <button
+                key={item.label}
+                type="button"
+                onClick={item.action}
+                className="flex min-h-24 flex-col items-start justify-between rounded-xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
+              >
+                <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Icon className="size-4" aria-hidden="true" />
+                </span>
+                <span className="text-sm font-semibold text-foreground">{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      <section aria-labelledby="other-products-heading" className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h3 id="other-products-heading" className="text-lg font-bold text-primary">Other products</h3>
+          <button type="button" onClick={onViewAccount} className="text-xs font-medium text-primary hover:underline">View details</button>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            { label: "Credit cards", detail: "Manage payments and rewards", icon: CreditCard },
+            { label: "Loans & mortgages", detail: "Payments and balances", icon: Landmark },
+            { label: "Investments", detail: "Portfolio and market updates", icon: TrendingUp },
+          ].map((item) => {
+            const Icon = item.icon
+            return (
+              <button key={item.label} type="button" onClick={onViewAccount} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/40 hover:bg-primary/5">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"><Icon className="size-5" aria-hidden="true" /></span>
+                <span><span className="block text-sm font-semibold">{item.label}</span><span className="mt-1 block text-xs text-muted-foreground">{item.detail}</span></span>
+                <ChevronRight className="ml-auto size-4 text-muted-foreground" aria-hidden="true" />
+              </button>
+            )
+          })}
+        </div>
+      </section>
 
       <Card className="dashboard-card-shadow border-0">
         <CardContent className="p-4">
