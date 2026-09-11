@@ -25,7 +25,6 @@ import { TransactionsDrawer } from "@/components/transactions-drawer"
 import { DisputeTransactionDrawer } from "@/components/dispute-transaction-drawer"
 import { useBanking } from "@/lib/banking-context"
 import { AccountOpeningModal } from "@/components/account-opening-modal"
-import { KycVerificationCard } from "@/components/kyc-verification-card"
 import { useAuth } from "@/lib/auth-context"
 
 export default function BankingDashboard() {
@@ -130,7 +129,6 @@ export default function BankingDashboard() {
       case "accounts":
         return (
           <div className="flex flex-col gap-5 pb-24">
-            <KycVerificationCard />
             <QuickActions
               onSendMoney={() => setSendMoneyOpen(true)}
               onDepositChecks={() => setDepositChecksOpen(true)}
