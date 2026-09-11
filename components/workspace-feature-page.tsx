@@ -13,8 +13,7 @@ export function WorkspaceFeaturePage({ title, description, actions }: { title: s
       <main className="min-h-screen bg-background px-4 py-8 md:px-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-6">
           <div>
-            <p className="text-sm font-medium text-primary">Workspace</p>
-            <h1 className="mt-1 text-3xl font-bold text-foreground">{title}</h1>
+            <h1 className="text-3xl font-bold text-foreground">{title}</h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">{description}</p>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
