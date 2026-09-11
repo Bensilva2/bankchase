@@ -17,6 +17,21 @@ export async function POST(request: NextRequest) {
     const { action, userId, ...data } = body
 
     switch (action) {
+      case 'start': {
+        if (!userId) {
+          return NextResponse.json({ error: 'userId required' }, { status: 400 })
+        }
+        const existing = getKYCProfile(userId)
+        const profile = existing ?? initializeKYCProfile(userId, {
+          firstName: 'Account',
+          lastName: 'Holder',
+        })
+        return NextResponse.json({
+          success: true,
+          status: profile.status === 'approved' ? 'approved' : 'requires_verification',
+          iframe_url: process.env.AGENTCARD_KYC_URL || null,
+        })
+      }
       case 'initialize': {
         const { personalInfo } = data
         if (!userId || !personalInfo) {
@@ -136,7 +151,23 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true, profile })
+    const status = profile.status === 'approved'
+      ? 'approved'
+      : profile.status === 'rejected'
+        ? 'rejected'
+        : profile.status === 'under_review' || profile.status === 'pending'
+          ? 'pending'
+          : profile.status === 'documents_required'
+            ? 'awaiting_documents'
+            : 'requires_verification'
+
+    return NextResponse.json({
+      success: true,
+      profile,
+      status,
+      iframe_url: process.env.AGENTCARD_KYC_URL || null,
+      reason: profile.documents.find((document) => document.status === 'rejected')?.rejectionReason,
+    })
   } catch (error) {
     console.error('KYC API error:', error)
     return NextResponse.json(
