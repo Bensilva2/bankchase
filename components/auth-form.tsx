@@ -52,15 +52,15 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   }
 
   return (
-    <main className="min-h-svh bg-[#0868b8] text-[#172033]">
-      <div className="mx-auto flex min-h-svh w-full max-w-6xl flex-col px-5 pb-8 sm:px-10">
-        <header className="flex items-center justify-between py-5 text-white">
+    <main className="min-h-svh overflow-y-auto bg-[#0868b8] text-[#172033]">
+      <div className="mx-auto flex min-h-svh w-full max-w-6xl flex-col px-5 pb-6 sm:px-10">
+        <header className="flex items-center justify-between py-4 text-white">
           <div className="flex items-center gap-2 text-sm font-medium"><ShieldCheck className="size-5" /> Secure sign in</div>
         </header>
-        <div className="flex flex-1 flex-col items-center justify-center gap-12 py-10 sm:gap-16">
+        <div className="flex flex-1 flex-col items-center justify-center gap-7 py-6 sm:gap-9 sm:py-8">
           <div className="flex items-center gap-2 text-white" aria-label="Chase">
-            <span className="font-mono text-4xl font-semibold tracking-[0.08em]">CHASE</span>
-            <Image src="/images/chase-logo.png" alt="Chase logo" width={52} height={52} className="shrink-0" priority />
+            <span className="font-mono text-3xl font-semibold tracking-[0.08em] sm:text-4xl">CHASE</span>
+            <Image src="/images/chase-logo.png" alt="Chase logo" width={44} height={44} className="shrink-0 sm:h-[52px] sm:w-[52px]" priority />
           </div>
           <section className="w-full max-w-xl rounded-md border border-[#aeb4bb] bg-white shadow-[0_3px_12px_rgba(0,0,0,.22)]">
             <div className="p-6 sm:p-9">
