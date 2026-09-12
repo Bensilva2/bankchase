@@ -7,6 +7,7 @@ import { AccountsSection } from "@/components/accounts-section"
 import { QuickActions } from "@/components/quick-actions"
 import { CreditJourneyCard } from "@/components/credit-journey-card"
 import { BottomNavigation } from "@/components/bottom-navigation"
+import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { SendMoneyDrawer } from "@/components/send-money-drawer"
 import { DepositChecksDrawer } from "@/components/deposit-checks-drawer"
 import { PayBillsDrawer } from "@/components/pay-bills-drawer"
@@ -125,6 +126,14 @@ export default function BankingDashboard() {
     )
   }
 
+  const viewTitles: Record<string, { eyebrow: string; title: string; description: string }> = {
+    accounts: { eyebrow: "Overview", title: "Your money, clearly organized", description: "Move money, monitor balances, and stay on top of what matters." },
+    "pay-transfer": { eyebrow: "Payments", title: "Pay and transfer", description: "Send money, pay bills, and manage upcoming activity from one place." },
+    "plan-track": { eyebrow: "Insights", title: "Plan and track", description: "Understand spending patterns and make progress toward your goals." },
+    offers: { eyebrow: "Benefits", title: "Make more of your money", description: "Explore rewards, perks, and offers available to you." },
+    more: { eyebrow: "Workspace", title: "Settings and controls", description: "Manage your profile, security, cards, and support preferences." },
+  }
+
   const renderView = () => {
     switch (activeView) {
       case "accounts":
@@ -168,28 +177,31 @@ export default function BankingDashboard() {
     }
   }
 
+  const currentView = viewTitles[activeView] ?? viewTitles.accounts
+
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader />
+    <div className="min-h-screen bg-muted/30 lg:flex">
+      <DashboardSidebar activeView={activeView} onViewChange={setActiveView} />
+      <div className="min-w-0 flex-1">
+        <DashboardHeader />
 
-      <main className="px-4 pt-5">
-        <div className="mb-5">
-          <h1 className="text-2xl font-bold text-foreground">
-            {getGreeting()}, {getUserFirstName()}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {new Date().toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
-        </div>
+        <main className="mx-auto w-full max-w-7xl px-4 pb-8 pt-5 sm:px-6 lg:px-10">
+          <div className="mb-7 flex flex-col gap-1 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{currentView.eyebrow}</p>
+              <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{currentView.title}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{currentView.description}</p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {getGreeting()}, {getUserFirstName()} · {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </p>
+          </div>
 
-        {renderView()}
-      </main>
+          {renderView()}
+        </main>
 
-      <BottomNavigation activeView={activeView} onViewChange={setActiveView} />
+        <BottomNavigation activeView={activeView} onViewChange={setActiveView} />
+      </div>
 
       {/* Drawers */}
       <SendMoneyDrawer open={sendMoneyOpen} onOpenChange={setSendMoneyOpen} onReceiptOpen={handleOpenReceipt} />
